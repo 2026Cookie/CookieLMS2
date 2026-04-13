@@ -1,0 +1,29 @@
+name: "✨ New Feature"
+description: 새로운 기능을 구현할 때 사용하는 템플릿입니다
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: 목표
+      placeholder: 이 기능을 통해 달성하려는 목적을 작성해주세요
+    validations:
+      required: true
+
+  - type: input
+    id: module
+    attributes:
+      label: 모듈 (기능명)
+      placeholder: "module/feature"
+    validations:
+      required: true
+
+  - type: textarea
+    id: checklist
+    attributes:
+      label: 구현 체크리스트
+      value: |
+        - [ ] 
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
