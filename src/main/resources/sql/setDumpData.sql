@@ -39,3 +39,4 @@ INSERT INTO `users` (`email`, `id`, `password`, `name`, `nickname`, `phone`, `ro
 ('user18@gmail.com', 'user18', '$2a$10$hashedpassword027', '양서연', '서연이', '010-2001-0018', 'USER', 'ACTIVE', false, NULL),
 ('user19@gmail.com', 'user19', '$2a$10$hashedpassword028', '남기현', '기현이', '010-2001-0019', 'USER', 'ACTIVE', true, '2026-03-15 14:22:00'),
 ('user20@gmail.com', 'user20', '$2a$10$hashedpassword029', '홍다빈', '다빈이', '010-2001-0020', 'USER', 'ACTIVE', false, NULL);
+

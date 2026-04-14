@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>CookieLMS - 강의 목록</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; padding: 20px; background-color: #f8f9fa; }
+        h1 { color: #333; text-align: center; margin-bottom: 20px; }
+
+        /* 검색창 디자인 */
+        .search-container { text-align: center; margin-bottom: 30px; }
+        .search-input { padding: 10px; width: 300px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; }
+        .search-btn { padding: 10px 20px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .search-btn:hover { background-color: #0056b3; }
+
+        .lecture-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 1000px; margin: 0 auto; }
+        .lecture-card { background-color: white; border: 1px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .lecture-card:hover { transform: translateY(-5px); }
+        .lecture-title { font-size: 1.2em; font-weight: bold; color: #007bff; margin-bottom: 15px; }
+        .lecture-info { color: #555; font-size: 0.9em; line-height: 1.6; }
+        .thumbnail-box { background-color: #e9ecef; height: 120px; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; color: #888; font-weight: bold;}
+
+        /* 페이지 네비게이션 컨테이너 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+            gap: 10px;
+        }
+        /* 페이지 버튼 기본 디자인 */
+        .page-btn {
+            padding: 8px 15px;
+            border: 1px solid #007bff;
+            background-color: white;
+            color: #007bff;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        /* 현재 보고 있는 페이지 버튼 색상 */
+        .page-btn.active {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<h1>📚 CookieLMS 전체 강의 목록</h1>
+
+<div class="search-container">
+    <input type="text" id="searchInput" class="search-input" placeholder="강의 제목을 검색해보세요!" onkeyup="if(event.keyCode===13) searchLectures()">
+    <button class="search-btn" onclick="searchLectures()">검색</button>
+</div>
+
+<div class="lecture-grid" id="lectureList"></div>
+<div id="pagination" class="pagination"></div>
+<script>
+    // 맨 처음 화면이 켜지면 0페이지(1페이지)를 불러옵니다.
+    loadLectures('', 0);
+
+    function searchLectures() {
+        const keyword = document.getElementById('searchInput').value;
+        // 검색할 때는 항상 첫 페이지(0)부터 다시 보여줍니다.
+        loadLectures(keyword, 0);
+    }
+
+    // 🌟 수정됨: page 파라미터를 추가로 받습니다. (Spring은 0페이지부터 시작)
+    function loadLectures(keyword, page) {
+        // 한 페이지에 6개씩(size=6) 가져오라고 백엔드에 요청합니다.
+        let url = `/lectures?page=${page}&size=6`;
+        if (keyword) {
+            url += `&keyword=${encodeURIComponent(keyword)}`;
+        }
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const lectureListDiv = document.getElementById('lectureList');
+                lectureListDiv.innerHTML = '';
+
+                // Spring의 Page 객체 안에 있는 실제 배열 데이터는 'content'에 들어있습니다.
+                const lectures = data.content;
+
+                if(lectures.length === 0) {
+                    lectureListDiv.innerHTML = '<p style="grid-column: span 3; text-align: center;">강의가 없습니다.</p>';
+                    document.getElementById('pagination').innerHTML = ''; // 버튼도 지움
+                    return;
+                }
+
+                // 1. 강의 카드 그리기
+                lectures.forEach(lecture => {
+                    const cardHtml = `
+                            <div class="lecture-card">
+                                <div class="thumbnail-box">
+                                    <div style="padding: 50px 0; text-align:center; color:#666;">
+                                        썸네일: ${lecture.thumbnail}
+                                    </div>
+                                </div>
+                                <div class="lecture-title">${lecture.title}</div>
+                                <div class="lecture-info">
+                                    👨‍🏫 강사 ID: ${lecture.instructorId} <br>
+                                    👥 수강 인원: ${lecture.currentEnrollment} / ${lecture.maxCapacity} 명
+                                </div>
+                            </div>
+                        `;
+                    lectureListDiv.innerHTML += cardHtml;
+                });
+
+                // 🌟 2. 하단 페이지 버튼 그리기 함수 호출
+                renderPagination(data.totalPages, data.number, keyword);
+            })
+            .catch(error => console.error('에러 발생:', error));
+    }
+
+    // 🌟 새로 추가됨: 페이지 번호 버튼을 생성하는 함수
+    function renderPagination(totalPages, currentPage, keyword) {
+        const paginationDiv = document.getElementById('pagination');
+        paginationDiv.innerHTML = ''; // 기존 버튼들 초기화
+
+        // 전체 페이지가 1개 이하면 버튼을 안 만듭니다.
+        if (totalPages <= 1) return;
+
+        for (let i = 0; i < totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.innerText = i + 1; // 화면엔 1, 2, 3... 으로 보이게 (0 + 1)
+
+            // 지금 보고 있는 페이지면 파란색(active) 칠하기
+            btn.className = (i === currentPage) ? 'page-btn active' : 'page-btn';
+
+            // 버튼을 누르면 해당 페이지 번호로 다시 API를 찌르도록 이벤트 연결
+            btn.onclick = () => loadLectures(keyword, i);
+
+            paginationDiv.appendChild(btn);
+        }
+    }
+</script>
+</body>
+</html>
