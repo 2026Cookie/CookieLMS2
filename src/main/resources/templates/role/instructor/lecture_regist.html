@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>강의 등록</title>
+  <style>
+    body { font-family: 'Malgun Gothic', sans-serif; padding: 20px; background-color: #f4f7f6; color: #333; }
+    .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    h2 { border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 25px; color: #007bff; }
+    div { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: bold; }
+    input[type="text"], textarea { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+    textarea { height: 100px; resize: none; }
+    button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; cursor: pointer; border-radius: 6px; font-size: 16px; font-weight: bold; }
+    button:hover { background-color: #0056b3; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>강의 등록 (강사용)</h2>
+
+  <form th:action="@{/instructor/lecture/regist}" method="post" enctype="multipart/form-data">
+    <div><label>강의 제목:</label><input type="text" name="title" required placeholder="강의 제목을 입력하세요"></div>
+    <div><label>강의 설명:</label><textarea name="description" required placeholder="강의 상세 설명"></textarea></div>
+    <div><label>유튜브 영상 주소:</label><input type="text" name="videoUrl" placeholder="https://..." required autocomplete="off"></div>
+    <div>
+      <div style="padding: 20px; background: #FFEB3B; border: 3px dashed #F44336; border-radius: 12px; margin: 20px 0;">
+        <h3 style="margin-top: 0; color: #d32f2f;">⭐ 강의 세부 설정 (꼭 입력!) ⭐</h3>
+
+        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+          <div style="flex: 1;">
+            <label style="color: #333;">👥 최대 인원</label>
+            <input type="number" name="maxCapacity" value="30" required style="width: 100%; height: 40px; font-size: 16px;">
+          </div>
+          <div style="flex: 1;">
+            <label style="color: #333;">📅 강의 요일</label>
+            <input type="text" name="lectureDay" placeholder="예: 월요일" required style="width: 100%; height: 40px; font-size: 16px;">
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 15px;">
+          <div style="flex: 1;">
+            <label style="color: #333;">⏰ 시작 시간</label>
+            <input type="time" name="startTime" required style="width: 100%; height: 40px; font-size: 16px;">
+          </div>
+          <div style="flex: 1;">
+            <label style="color: #333;">⌛ 종료 시간</label>
+            <input type="time" name="endTime" required style="width: 100%; height: 40px; font-size: 16px;">
+          </div>
+        </div>
+      </div>
+      <label>수업 자료 (PDF만 가능, 최대 5MB):</label>
+      <input type="file" name="lectureFile" id="lectureFile" required onchange="validateFile(this)">
+    </div>
+    <div style="margin-top: 30px;"><button type="submit">등록하기</button></div>
+  </form>
+</div>
+
+<script th:inline="javascript">
+  function validateFile(input) {
+    // [수정] input.files으로 정확히 파일을 가져옵니다.
+    const file = input.files;
+    if (!file) return;
+
+    // A. 확장자 체크
+    const fileName = file.name;
+    const fileExtension = fileName.split('.').pop().toLowerCase();
+
+    if (fileExtension !== 'pdf') {
+      alert("❌ 맞지 않는 형식의 파일입니다. PDF만 업로드 해주세요.");
+      resetFile(input);
+      return;
+    }
+
+    // B. 용량 체크 (5MB)
+    const maxSize = 5 * 1024 * 1024;
+
+    // [수정] file.getSize()는 없습니다. file.size가 정답입니다.
+    if (file.size > maxSize) {
+      alert("❌ 5MB를 초과합니다. 5MB 이하의 PDF를 업로드 해주세요.");
+      resetFile(input);
+      return;
+    }
+  }
+
+  function resetFile(input) {
+    input.value = "";
+    if (input.value) {
+      input.type = "text";
+      input.type = "file";
+    }
+  }
+
+  /*<![CDATA[*/
+  // 서버에서 보낸 에러 메시지 팝업 처리
+  const errorMsg = /*[[${errorMessage}]]*/ null;
+  if (errorMsg) {
+    alert("❌ " + errorMsg);
+  }
+
+  const successMsg = /*[[${message}]]*/ null;
+  if (successMsg) {
+    alert(successMsg);
+  }
+  /*]]>*/
+</script>
+</body>
+</html>
