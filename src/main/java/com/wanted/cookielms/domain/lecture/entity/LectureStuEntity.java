@@ -1,4 +1,4 @@
-package com.wanted.cookielms.domain.lecture;
+package com.wanted.cookielms.domain.lecture.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

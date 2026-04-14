@@ -32,7 +32,7 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testAnnotationProcessor 'org.projectlombok:lombok'
-     //Source: https://mvnrepository.com/artifact/org.modelmapper/modelmapper
+    // Source: https://mvnrepository.com/artifact/org.modelmapper/modelmapper
     implementation("org.modelmapper:modelmapper:3.1.1")
     // thymeleaf-extras-springsecurity https://mvnrepository.com/artifact/org.thymeleaf.extras/thymeleaf-extras-springsecurity6
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
