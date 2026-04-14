@@ -55,6 +55,7 @@ application-*.yaml
 application-*.yml
 !application-test.yaml
 !application-test.yml
+application.yaml
 
 ### Environment variables ###
 .env
