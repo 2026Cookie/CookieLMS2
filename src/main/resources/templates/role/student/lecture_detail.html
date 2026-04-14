@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>CookieLMS - 강의 상세</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 40px 20px;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .thumbnail-area {
+      width: 100%;
+      height: 300px;
+      background-color: #e9ecef;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: #888;
+    }
+    .thumbnail-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .content-area {
+      padding: 40px;
+    }
+    .meta-info {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 10px;
+      display: flex;
+      gap: 15px;
+    }
+    .lecture-title {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #212529;
+      margin: 0 0 20px 0;
+    }
+    .lecture-desc {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: #555;
+      margin-bottom: 40px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid #eee;
+    }
+    /* 버튼 공통 스타일 */
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .action-btn {
+      padding: 15px 20px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: white;
+      color: #333;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+    }
+    .action-btn:hover {
+      border-color: #007bff;
+      background-color: #f1f7ff;
+      color: #007bff;
+    }
+    /* 수강신청 메인 버튼 스타일 */
+    .enroll-btn {
+      background-color: #007bff;
+      color: white;
+      text-align: center;
+      justify-content: center;
+      border: none;
+      padding: 18px;
+      font-size: 1.2rem;
+    }
+    .enroll-btn:hover {
+      background-color: #0056b3;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="thumbnail-area" id="thumbnailArea">
+    로딩 중...
+  </div>
+
+  <div class="content-area">
+    <div class="meta-info">
+      <span id="instructorInfo">👨‍🏫 강사: 로딩 중</span>
+      <span id="capacityInfo">👥 인원: 로딩 중</span>
+    </div>
+    <h1 class="lecture-title" id="lectureTitle">강의 제목을 불러오는 중입니다...</h1>
+    <div class="lecture-desc" id="lectureDesc">
+      강의 상세 설명을 불러오는 중입니다. 잠시만 기다려주세요.
+    </div>
+
+    <div class="btn-group" id="buttonArea">
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // 1. 현재 URL에서 강의 번호(lectureId)를 추출합니다.
+    const pathParts = window.location.pathname.split('/');
+    const lectureId = pathParts[pathParts.length - 1];
+
+    // 2. 백엔드 API 호출하여 데이터 가져오기
+    fetch(`/lectures/${lectureId}`)
+            .then(response => {
+              if(!response.ok) throw new Error("강의 정보를 불러오지 못했습니다.");
+              return response.json();
+            })
+            .then(data => {
+              // 화면 요소 채우기
+              document.getElementById('lectureTitle').innerText = data.title;
+              document.getElementById('lectureDesc').innerText = data.description;
+              document.getElementById('instructorInfo').innerText = `👨‍🏫 강사 ID: ${data.instructorId}`;
+
+              // 🌟 최신 DTO 변수명(currentEnrollment) 반영
+              document.getElementById('capacityInfo').innerText = `👥 인원: ${data.currentEnrollment} / ${data.maxCapacity} 명`;
+
+              // 썸네일 처리 (이미지 태그로 변경)
+              if(data.thumbnail) {
+                document.getElementById('thumbnailArea').innerHTML = `<img src="/images/${data.thumbnail}" alt="${data.title} 썸네일" onerror="this.style.display='none'; this.parentNode.innerText='이미지 없음';">`;
+              } else {
+                document.getElementById('thumbnailArea').innerText = '등록된 썸네일이 없습니다.';
+              }
+
+              // 🌟 핵심: 수강 여부에 따른 버튼 분기 처리
+              const buttonArea = document.getElementById('buttonArea');
+
+              // Jackson 직렬화 시 boolean isEnrolled는 'enrolled'로 넘어올 수 있으므로 둘 다 체크합니다.
+              const isEnrolled = data.enrolled === true || data.isEnrolled === true;
+
+              if (isEnrolled) {
+                // [수강 중]인 경우 -> 학습 관련 버튼 3개 표시
+                buttonArea.innerHTML = `
+                        <button class="action-btn" onclick="playVideo('${data.videoUrl}')">
+                            ▶️ 강의 영상 재생
+                        </button>
+                        <button class="action-btn" onclick="downloadMaterial('${data.materialId}')">
+                            📥 학습 자료 다운로드
+                        </button>
+                        <button class="action-btn" onclick="goToAssignment(${lectureId})">
+                            📝 과제 제출하기
+                        </button>
+                    `;
+              } else {
+                // [미수강]인 경우 -> 수강신청 버튼 1개 표시
+                buttonArea.innerHTML = `
+                        <button class="action-btn enroll-btn" onclick="enrollLecture(${lectureId})">
+                            수강신청 하기
+                        </button>
+                    `;
+              }
+            })
+            .catch(error => {
+              console.error("Error:", error);
+              alert("강의 정보를 불러오는 중 오류가 발생했습니다.");
+            });
+  });
+
+  // --- 임시 버튼 클릭 함수들 (추후 각 기능에 맞게 수정하세요) ---
+  function enrollLecture(id) {
+    alert(id + "번 강의 수강신청을 진행합니다! (백엔드 API 연결 필요)");
+    // fetch('/api/enrollments', { method: 'POST', body: ... })
+  }
+
+  function playVideo(url) {
+    if(!url || url === 'null') {
+      alert("등록된 영상 주소가 없습니다.");
+      return;
+    }
+    alert("영상 재생 창으로 이동합니다: " + url);
+    // window.open(url, '_blank');
+  }
+
+  function downloadMaterial(materialId) {
+    if(!materialId || materialId === 'null') {
+      alert("등록된 학습 자료가 없습니다.");
+      return;
+    }
+    alert(materialId + " 파일을 다운로드합니다.");
+  }
+
+  function goToAssignment(id) {
+    alert(id + "번 강의 과제 제출 페이지로 이동합니다.");
+    // window.location.href = `/student/lectures/${id}/assignments`;
+  }
+</script>
+
+</body>
+</html>

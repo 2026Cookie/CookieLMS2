@@ -1,5 +1,6 @@
-package com.wanted.cookielms.domain.lecture;
+package com.wanted.cookielms.domain.lecture.repository;
 
+import com.wanted.cookielms.domain.lecture.entity.LectureStuEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
