@@ -4,8 +4,12 @@ import com.wanted.cookielms.domain.user.enums.Role;
 import com.wanted.cookielms.domain.user.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,7 +18,7 @@ import java.time.LocalDateTime;
 @ToString
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,4 +44,14 @@ public class User {
     private Boolean isDeleted;
     private Role role;
     private Status status;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public String getUsername() {
+        return loginId;
+    }
 }
