@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user_bans")
@@ -16,6 +17,7 @@ public class UserBan {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ban_id")
     private Long id;
 
     @Column(name = "user_id")
@@ -24,6 +26,9 @@ public class UserBan {
     @Column(name = "reason")
     private String reason;
 
-    @Column(name = "banned_at")
-    private String bannedAt;
+    @Column(name = "is_active")
+    private Boolean isActive;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 }

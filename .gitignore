@@ -69,3 +69,7 @@ application.yaml
 *.tmp
 *.swp
 *~
+
+### Claude Code ###
+.claude/
+CLAUDE.md
