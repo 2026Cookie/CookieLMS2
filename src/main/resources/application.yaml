@@ -1,24 +1,16 @@
 spring:
-  application:
-    name: CookieLMS
-
-
-  # 데이터베이스 연결 정보
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
+    # 'coookie'에서 'CoookieLMS'로 변경
     url: jdbc:mysql://localhost:3306/CoookieLMS
     username: cookie
     password: cookie
-
-  # JPA (데이터베이스 조작) 설정
   jpa:
     hibernate:
-      # 테이블은 우리가 워크벤치에서 만들었으니 스프링은 건드리지 마!
-
       ddl-auto: update
-    show-sql: true
+    show-sql: true # JPA가 생성하는 SQL을 콘솔에 출력
     properties:
       hibernate:
-
-        format_sql: true
+        format_sql: true # SQL을 보기 좋게 정렬
+        highlight_sql: true # (선택) SQL 키워드에 색상 부여
 
