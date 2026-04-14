@@ -58,12 +58,12 @@ public class InsLecture {
         this.description = description;
         this.videoUrl = videoUrl;
         this.fileSavedName = fileSavedName;
-        // 👇 빌더 파라미터로 받은 값들 저장
+
         this.maxCapacity = maxCapacity;
         this.lectureDay = lectureDay;
         this.startTime = startTime;
         this.endTime = endTime;
-        // 👇 기본값 설정
+        //  기본값 설정
         this.currentEnrollment = 0;
         this.status = "OPEN";
         this.instructorId = 2L;

@@ -30,14 +30,14 @@ public class InstructorController {
 
     @GetMapping("/lecture/detail/{id}")
     public String lectureDetail(@PathVariable("id") Long id, Model model) {
-        // 친구가 만든 서비스 로직을 사용하여 데이터를 가져옵니다.
+
         // 이때 DB의 'lecture' 테이블에서 id로 데이터를 한 건 조회합니다.
         LectureStuDTO lecture = lectureStuService.getLectureDetail(id);
 
         // 친구의 HTML(lecture_detail.html)에서 사용할 수 있도록 모델에 담습니다.
         model.addAttribute("lecture", lecture);
 
-        // 친구가 만든 상세 페이지 HTML 경로로 연결합니다.
+
         return "role/student/lecture_detail";
     }
     /**
@@ -62,7 +62,7 @@ public class InstructorController {
             return "redirect:/instructor/lecture/regist?status=success";
 
         } catch (IllegalArgumentException e) {
-            // [수정] 서비스에서 던진 메시지("5MB를 초과합니다...")를 그대로 전달
+            // 서비스에서 던진 메시지("5MB를 초과합니다..."
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/instructor/lecture/regist";
 
