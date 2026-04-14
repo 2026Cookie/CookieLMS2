@@ -35,3 +35,37 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### macOS ###
+.DS_Store
+.AppleDouble
+.LSOverride
+
+### Windows ###
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+### Logs ###
+*.log
+logs/
+
+### Spring Boot - sensitive config ###
+application-*.yaml
+application-*.yml
+!application-test.yaml
+!application-test.yml
+application.yaml
+
+### Environment variables ###
+.env
+.env.*
+
+### Compiled files ###
+*.class
+*.jar
+
+### Temp files ###
+*.tmp
+*.swp
+*~

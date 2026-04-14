@@ -2,22 +2,23 @@ spring:
   application:
     name: CookieLMS
 
+
+  # 데이터베이스 연결 정보
   datasource:
-    url: jdbc:mysql://localhost:3306/cookielms?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/CoookieLMS
     username: cookie
     password: cookie
-    driver-class-name: com.mysql.cj.jdbc.Driver
 
+  # JPA (데이터베이스 조작) 설정
   jpa:
     hibernate:
+      # 테이블은 우리가 워크벤치에서 만들었으니 스프링은 건드리지 마!
+
       ddl-auto: update
     show-sql: true
     properties:
       hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
 
-  thymeleaf:
-    prefix: classpath:/templates/
-    suffix: .html
-    cache: false
+        format_sql: true
+
