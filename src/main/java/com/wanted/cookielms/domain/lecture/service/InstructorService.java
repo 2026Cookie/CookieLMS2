@@ -6,6 +6,7 @@ import com.wanted.cookielms.domain.lecture.entity.InsLecture;
 import com.wanted.cookielms.domain.lecture.repository.LectureInsRepository;
 import com.wanted.cookielms.domain.lecture.repository.LectureStuRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Setter
 @Transactional(readOnly = true)
 public class InstructorService {
 
@@ -31,9 +33,7 @@ public class InstructorService {
     @Transactional
     public void registLecture(LectureInsDTO dto, Long instructorId) throws IOException {
 
-        // 1. 파일 저장 (PDF 검증 포함)
         String fileSavedName = saveFile(dto.getLectureFile());
-
 
         InsLecture lecture = InsLecture.builder()
                 .title(dto.getTitle())
@@ -43,8 +43,8 @@ public class InstructorService {
 
                 .maxCapacity(dto.getMaxCapacity())
                 .lectureDay(dto.getLectureDay())
-                .startTime(LocalTime.parse(dto.getStartTime())) // "09:00" 문자열 -> LocalTime 변환
-                .endTime(LocalTime.parse(dto.getEndTime()))     // "10:00" 문자열 -> LocalTime 변환
+                .startTime(LocalTime.parse(dto.getStartTime()))
+                .endTime(LocalTime.parse(dto.getEndTime()))
 
                 .instructorId(instructorId)
                 .build();
@@ -62,18 +62,18 @@ public class InstructorService {
 
         String originalName = file.getOriginalFilename();
 
-        // 1. 확장자 체크
+
         if (originalName == null || !originalName.toLowerCase().endsWith(".pdf")) {
             throw new IllegalArgumentException("맞지 않는 형식의 파일입니다. PDF만 업로드 해주세요.");
         }
 
-        // 2. 용량 체크 (5MB)
+
         long maxSize = 5 * 1024 * 1024;
         if (file.getSize() > maxSize) {
             throw new IllegalArgumentException("5MB를 초과합니다. 5MB 이하의 PDF를 업로드 해주세요.");
         }
 
-        // 3. 실제 폴더에 저장
+
         String ext = originalName.substring(originalName.lastIndexOf("."));
         String savedName = UUID.randomUUID().toString() + ext;
         File target = new File(uploadPath, savedName);
@@ -94,4 +94,40 @@ public class InstructorService {
 
         return myLectures.map(entity -> modelMapper.map(entity, LectureStuDTO.class));
     }
- }
+    @Transactional //
+    public void updateLecture(Long id, LectureInsDTO dto) throws IOException {
+
+        InsLecture lecture = lectureInsRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다. ID: " + id));
+
+        // 2. 파일 수정 처리 (새 파일이 업로드된 경우에만 교체)
+        if (dto.getLectureFile() != null && !dto.getLectureFile().isEmpty()) {
+            String savedName = saveFile(dto.getLectureFile());
+            lecture.updateFileName(dto.getLectureFile().getOriginalFilename(), savedName);
+        }
+
+        lecture.updateInfo(
+                dto.getTitle(),
+                dto.getDescription(),
+                dto.getVideoUrl(),
+                dto.getMaxCapacity(),
+                dto.getLectureDay(),
+                LocalTime.parse(dto.getStartTime()),
+                LocalTime.parse(dto.getEndTime())
+        );
+
+    }
+
+        public LectureInsDTO getLectureForEdit(Long id) {
+            InsLecture lecture = lectureInsRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다. ID: " + id));
+
+
+            LectureInsDTO dto = modelMapper.map(lecture, LectureInsDTO.class);
+
+            dto.setStartTime(lecture.getStartTime().toString());
+            dto.setEndTime(lecture.getEndTime().toString());
+
+            return dto;
+        }
+    }
