@@ -46,6 +46,9 @@
 <div id="pagination" class="pagination"></div>
 
 <script>
+    let currentKeyword = '';
+    let currentPage = 0;
+
     loadLectures('', 0);
 
     function searchLectures() {
@@ -54,6 +57,9 @@
     }
 
     function loadLectures(keyword, page) {
+        currentKeyword = keyword;
+        currentPage = page;
+
         let url = `/lectures?page=${page}&size=6`;
         if (keyword) {
             url += `&keyword=${encodeURIComponent(keyword)}`;
@@ -79,15 +85,15 @@
 
                     const cardHtml = `
                         <div class="lecture-card">
-                            <div class="thumbnail-box">썸네일: ${lecture.thumbnail}</div>
+                            <div class="thumbnail-box">썸네일: ${lecture.thumbnail ?? '없음'}</div>
                             <div class="lecture-title">${lecture.title}</div>
                             <div class="lecture-info">
                                 👨‍🏫 강사 ID: ${lecture.instructorId}<br>
                                 👥 수강 인원: ${lecture.currentEnrollment} / ${lecture.maxCapacity} 명<br>
                                 🪑 잔여 정원: ${isFull ? '마감' : remaining + '명'}
                             </div>
-                            <button class="enroll-btn" onclick="enroll(${lecture.id})">
-                                ${isFull ? '대기열 등록' : '수강 신청'}
+                            <button class="enroll-btn" ${isFull ? 'disabled' : ''} onclick="enroll(${lecture.lectureId})">
+                                ${isFull ? '정원 마감' : '수강 신청'}
                             </button>
                         </div>
                     `;
@@ -114,8 +120,13 @@
     }
 
     function enroll(lectureId) {
-        // TODO: POST /api/enrollments/{lectureId} 구현 후 연결
-        alert('수강 신청 기능은 준비 중입니다. (lectureId: ' + lectureId + ')');
+        fetch(`/api/enrollments/${lectureId}`, { method: 'POST' })
+            .then(res => res.text())
+            .then(message => {
+                alert(message);
+                loadLectures(currentKeyword, currentPage);
+            })
+            .catch(() => alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'));
     }
 </script>
 </body>
