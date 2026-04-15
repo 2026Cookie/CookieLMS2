@@ -1,5 +1,7 @@
 package com.wanted.cookielms.global;
 
+import com.wanted.cookielms.domain.auth.hander.AuthSuccessHandler;
+import com.wanted.cookielms.domain.user.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,22 +19,40 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public AuthSuccessHandler authSuccessHandler(UserService memberService) {
+        return new AuthSuccessHandler(memberService);
+    }
+
 
 
     @Bean
-    public SecurityFilterChain configure(HttpSecurity http) throws Exception {
+    public SecurityFilterChain configure(HttpSecurity http,
+                                         AuthSuccessHandler authSuccessHandler) throws Exception {
         http.authorizeHttpRequests(auth -> {
-                    auth.anyRequest().permitAll(); // 일단 모든 요청 허용
+                    auth.requestMatchers("/user/login", "/user/join", "/").permitAll()
+                            .requestMatchers("/instructor/**").hasRole("INSTRUCTOR")
+                            .requestMatchers("/user/**").hasRole("USER")
+                            .anyRequest().permitAll();
                 })
                 .formLogin(login -> {
                     login.loginPage("/user/login");
                     login.usernameParameter("loginId");
                     login.passwordParameter("password");
-                    login.defaultSuccessUrl("/");
+                    login.successHandler(authSuccessHandler);
                     login.failureUrl("/user/login");
+
                 })
+
+                .logout(logout -> {
+                    logout.logoutUrl("/logout");
+                    logout.logoutSuccessUrl("/");
+                })
+
                 .csrf(csrf -> csrf.disable());
         return http.build();
     }
+
+
 
 }

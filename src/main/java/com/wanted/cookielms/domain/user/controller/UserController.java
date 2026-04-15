@@ -50,4 +50,16 @@ public class UserController {
         return "user/login";
     }
 
-}
+
+    @GetMapping("/main")
+    public String main(){
+        return "user/main";
+    }
+
+    @GetMapping("/enrollments")
+    public String enrollment() {
+        return "role/user/enrollment";
+    }
+    }
+
+

@@ -28,6 +28,11 @@ public class InstructorController {
     private final InstructorService instructorService;
     private final LectureStuService lectureStuService;
 
+    @GetMapping("/main")
+    public String main(){
+        return "instructor/main";
+    }
+
     @GetMapping("/lecture/detail/{id}")
     public String lectureDetail(@PathVariable("id") Long id, Model model) {
 
