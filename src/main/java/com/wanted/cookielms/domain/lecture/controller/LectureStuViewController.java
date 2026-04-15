@@ -9,7 +9,7 @@ public class LectureStuViewController {
 
     @GetMapping("/student/lectures")
     public String studentLectureList() {
-        return "role/student/lecture_list";
+        return "role/student/lecture_stu_list";
     }
 
     @GetMapping("/student/lectures/{lectureId}")

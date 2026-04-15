@@ -1,9 +1,14 @@
 package com.wanted.cookielms.domain.lecture.service;
 
 import com.wanted.cookielms.domain.lecture.dto.LectureInsDTO;
+import com.wanted.cookielms.domain.lecture.dto.LectureStuDTO;
 import com.wanted.cookielms.domain.lecture.entity.InsLecture;
 import com.wanted.cookielms.domain.lecture.repository.LectureInsRepository;
+import com.wanted.cookielms.domain.lecture.repository.LectureStuRepository;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,28 +25,33 @@ public class InstructorService {
 
     private final LectureInsRepository lectureInsRepository;
     private final String uploadPath = "C:/cookielms/uploads/";
+    private final LectureStuRepository lectureStuRepository;
+    private final ModelMapper modelMapper;
 
     @Transactional
-    public void registLecture(LectureInsDTO dto) throws IOException {
+    public void registLecture(LectureInsDTO dto, Long instructorId) throws IOException {
 
         // 1. 파일 저장 (PDF 검증 포함)
         String fileSavedName = saveFile(dto.getLectureFile());
 
-        // 2. 엔티티 생성 (하드코딩 없이 DTO에서 직접 꺼내기)
+
         InsLecture lecture = InsLecture.builder()
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .videoUrl(dto.getVideoUrl())
                 .fileSavedName(fileSavedName)
-                // 👇 HTML에서 넘겨준 세부 설정 데이터 매핑
+
                 .maxCapacity(dto.getMaxCapacity())
                 .lectureDay(dto.getLectureDay())
                 .startTime(LocalTime.parse(dto.getStartTime())) // "09:00" 문자열 -> LocalTime 변환
                 .endTime(LocalTime.parse(dto.getEndTime()))     // "10:00" 문자열 -> LocalTime 변환
+
+                .instructorId(instructorId)
                 .build();
 
-        // 3. DB 저장
+        //  DB 저장
         lectureInsRepository.save(lecture);
+
     }
 
     /**
@@ -75,4 +85,13 @@ public class InstructorService {
 
         return savedName;
     }
-}
+
+
+    public Page<LectureStuDTO> getMyLectures(Long instructorId, Pageable pageable) {
+
+        Page<InsLecture> myLectures = lectureInsRepository.findByInstructorId(instructorId, pageable);
+
+
+        return myLectures.map(entity -> modelMapper.map(entity, LectureStuDTO.class));
+    }
+ }
