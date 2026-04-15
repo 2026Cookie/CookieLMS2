@@ -7,6 +7,8 @@
 <body>
 <h1>강사 메인 페이지</h1>
 <p>환영합니다, 강사님!</p>
-<a th:href="@{/logout}">로그아웃</a>
+<form th:action="@{/logout}" method="post">
+  <button type="submit">로그아웃</button>
+</form>
 </body>
 </html>
