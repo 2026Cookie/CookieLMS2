@@ -12,10 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
@@ -67,7 +64,9 @@ public class InstructorController {
      * 강의 등록 페이지 이동
      */
     @GetMapping("/lecture/regist")
-    public String registPage() {
+    public String registPage(Model model) {
+        model.addAttribute("lecture", new LectureInsDTO()); // 빈 바구니를 넣어줘야 에러가 안 납니다!
+        model.addAttribute("isEdit", false);
         return "role/instructor/lecture_regist"; // templates/lectureRegist.html과 매핑
     }
 
@@ -101,6 +100,39 @@ public class InstructorController {
            return "redirect:/instructor/lectures?instructorId=1";
         }
 
+
     }
 
+
+    /**
+     * 1. 수정 페이지로 이동 (GET)
+     */
+    @GetMapping("/lecture/edit/{id}")
+    public String inseditPage(@PathVariable("id") Long id, Model model) {
+        // 기존 상세조회 로직을 활용해 데이터를 가져옵니다.
+        LectureInsDTO lecture = instructorService.getLectureForEdit(id);
+
+        model.addAttribute("lecture", lecture);
+        model.addAttribute("isEdit", true); // 이 값이 true면 HTML에서 '수정' 모드로 작동합니다.
+        return "role/instructor/lecture_regist"; // 기존 등록 페이지를 그대로 사용합니다!
+    }
+
+    /**
+     * 2. 수정 실행 (POST)
+     */
+    @PostMapping("/lecture/edit/{id}")
+    public String updateLecture(
+            @PathVariable("id") Long id,
+            @ModelAttribute LectureInsDTO lectureInsDTO,
+            RedirectAttributes redirectAttributes) {
+        try {
+            instructorService.updateLecture(id, lectureInsDTO);
+            redirectAttributes.addFlashAttribute("message", "✅ 강의 수정이 완료되었습니다!");
+            return "redirect:/instructor/lecture/detail/" + id;
+        } catch (Exception e) {
+            log.error("❌ 수정 중 오류 발생: ", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "수정 중 오류가 발생했습니다.");
+            return "redirect:/instructor/lecture/edit/" + id;
+        }
+    }
 }

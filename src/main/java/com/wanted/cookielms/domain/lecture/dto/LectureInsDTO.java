@@ -14,13 +14,14 @@ import org.springframework.web.multipart.MultipartFile;
 @ToString
 public class LectureInsDTO {
 
-    private String title;           // 강의 제목
-    private String description;     // 강의 설명
+    private Long lectureId;
+    private String title;
+    private String description;
     private MultipartFile lectureFile;
-    private String videoUrl;// 수업 자료 (HTML의 name="lectureFile"와 매칭)
-
+    private String videoUrl;
     private Integer maxCapacity;
     private String lectureDay;
     private String startTime;
     private String endTime;
+
 }

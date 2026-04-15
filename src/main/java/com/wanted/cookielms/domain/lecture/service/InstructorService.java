@@ -6,6 +6,7 @@ import com.wanted.cookielms.domain.lecture.entity.InsLecture;
 import com.wanted.cookielms.domain.lecture.repository.LectureInsRepository;
 import com.wanted.cookielms.domain.lecture.repository.LectureStuRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Setter
 @Transactional(readOnly = true)
 public class InstructorService {
 
@@ -94,4 +96,43 @@ public class InstructorService {
 
         return myLectures.map(entity -> modelMapper.map(entity, LectureStuDTO.class));
     }
- }
+    @Transactional //
+    public void updateLecture(Long id, LectureInsDTO dto) throws IOException {
+        // 1. 기존 강의 엔티티 조회 (DB에서 가져오기)
+        InsLecture lecture = lectureInsRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다. ID: " + id));
+
+        // 2. 파일 수정 처리 (새 파일이 업로드된 경우에만 교체)
+        if (dto.getLectureFile() != null && !dto.getLectureFile().isEmpty()) {
+            String savedName = saveFile(dto.getLectureFile());
+            lecture.updateFileName(dto.getLectureFile().getOriginalFilename(), savedName);
+        }
+
+        // 3. 정보 업데이트 (JPA 변경 감지 활용)
+        // LocalTime.parse를 사용해 DTO의 String을 시간 객체로 변환합니다.
+        lecture.updateInfo(
+                dto.getTitle(),
+                dto.getDescription(),
+                dto.getVideoUrl(),
+                dto.getMaxCapacity(),
+                dto.getLectureDay(),
+                LocalTime.parse(dto.getStartTime()),
+                LocalTime.parse(dto.getEndTime())
+        );
+
+    }
+
+        public LectureInsDTO getLectureForEdit(Long id) {
+            InsLecture lecture = lectureInsRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다. ID: " + id));
+
+            // ModelMapper를 사용하여 DTO로 변환하거나 직접 빌더를 사용합니다.
+            LectureInsDTO dto = modelMapper.map(lecture, LectureInsDTO.class);
+
+            // LocalTime을 String으로 변환해서 넣어줍니다. (HTML input type="time" 바인딩용)
+            dto.setStartTime(lecture.getStartTime().toString());
+            dto.setEndTime(lecture.getEndTime().toString());
+
+            return dto;
+        }
+    }
