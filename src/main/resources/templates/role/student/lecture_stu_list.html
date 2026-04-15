@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>강의 목록</title>
+</head>
+<body>
+
+<h1>전체 강의 목록</h1>
+
+<div>
+    <input type="text" id="searchInput" placeholder="강의 제목을 검색해보세요!" onkeyup="if(event.keyCode===13) searchLectures()">
+    <button onclick="searchLectures()">검색</button>
+</div>
+
+<hr>
+
+<div id="lectureList"></div>
+
+<br>
+
+<div id="pagination"></div>
+
+<script>
+    loadLectures('', 0);
+
+    function searchLectures() {
+        const keyword = document.getElementById('searchInput').value;
+        loadLectures(keyword, 0);
+    }
+
+    function loadLectures(keyword, page) {
+        let url = `/lectures?page=${page}&size=6`;
+        if (keyword) {
+            url += `&keyword=${encodeURIComponent(keyword)}`;
+        }
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const lectureListDiv = document.getElementById('lectureList');
+                lectureListDiv.innerHTML = '';
+
+                const lectures = data.content;
+
+                if(lectures.length === 0) {
+                    lectureListDiv.innerHTML = '<p>강의가 없습니다.</p>';
+                    document.getElementById('pagination').innerHTML = '';
+                    return;
+                }
+
+                // 카드 그리기 (디자인 제거, 테두리와 클릭 이벤트만 유지)
+                lectures.forEach(lecture => {
+                    const cardHtml = `
+                        <div onclick="location.href='/student/lectures/${lecture.lectureId}'" style="border: 1px solid black; margin: 10px; padding: 10px; cursor: pointer;">
+                            <div>
+                                ${lecture.thumbnail ? `<img src="/images/${lecture.thumbnail}" alt="썸네일" width="150">` : `썸네일 없음`}
+                            </div>
+                            <h3>${lecture.title}</h3>
+                            <div>
+                                강사 ID: ${lecture.instructorId} <br>
+                                수강 인원: ${lecture.currentEnrollment} / ${lecture.maxCapacity} 명
+                            </div>
+                        </div>
+                    `;
+                    lectureListDiv.innerHTML += cardHtml;
+                });
+
+                renderPagination(data.totalPages, data.number, keyword);
+            })
+            .catch(error => console.error('에러 발생:', error));
+    }
+
+    function renderPagination(totalPages, currentPage, keyword) {
+        const paginationDiv = document.getElementById('pagination');
+        paginationDiv.innerHTML = '';
+
+        if (totalPages <= 1) return;
+
+        for (let i = 0; i < totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.innerText = i + 1;
+            // 활성화된 페이지 표시를 위해 간단히 굵은 글씨 적용
+            if (i === currentPage) {
+                btn.style.fontWeight = 'bold';
+            }
+            btn.onclick = () => loadLectures(keyword, i);
+            paginationDiv.appendChild(btn);
+        }
+    }
+</script>
+</body>
+</html>
