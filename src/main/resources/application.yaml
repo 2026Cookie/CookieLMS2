@@ -30,3 +30,8 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
+
+# 애플리케이션 커스텀 설정
+app:
+  error-log:
+    stack-trace-max-length: 1000  # 스택 트레이스 최대 길이 (자)
