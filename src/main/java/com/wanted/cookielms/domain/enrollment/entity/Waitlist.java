@@ -10,15 +10,15 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "enrollment")
+@Table(name = "waitlist")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Enrollment {
+public class Waitlist {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "enrollment_id")
-    private Long enrollmentId;
+    @Column(name = "waitlist_id")
+    private Long waitlistId;
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
@@ -26,21 +26,25 @@ public class Enrollment {
     @Column(name = "lecture_id", nullable = false)
     private Long lectureId;
 
+    @Column(name = "wait_number", nullable = false)
+    private Integer waitNumber;
+
     @CreationTimestamp
-    @Column(name = "enrolled_at", nullable = false, updatable = false)
-    private LocalDateTime enrolledAt;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     @Column(length = 20, nullable = false)
-    private String status;
+    private String status; // "WAITING", "ENROLLED", "CANCELLED"
 
-    public void changeStatus(String status) {
+    @Builder
+    private Waitlist(Long userId, Long lectureId, Integer waitNumber, String status) {
+        this.userId = userId;
+        this.lectureId = lectureId;
+        this.waitNumber = waitNumber;
         this.status = status;
     }
 
-    @Builder
-    private Enrollment(Long userId, Long lectureId, String status) {
-        this.userId = userId;
-        this.lectureId = lectureId;
+    public void changeStatus(String status) {
         this.status = status;
     }
 }

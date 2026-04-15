@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>대기열 등록 | CookieLMS</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; background-color: #f8f9fa; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 50px 60px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; }
+        h2 { color: #333; margin-bottom: 10px; }
+        .wait-number { font-size: 5em; font-weight: bold; color: #007bff; margin: 20px 0; }
+        .wait-label { color: #888; font-size: 1em; margin-bottom: 30px; }
+        .info { background: #e8f4ff; border-radius: 8px; padding: 15px 20px; color: #555; font-size: 0.9em; margin-bottom: 30px; line-height: 1.6; }
+        .btn { display: inline-block; padding: 12px 30px; border-radius: 8px; font-size: 15px; font-weight: bold; text-decoration: none; cursor: pointer; border: none; }
+        .btn-main { background-color: #6c757d; color: white; }
+        .btn-main:hover { background-color: #5a6268; }
+        .btn-cancel { background-color: #dc3545; color: white; margin-left: 10px; }
+        .btn-cancel:hover { background-color: #c82333; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>대기열 등록 완료</h2>
+    <div class="wait-number" th:text="${waitNumber}">1</div>
+    <div class="wait-label">번째 대기 중</div>
+    <div class="info">
+        수강 취소가 발생하면 대기 순서에 따라<br>
+        자동으로 수강 신청이 완료됩니다.
+    </div>
+    <a th:href="@{/user/enrollments}" class="btn btn-main">강의 목록으로</a>
+    <button class="btn btn-cancel" th:onclick="|cancelWaitlist(${lectureId})|">대기열 취소</button>
+</div>
+<script th:inline="javascript">
+    function cancelWaitlist(lectureId) {
+        if (!confirm('대기열을 취소하시겠습니까?')) return;
+
+        fetch(`/api/waitlist/${lectureId}`, { method: 'DELETE' })
+            .then(res => res.text())
+            .then(message => {
+                alert(message);
+                location.href = '/user/enrollments';
+            })
+            .catch(() => alert('서버 오류가 발생했습니다.'));
+    }
+</script>
+</body>
+</html>

@@ -24,7 +24,11 @@
 
         .enroll-btn { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; }
         .enroll-btn:hover { background-color: #218838; }
-        .enroll-btn:disabled { background-color: #adb5bd; cursor: not-allowed; }
+        .waitlist-btn { width: 100%; padding: 10px; background-color: #fd7e14; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .waitlist-btn:hover { background-color: #e8670c; }
+        .cancel-btn { width: 100%; padding: 10px; background-color: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .cancel-btn:hover { background-color: #c82333; }
+
 
         .pagination { display: flex; justify-content: center; margin-top: 40px; gap: 10px; }
         .page-btn { padding: 8px 15px; border: 1px solid #007bff; background-color: white; color: #007bff; border-radius: 5px; cursor: pointer; font-weight: bold; }
@@ -48,8 +52,18 @@
 <script>
     let currentKeyword = '';
     let currentPage = 0;
+    let myEnrolledIds = [];
+    let myWaitlistIds = [];
 
-    loadLectures('', 0);
+    // 수강 목록 + 대기열 목록 조회 후 강의 목록 로드
+    Promise.all([
+        fetch('/api/enrollments/my').then(res => res.json()).catch(() => []),
+        fetch('/api/waitlist/my').then(res => res.json()).catch(() => [])
+    ]).then(([enrolledIds, waitlistIds]) => {
+        myEnrolledIds = enrolledIds;
+        myWaitlistIds = waitlistIds;
+        loadLectures('', 0);
+    });
 
     function searchLectures() {
         const keyword = document.getElementById('searchInput').value;
@@ -92,9 +106,14 @@
                                 👥 수강 인원: ${lecture.currentEnrollment} / ${lecture.maxCapacity} 명<br>
                                 🪑 잔여 정원: ${isFull ? '마감' : remaining + '명'}
                             </div>
-                            <button class="enroll-btn" ${isFull ? 'disabled' : ''} onclick="enroll(${lecture.lectureId})">
-                                ${isFull ? '정원 마감' : '수강 신청'}
-                            </button>
+                            ${myEnrolledIds.includes(lecture.lectureId)
+                                ? `<button class="cancel-btn" onclick="cancel(${lecture.lectureId})">수강 취소</button>`
+                                : myWaitlistIds.includes(lecture.lectureId)
+                                    ? `<button class="waitlist-btn" onclick="location.href='/user/waitlist/${lecture.lectureId}'">대기열 보기</button>`
+                                    : isFull
+                                        ? `<button class="waitlist-btn" onclick="registerWaitlist(${lecture.lectureId})">대기열 등록</button>`
+                                        : `<button class="enroll-btn" onclick="enroll(${lecture.lectureId})">수강 신청</button>`
+                            }
                         </div>
                     `;
                     lectureListDiv.innerHTML += cardHtml;
@@ -124,10 +143,45 @@
             .then(res => res.text())
             .then(message => {
                 alert(message);
-                loadLectures(currentKeyword, currentPage);
+                fetch('/api/enrollments/my')
+                    .then(res => res.json())
+                    .then(ids => {
+                        myEnrolledIds = ids;
+                        loadLectures(currentKeyword, currentPage);
+                    });
             })
             .catch(() => alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'));
     }
+
+    function cancel(lectureId) {
+        fetch(`/api/enrollments/${lectureId}`, { method: 'DELETE' })
+            .then(res => res.text())
+            .then(message => {
+                alert(message);
+                fetch('/api/enrollments/my')
+                    .then(res => res.json())
+                    .then(ids => {
+                        myEnrolledIds = ids;
+                        loadLectures(currentKeyword, currentPage);
+                    });
+            })
+            .catch(() => alert('서버 오류가 발생했습니다.'));
+    }
+
+    function registerWaitlist(lectureId) {
+        fetch(`/api/waitlist/${lectureId}`, { method: 'POST' })
+            .then(res => res.text())
+            .then(result => {
+                const waitNumber = parseInt(result);
+                if (!isNaN(waitNumber)) {
+                    location.href = `/user/waitlist/${lectureId}`;
+                } else {
+                    alert(result);
+                }
+            })
+            .catch(() => alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'));
+    }
+
 </script>
 </body>
 </html>

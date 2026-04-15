@@ -8,6 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -15,12 +18,13 @@ public class EnrollmentService {
 
     private final EnrollmentRepository enrollmentRepository;
     private final LectureStuRepository lectureStuRepository;
+    private final WaitlistService waitlistService;
 
     @Transactional
     public void enroll(Long lectureId, Long userId) {
 
         // 1. 중복 수강 신청 체크
-        if (enrollmentRepository.existsByUserIdAndLectureId(userId, lectureId)) {
+        if (enrollmentRepository.existsByUserIdAndLectureIdAndStatus(userId, lectureId, "ENROLLED")) {
             throw new IllegalStateException("이미 수강 신청한 강의입니다.");
         }
 
@@ -43,5 +47,31 @@ public class EnrollmentService {
 
         // 5. 현재 수강 인원 증가
         lecture.increaseEnrollment();
+    }
+
+    @Transactional
+    public void cancel(Long lectureId, Long userId) {
+
+        // 1. 수강 신청 내역 조회
+        Enrollment enrollment = enrollmentRepository.findByUserIdAndLectureIdAndStatus(userId, lectureId, "ENROLLED")
+                .orElseThrow(() -> new IllegalArgumentException("수강 신청 내역을 찾을 수 없습니다."));
+
+        // 2. 수강 취소 처리
+        enrollment.changeStatus("CANCELLED");
+
+        // 3. 강의 수강 인원 감소
+        LectureStuEntity lecture = lectureStuRepository.findById(lectureId)
+                .orElseThrow(() -> new IllegalArgumentException("강의를 찾을 수 없습니다."));
+        lecture.decreaseEnrollment();
+
+        // 4. 대기열 1번 자동 수강 신청
+        waitlistService.autoEnroll(lectureId);
+    }
+
+    public List<Long> getMyEnrolledLectureIds(Long userId) {
+        return enrollmentRepository.findByUserIdAndStatus(userId, "ENROLLED")
+                .stream()
+                .map(Enrollment::getLectureId)
+                .collect(Collectors.toList());
     }
 }

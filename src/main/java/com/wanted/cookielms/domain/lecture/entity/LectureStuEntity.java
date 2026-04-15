@@ -59,4 +59,10 @@ public class LectureStuEntity {
     public void increaseEnrollment() {
         this.currentEnrollment++;
     }
+
+    public void decreaseEnrollment() {
+        if (this.currentEnrollment > 0) {
+            this.currentEnrollment--;
+        }
+    }
 }

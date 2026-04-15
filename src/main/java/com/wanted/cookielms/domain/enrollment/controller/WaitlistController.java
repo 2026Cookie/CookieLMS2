@@ -1,51 +1,39 @@
 package com.wanted.cookielms.domain.enrollment.controller;
 
 import com.wanted.cookielms.domain.auth.dto.AuthDetails;
-import com.wanted.cookielms.domain.enrollment.service.EnrollmentService;
+import com.wanted.cookielms.domain.enrollment.service.WaitlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
-@RestController
-@RequestMapping("/api/enrollments")
+@Controller
 @RequiredArgsConstructor
-public class EnrollmentController {
+public class WaitlistController {
 
-    private final EnrollmentService enrollmentService;
+    private final WaitlistService waitlistService;
 
-    @GetMapping("/my")
-    public ResponseEntity<List<Long>> getMyEnrollments(Authentication authentication) {
+    // 내 대기열 강의 ID 목록 조회
+    @GetMapping("/api/waitlist/my")
+    @ResponseBody
+    public ResponseEntity<List<Long>> getMyWaitlist(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()
                 || authentication.getPrincipal().equals("anonymousUser")) {
             return ResponseEntity.ok(List.of());
         }
         AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
         Long userId = authDetails.getLoginUserDTO().getUserId();
-        return ResponseEntity.ok(enrollmentService.getMyEnrolledLectureIds(userId));
+        return ResponseEntity.ok(waitlistService.getMyWaitingLectureIds(userId));
     }
 
-    @DeleteMapping("/{lectureId}")
-    public String cancel(@PathVariable Long lectureId, Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()
-                || authentication.getPrincipal().equals("anonymousUser")) {
-            return "로그인이 필요합니다.";
-        }
-        try {
-            AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
-            Long userId = authDetails.getLoginUserDTO().getUserId();
-            enrollmentService.cancel(lectureId, userId);
-            return "수강 취소가 완료되었습니다.";
-        } catch (IllegalStateException | IllegalArgumentException e) {
-            return e.getMessage();
-        }
-    }
-
-    @PostMapping("/{lectureId}")
-    public String enroll(@PathVariable Long lectureId, Authentication authentication) {
+    // 대기열 등록 API
+    @PostMapping("/api/waitlist/{lectureId}")
+    @ResponseBody
+    public String registerWaitlist(@PathVariable Long lectureId, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()
                 || authentication.getPrincipal().equals("anonymousUser")) {
             return "로그인이 필요합니다.";
@@ -54,10 +42,42 @@ public class EnrollmentController {
         try {
             AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
             Long userId = authDetails.getLoginUserDTO().getUserId();
-            enrollmentService.enroll(lectureId, userId);
-            return "수강 신청이 완료되었습니다!";
+            int waitNumber = waitlistService.registerWaitlist(lectureId, userId);
+            return String.valueOf(waitNumber);
         } catch (IllegalStateException | IllegalArgumentException e) {
             return e.getMessage();
         }
+    }
+
+    // 대기열 취소 API
+    @DeleteMapping("/api/waitlist/{lectureId}")
+    @ResponseBody
+    public String cancelWaitlist(@PathVariable Long lectureId, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication.getPrincipal().equals("anonymousUser")) {
+            return "로그인이 필요합니다.";
+        }
+
+        try {
+            AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
+            Long userId = authDetails.getLoginUserDTO().getUserId();
+            waitlistService.cancelWaitlist(lectureId, userId);
+            return "대기열 취소가 완료되었습니다.";
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            return e.getMessage();
+        }
+    }
+
+    // 대기 페이지
+    @GetMapping("/user/waitlist/{lectureId}")
+    public String waitlistPage(@PathVariable Long lectureId, Authentication authentication, Model model) {
+        AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
+        Long userId = authDetails.getLoginUserDTO().getUserId();
+
+        int waitNumber = waitlistService.getWaitNumber(lectureId, userId);
+        model.addAttribute("waitNumber", waitNumber);
+        model.addAttribute("lectureId", lectureId);
+
+        return "user/waitlist";
     }
 }
