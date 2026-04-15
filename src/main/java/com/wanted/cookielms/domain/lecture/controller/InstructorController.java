@@ -109,12 +109,12 @@ public class InstructorController {
      */
     @GetMapping("/lecture/edit/{id}")
     public String inseditPage(@PathVariable("id") Long id, Model model) {
-        // 기존 상세조회 로직을 활용해 데이터를 가져옵니다.
+
         LectureInsDTO lecture = instructorService.getLectureForEdit(id);
 
         model.addAttribute("lecture", lecture);
-        model.addAttribute("isEdit", true); // 이 값이 true면 HTML에서 '수정' 모드로 작동합니다.
-        return "role/instructor/lecture_regist"; // 기존 등록 페이지를 그대로 사용합니다!
+        model.addAttribute("isEdit", true);
+        return "role/instructor/lecture_regist";
     }
 
     /**

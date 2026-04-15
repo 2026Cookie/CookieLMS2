@@ -33,9 +33,7 @@ public class InstructorService {
     @Transactional
     public void registLecture(LectureInsDTO dto, Long instructorId) throws IOException {
 
-        // 1. 파일 저장 (PDF 검증 포함)
         String fileSavedName = saveFile(dto.getLectureFile());
-
 
         InsLecture lecture = InsLecture.builder()
                 .title(dto.getTitle())
@@ -45,8 +43,8 @@ public class InstructorService {
 
                 .maxCapacity(dto.getMaxCapacity())
                 .lectureDay(dto.getLectureDay())
-                .startTime(LocalTime.parse(dto.getStartTime())) // "09:00" 문자열 -> LocalTime 변환
-                .endTime(LocalTime.parse(dto.getEndTime()))     // "10:00" 문자열 -> LocalTime 변환
+                .startTime(LocalTime.parse(dto.getStartTime()))
+                .endTime(LocalTime.parse(dto.getEndTime()))
 
                 .instructorId(instructorId)
                 .build();
@@ -64,18 +62,18 @@ public class InstructorService {
 
         String originalName = file.getOriginalFilename();
 
-        // 1. 확장자 체크
+
         if (originalName == null || !originalName.toLowerCase().endsWith(".pdf")) {
             throw new IllegalArgumentException("맞지 않는 형식의 파일입니다. PDF만 업로드 해주세요.");
         }
 
-        // 2. 용량 체크 (5MB)
+
         long maxSize = 5 * 1024 * 1024;
         if (file.getSize() > maxSize) {
             throw new IllegalArgumentException("5MB를 초과합니다. 5MB 이하의 PDF를 업로드 해주세요.");
         }
 
-        // 3. 실제 폴더에 저장
+
         String ext = originalName.substring(originalName.lastIndexOf("."));
         String savedName = UUID.randomUUID().toString() + ext;
         File target = new File(uploadPath, savedName);
@@ -98,7 +96,7 @@ public class InstructorService {
     }
     @Transactional //
     public void updateLecture(Long id, LectureInsDTO dto) throws IOException {
-        // 1. 기존 강의 엔티티 조회 (DB에서 가져오기)
+
         InsLecture lecture = lectureInsRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다. ID: " + id));
 
@@ -108,8 +106,6 @@ public class InstructorService {
             lecture.updateFileName(dto.getLectureFile().getOriginalFilename(), savedName);
         }
 
-        // 3. 정보 업데이트 (JPA 변경 감지 활용)
-        // LocalTime.parse를 사용해 DTO의 String을 시간 객체로 변환합니다.
         lecture.updateInfo(
                 dto.getTitle(),
                 dto.getDescription(),
@@ -126,10 +122,9 @@ public class InstructorService {
             InsLecture lecture = lectureInsRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다. ID: " + id));
 
-            // ModelMapper를 사용하여 DTO로 변환하거나 직접 빌더를 사용합니다.
+
             LectureInsDTO dto = modelMapper.map(lecture, LectureInsDTO.class);
 
-            // LocalTime을 String으로 변환해서 넣어줍니다. (HTML input type="time" 바인딩용)
             dto.setStartTime(lecture.getStartTime().toString());
             dto.setEndTime(lecture.getEndTime().toString());
 
