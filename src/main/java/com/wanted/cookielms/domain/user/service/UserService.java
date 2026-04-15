@@ -1,18 +1,19 @@
 package com.wanted.cookielms.domain.user.service;
 
 import com.wanted.cookielms.domain.user.dto.JoinUserDTO;
+import com.wanted.cookielms.domain.user.dto.LoginUserDTO;
 import com.wanted.cookielms.domain.user.entity.User;
 import com.wanted.cookielms.domain.user.enums.Role;
 import com.wanted.cookielms.domain.user.enums.Status;
 import com.wanted.cookielms.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.mapping.Join;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -51,4 +52,8 @@ public class UserService {
 
     }
 
+    public LoginUserDTO findByUsername(String username) {
+        Optional<User> userOptional = userRepository.findByLoginId(username);
+        return userOptional.map(user -> modelMapper.map(user, LoginUserDTO.class)).orElse(null);
+    }
 }
