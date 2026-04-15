@@ -30,7 +30,7 @@ public class SecurityConfig {
     public SecurityFilterChain configure(HttpSecurity http,
                                          AuthSuccessHandler authSuccessHandler) throws Exception {
         http.authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/user/login", "/user/join", "/").permitAll()
+                    auth.requestMatchers("/user/login", "/user/join", "/user/joinsuccess", "/").permitAll()
                             .requestMatchers("/instructor/**").hasRole("INSTRUCTOR")
                             .requestMatchers("/user/**").hasRole("USER")
                             .anyRequest().permitAll();
