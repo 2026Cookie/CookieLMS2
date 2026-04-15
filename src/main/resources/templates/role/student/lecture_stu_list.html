@@ -49,7 +49,7 @@
                     return;
                 }
 
-                // 카드 그리기 (디자인 제거, 테두리와 클릭 이벤트만 유지)
+                // 카드 그리기
                 lectures.forEach(lecture => {
                     const cardHtml = `
                         <div onclick="location.href='/student/lectures/${lecture.lectureId}'" style="border: 1px solid black; margin: 10px; padding: 10px; cursor: pointer;">
@@ -80,7 +80,7 @@
         for (let i = 0; i < totalPages; i++) {
             const btn = document.createElement('button');
             btn.innerText = i + 1;
-            // 활성화된 페이지 표시를 위해 간단히 굵은 글씨 적용
+
             if (i === currentPage) {
                 btn.style.fontWeight = 'bold';
             }
