@@ -26,10 +26,10 @@ public class InsLecture {
     @Column(name = "video_url")
     private String videoUrl;
 
-    @Column(name = "material_id") // 친구 컬럼명과 매핑
+    @Column(name = "material_id") // 컬럼명과 매핑
     private String fileSavedName;
 
-    // ⭐ [여기서부터 추가된 필드들입니다!] ⭐
+
     @Column(name = "max_capacity")
     private Integer maxCapacity;
 
@@ -49,11 +49,11 @@ public class InsLecture {
     private LocalTime endTime;
 
     @Column(name = "user_id")
-    private Long instructorId = 2L; // 친구 테스트용 강사 ID 고정
+    private Long instructorId = 2L; // "// TODO: 로그인 연동 후 세션 기반으로 변경 예정"
 
     @Builder
     private InsLecture(String title, String description, String videoUrl, String fileSavedName,
-                       Integer maxCapacity, String lectureDay, LocalTime startTime, LocalTime endTime) {
+                       Integer maxCapacity, String lectureDay, LocalTime startTime, LocalTime endTime,Long instructorId) {
         this.title = title;
         this.description = description;
         this.videoUrl = videoUrl;
@@ -65,7 +65,8 @@ public class InsLecture {
         this.endTime = endTime;
         //  기본값 설정
         this.currentEnrollment = 0;
+        this.instructorId = instructorId;
         this.status = "OPEN";
-        this.instructorId = 2L;
+
     }
 }
