@@ -1,119 +1,87 @@
 package com.wanted.cookielms.global.error;
 
-import com.wanted.cookielms.global.error.exception.BusinessException;
-
 import com.wanted.cookielms.global.error.model.ErrorLogService;
 import com.wanted.cookielms.global.error.util.ClientIpResolver;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.MDC;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.validation.BindException;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @Slf4j
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
-
-    // =========================================================================
-    // [공통 메서드] 중복 로직 제거
-    // =========================================================================
-
-    /**
-     * [공통] 일반 예외 처리 (FieldError 없음)
-     */
-    private ResponseEntity<ErrorResponse> buildErrorResponse(ErrorCode errorCode, Exception e, HttpServletRequest request) {
-        log.warn("Exception occurred: {}", errorCode.getCode());
-        // 비동기 스레드에서 HttpServletRequest에 접근할 수 없으므로, 여기서 정보 추출
-        String clientIp = clientIpResolver.resolveClientIp(request);
-        String userId = extractUserId();
-        errorLogService.saveErrorLog(errorCode, e, clientIp, userId, request.getRequestURI(), request.getMethod());
-        ErrorResponse response = ErrorResponse.of(errorCode);
-        return new ResponseEntity<>(response, errorCode.getStatus());
-    }
-
-    /**
-     * [공통] 검증 실패 처리 (FieldError 포함)
-     */
-    private ResponseEntity<ErrorResponse> buildErrorResponse(ErrorCode errorCode, Exception e, HttpServletRequest request, BindingResult bindingResult) {
-        log.warn("Exception occurred: {}", errorCode.getCode());
-        // 비동기 스레드에서 HttpServletRequest에 접근할 수 없으므로, 여기서 정보 추출
-        String clientIp = clientIpResolver.resolveClientIp(request);
-        String userId = extractUserId();
-        errorLogService.saveErrorLog(errorCode, e, clientIp, userId, request.getRequestURI(), request.getMethod(), bindingResult);
-        ErrorResponse response = ErrorResponse.of(errorCode);
-        return new ResponseEntity<>(response, errorCode.getStatus());
-    }
-
     private final ErrorLogService errorLogService;
     private final HttpServletRequest request;
     private final ClientIpResolver clientIpResolver;
 
     // =========================================================================
-    // 1. 데이터 바인딩 및 검증 에러 (400 Bad Request)
+    // [공통 메서드] 에러 응답 빌드
     // =========================================================================
 
     /**
-     * [C001] @Valid, @Validated 에서 검증에 실패한 경우 (JSON 요청)
+     * 에러 응답 생성 (검증 에러 없음)
      */
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    protected ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        return buildErrorResponse(ErrorCode.INVALID_INPUT_VALUE, e, request, e.getBindingResult());
+    private ResponseEntity<ErrorResponse> buildErrorResponse(ErrorCode errorCode, Exception e, HttpServletRequest request) {
+        log.warn("Exception occurred: {} - {}", errorCode.getCode(), e.getMessage());
+        String clientIp = clientIpResolver.resolveClientIp(request);
+        String userId = extractUserId();
+        String traceId = MDC.get("traceId");
+        errorLogService.saveErrorLog(errorCode, e, clientIp, userId, request.getRequestURI(), request.getMethod());
+        ErrorResponse response = ErrorResponse.of(errorCode, traceId);
+        return new ResponseEntity<>(response, errorCode.getStatus());
     }
 
     /**
-     * [C001] @ModelAttribute 으로 바인딩 시 검증에 실패한 경우 (Form 요청)
+     * ApplicationException 기반 예외 처리 (모든 커스텀 예외)
      */
-    @ExceptionHandler(BindException.class)
-    protected ResponseEntity<ErrorResponse> handleBindException(BindException e) {
-        return buildErrorResponse(ErrorCode.INVALID_INPUT_VALUE, e, request, e.getBindingResult());
+    private ResponseEntity<ErrorResponse> buildErrorResponse(com.wanted.cookielms.global.error.exception.ApplicationException e, HttpServletRequest request) {
+        log.warn("ApplicationException occurred: {} - {}", e.getCode(), e.getMessage());
+        String clientIp = clientIpResolver.resolveClientIp(request);
+        String userId = extractUserId();
+        String traceId = MDC.get("traceId");
+
+        // 비동기로 DB에 에러 로그 저장
+        errorLogService.saveApplicationExceptionLog(e, clientIp, userId, traceId, request.getRequestURI(), request.getMethod());
+
+        // 응답 생성
+        ErrorResponse response = ErrorResponse.builder()
+                .status(e.getStatus().value())
+                .code(e.getCode())
+                .message(e.getMessage())
+                .traceId(traceId)
+                .build();
+        return new ResponseEntity<>(response, e.getStatus());
     }
 
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    protected ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
-        return buildErrorResponse(ErrorCode.INVALID_TYPE_VALUE, e, request);
+    // =========================================================================
+    // 커스텀 예외 핸들러 (ApplicationException 계열)
+    // =========================================================================
+
+    /**
+     * 모든 ApplicationException 기반 예외 처리
+     */
+    @ExceptionHandler(com.wanted.cookielms.global.error.exception.ApplicationException.class)
+    protected ResponseEntity<ErrorResponse> handleApplicationException(com.wanted.cookielms.global.error.exception.ApplicationException e) {
+        return buildErrorResponse(e, request);
     }
 
-    @ExceptionHandler(MissingServletRequestParameterException.class)
-    protected ResponseEntity<ErrorResponse> handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
-        return buildErrorResponse(ErrorCode.MISSING_REQUEST_PARAMETER, e, request);
-    }
+    // =========================================================================
+    // [500] 예상치 못한 모든 예외
+    // =========================================================================
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    protected ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
-        return buildErrorResponse(ErrorCode.HTTP_MESSAGE_NOT_READABLE, e, request);
-    }
-
-    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    protected ResponseEntity<ErrorResponse> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
-        return buildErrorResponse(ErrorCode.METHOD_NOT_ALLOWED, e, request);
-    }
-
-    @ExceptionHandler(AccessDeniedException.class)
-    protected ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
-        return buildErrorResponse(ErrorCode.ACCESS_DENIED, e, request);
-    }
-
-    @ExceptionHandler(BusinessException.class)
-    protected ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
-        return buildErrorResponse(e.getErrorCode(), e, request);
-    }
-
+    /**
+     * [500] 예상치 못한 모든 예외
+     */
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<ErrorResponse> handleException(Exception e) {
-        log.error("handleException - 서버 내부 오류 발생!", e);
+        log.error("Unexpected exception occurred!", e);
         return buildErrorResponse(ErrorCode.INTERNAL_SERVER_ERROR, e, request);
     }
 

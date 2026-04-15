@@ -1,10 +1,12 @@
 package com.wanted.cookielms.global.error.model;
 
 import com.wanted.cookielms.global.error.ErrorCode;
+import com.wanted.cookielms.global.error.exception.ApplicationException;
 import com.wanted.cookielms.global.error.model.entity.ErrorLog;
 import com.wanted.cookielms.global.error.model.repository.ErrorLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,11 +31,14 @@ public class ErrorLogService {
     @Transactional
     public void saveErrorLog(ErrorCode errorCode, Exception e, String clientIp, String userId, String requestUri, String httpMethod) {
         try {
-            // 1. 스택 트레이스 추출 및 포맷팅
+            // 1. MDC에서 traceId 추출
+            String traceId = MDC.get("traceId");
+
+            // 2. 스택 트레이스 추출 및 포맷팅
             String stackTrace = formatStackTrace(e);
             String combined = buildStackTraceWithErrors("", stackTrace, stackTraceMaxLength);
 
-            // 2. 엔티티 생성 및 저장
+            // 3. 엔티티 생성 및 저장
             ErrorLog errorLog = ErrorLog.builder()
                     .errorCode(errorCode.getCode())
                     .errorMessage(e.getMessage() != null ? e.getMessage() : errorCode.getMessage())
@@ -43,6 +48,8 @@ public class ErrorLogService {
                     .clientIp(clientIp)
                     .userId(userId)
                     .stackTrace(combined)
+                    .traceId(traceId)
+                    .severity(errorCode.getSeverity())
                     .build();
 
             errorLogRepository.save(errorLog);
@@ -59,12 +66,15 @@ public class ErrorLogService {
     @Transactional
     public void saveErrorLog(ErrorCode errorCode, Exception e, String clientIp, String userId, String requestUri, String httpMethod, BindingResult bindingResult) {
         try {
-            // 1. 필드 에러와 스택 트레이스 추출
+            // 1. MDC에서 traceId 추출
+            String traceId = MDC.get("traceId");
+
+            // 2. 필드 에러와 스택 트레이스 추출
             String fieldErrors = formatFieldErrors(bindingResult);
             String stackTrace = formatStackTrace(e);
             String combined = buildStackTraceWithErrors(fieldErrors, stackTrace, stackTraceMaxLength);
 
-            // 2. 엔티티 생성 및 저장
+            // 3. 엔티티 생성 및 저장
             ErrorLog errorLog = ErrorLog.builder()
                     .errorCode(errorCode.getCode())
                     .errorMessage(e.getMessage() != null ? e.getMessage() : errorCode.getMessage())
@@ -74,6 +84,8 @@ public class ErrorLogService {
                     .clientIp(clientIp)
                     .userId(userId)
                     .stackTrace(combined)
+                    .traceId(traceId)
+                    .severity(errorCode.getSeverity())
                     .build();
 
             errorLogRepository.save(errorLog);
@@ -123,5 +135,41 @@ public class ErrorLogService {
             return combined.substring(0, maxLength);
         }
         return combined;
+    }
+
+    /**
+     * ApplicationException (커스텀 예외)을 DB에 저장합니다.
+     */
+    @Async
+    @Transactional
+    public void saveApplicationExceptionLog(ApplicationException e, String clientIp, String userId, String traceId, String requestUri, String httpMethod) {
+        try {
+            // 스택 트레이스 추출
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            String stackTrace = sw.toString();
+            if (stackTrace.length() > stackTraceMaxLength) {
+                stackTrace = stackTrace.substring(0, stackTraceMaxLength);
+            }
+
+            // 엔티티 생성 및 저장
+            ErrorLog errorLog = ErrorLog.builder()
+                    .errorCode(e.getCode())
+                    .errorMessage(e.getMessage())
+                    .exceptionName(e.getClass().getSimpleName())
+                    .requestUri(requestUri)
+                    .httpMethod(httpMethod)
+                    .clientIp(clientIp)
+                    .userId(userId)
+                    .stackTrace(stackTrace)
+                    .traceId(traceId)
+                    .severity(e.getSeverity())
+                    .build();
+
+            errorLogRepository.save(errorLog);
+
+        } catch (Exception logException) {
+            log.error("에러 로그 저장 중 실패 (원래 에러 응답에는 영향 없음)", logException);
+        }
     }
 }

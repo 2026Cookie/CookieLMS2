@@ -45,6 +45,14 @@ public class ErrorLog {
     @Column(columnDefinition = "TEXT")
     private String stackTrace;     // 전체 에러 흔적 (매우 길 수 있으므로 TEXT 타입)
 
+    @Column(length = 36)
+    @org.hibernate.annotations.Index(name = "idx_trace_id")
+    private String traceId;        // 요청 추적 ID (요청별 고유값, 같은 요청의 모든 에러가 같은 traceId 공유)
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private ErrorSeverity severity; // 에러 심각도 (INFO, WARNING, CRITICAL)
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt; // 에러 발생 시각
@@ -52,7 +60,7 @@ public class ErrorLog {
     @Builder
     public ErrorLog(String errorCode, String errorMessage, String exceptionName,
                     String requestUri, String httpMethod, String clientIp,
-                    String userId, String stackTrace) {
+                    String userId, String stackTrace, String traceId, ErrorSeverity severity) {
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
         this.exceptionName = exceptionName;
@@ -61,5 +69,7 @@ public class ErrorLog {
         this.clientIp = clientIp;
         this.userId = userId;
         this.stackTrace = stackTrace;
+        this.traceId = traceId;
+        this.severity = severity;
     }
 }
