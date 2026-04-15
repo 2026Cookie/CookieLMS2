@@ -1,6 +1,6 @@
-package com.wanted.cookielms.global.error.exception;
+package com.wanted.cookielms.global.error.handler;
 
-import com.wanted.cookielms.global.error.model.entity.ErrorSeverity;
+import com.wanted.cookielms.global.error.model.entity.enums.ErrorSeverity;
 import org.springframework.http.HttpStatus;
 
 /**

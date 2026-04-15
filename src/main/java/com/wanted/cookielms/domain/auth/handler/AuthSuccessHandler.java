@@ -1,9 +1,8 @@
-package com.wanted.cookielms.domain.auth.hander;
+package com.wanted.cookielms.domain.auth.handler;
 
 import com.wanted.cookielms.domain.auth.dto.AuthDetails;
 import com.wanted.cookielms.domain.user.enums.Role;
 import com.wanted.cookielms.domain.user.service.UserService;
-import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

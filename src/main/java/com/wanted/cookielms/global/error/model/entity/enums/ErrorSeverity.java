@@ -1,4 +1,4 @@
-package com.wanted.cookielms.global.error.model.entity;
+package com.wanted.cookielms.global.error.model.entity.enums;
 
 import lombok.Getter;
 

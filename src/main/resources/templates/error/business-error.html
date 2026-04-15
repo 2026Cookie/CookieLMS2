@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>안내 - CookieLMS</title>
+    <style th:replace="~{error/error-style :: error-css}"></style>
+</head>
+<body>
+<div class="error-container">
+    <div class="error-code">📢</div>
+    <div class="error-title">확인이 필요합니다</div>
+    <div class="error-message" th:text="${message}">요청하신 작업을 처리할 수 없습니다.</div>
+
+    <div class="error-details">
+        <div class="detail-item" th:if="${traceId}">
+            <span class="detail-label">추적 ID:</span>
+            <span class="detail-value" th:text="${traceId}"></span>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="btn btn-primary" onclick="history.back()">이전으로 돌아가기</button>
+        <button class="btn btn-secondary" onclick="location.href='/'">홈으로</button>
+    </div>
+</div>
+</body>
+</html>

@@ -1,5 +1,6 @@
-package com.wanted.cookielms.global.error;
+package com.wanted.cookielms.global.error.model.DTO;
 
+import com.wanted.cookielms.global.error.handler.ErrorCode;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -7,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ErrorResponse {
+public class ErrorResponseDTO {
 
     private int status;
     private String code;
@@ -15,15 +16,15 @@ public class ErrorResponse {
     private String traceId;  // 요청 추적 ID
 
     @Builder
-    private ErrorResponse(int status, String code, String message, String traceId) {
+    private ErrorResponseDTO(int status, String code, String message, String traceId) {
         this.status = status;
         this.code = code;
         this.message = message;
         this.traceId = traceId;
     }
 
-    public static ErrorResponse of(ErrorCode code, String traceId) {
-        return ErrorResponse.builder()
+    public static ErrorResponseDTO of(ErrorCode code, String traceId) {
+        return ErrorResponseDTO.builder()
                 .status(code.getStatus().value())
                 .code(code.getCode())
                 .message(code.getMessage())
