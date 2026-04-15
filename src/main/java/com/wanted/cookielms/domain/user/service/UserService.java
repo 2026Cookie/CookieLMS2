@@ -42,7 +42,7 @@ public class UserService {
         user.setEmail(joinUserDTO.getEmail());
         user.setNickname(joinUserDTO.getNickname());
         user.setPhone(joinUserDTO.getPhone());
-        user.setRole(Role.USER);
+        user.setRole(joinUserDTO.getRole());
         user.setStatus(Status.ACTIVE);
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());

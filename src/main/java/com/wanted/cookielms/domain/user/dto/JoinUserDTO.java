@@ -1,9 +1,7 @@
 package com.wanted.cookielms.domain.user.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import com.wanted.cookielms.domain.user.enums.Role;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,6 +13,9 @@ import lombok.ToString;
 @NoArgsConstructor
 
 public class JoinUserDTO {
+
+    @NotNull
+    private Role role;
 
     @NotBlank
     private String name;
