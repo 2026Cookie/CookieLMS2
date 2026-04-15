@@ -52,14 +52,20 @@
       <label>수업 자료 (PDF만 가능, 최대 5MB):</label>
       <input type="file" name="lectureFile" id="lectureFile" required onchange="validateFile(this)">
     </div>
-    <div style="margin-top: 30px;"><button type="submit">등록하기</button></div>
-  </form>
+    <div style="display: flex; gap: 10px; margin-top: 30px;">
+      <button type="submit" style="flex: 2;">등록하기</button>
+
+      <button type="button"
+              th:onclick="|location.href='@{/instructor/lectures}'|"
+              style="flex: 1; background-color: #6c757d;">
+        취소 (목록으로)
+      </button>
 </div>
 
 <script th:inline="javascript">
   function validateFile(input) {
     // [수정] input.files으로 정확히 파일을 가져옵니다.
-    const file = input.files;
+    const files = input.files;
     if (!file) return;
 
     // A. 확장자 체크
