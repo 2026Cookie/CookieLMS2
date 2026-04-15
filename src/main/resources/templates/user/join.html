@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>회원가입</title>
+</head>
+<body>
+<h1>회원가입</h1>
+
+<!-- 권한 선택 버튼 -->
+<div id="roleSelect">
+    <button type="button" onclick="selectRole('USER')">학생</button>
+    <button type="button" onclick="selectRole('INSTRUCTOR')">강사</button>
+</div>
+
+<!-- 폼 (처음엔 숨김) -->
+<form th:action="@{/user/join}" method="post" id="joinForm" style="display:none">
+    <input type="hidden" name="role" id="roleInput">
+    <input type="text" name="name" placeholder="이름"><br>
+    <input type="text" name="nickname" placeholder="닉네임"><br>
+    <input type="email" name="email" placeholder="이메일"><br>
+    <input type="text" name="loginId" placeholder="아이디"><br>
+    <input type="password" name="password" placeholder="비밀번호"><br>
+    <input type="password" name="passwordConfirm" placeholder="비밀번호 확인"><br>
+    <input type="text" name="phone" placeholder="전화번호"><br>
+    <button type="submit">가입하기</button>
+</form>
+
+<script>
+    function selectRole(role) {
+        document.getElementById('roleInput').value = role;
+        document.getElementById('roleSelect').style.display = 'none';
+        document.getElementById('joinForm').style.display = 'block';
+    }
+</script>
+</body>
+</html>

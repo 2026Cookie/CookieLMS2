@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -109,15 +109,34 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎓 Cookiego</h1>
-        <p>어디로 이동하시겠습니까?</p>
+<div class="container">
+    <h1>🎓 Cookiego</h1>
+    <p>어디로 이동하시겠습니까?</p>
 
-        <div class="button-group">
-            <a href="/admin" class="btn btn-admin">🔐 관리자</a>
-            <a href="/instructor" class="btn btn-instructor">👨‍🏫 강사</a>
-            <a href="/student/main" class="btn btn-student">👨‍🎓 학생</a>
+    <div class="button-group">
+        <!-- 비로그인 -->
+        <div sec:authorize="isAnonymous()">
+            <a th:href="@{/user/login}" class="btn btn-instructor">로그인</a>
+            <a th:href="@{/user/join}" class="btn btn-student">회원가입</a>
+        </div>
+
+        <!-- 강사 -->
+        <div sec:authorize="hasRole('INSTRUCTOR')">
+            <a th:href="@{/instructor/main}" class="btn btn-instructor">👨‍🏫 강사 페이지</a>
+        </div>
+
+        <!-- 학생 -->
+        <div sec:authorize="hasRole('USER')">
+            <a th:href="@{/user/main}" class="btn btn-student">👨‍🎓 학생 페이지</a>
+        </div>
+
+        <!-- 로그아웃 -->
+        <div sec:authorize="isAuthenticated()">
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="btn btn-admin">로그아웃</button>
+            </form>
         </div>
     </div>
+</div>
 </body>
 </html>

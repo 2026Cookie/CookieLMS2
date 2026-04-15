@@ -55,4 +55,8 @@ public class LectureStuEntity {
 
     @Column(name = "user_id", nullable = false)
     private Long instructorId;
+
+    public void increaseEnrollment() {
+        this.currentEnrollment++;
+    }
 }

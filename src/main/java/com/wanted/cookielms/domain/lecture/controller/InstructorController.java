@@ -48,6 +48,11 @@ public class InstructorController {
 
         return "role/instructor/lecture_list";
     }
+    @GetMapping("/main")
+    public String main(){
+        return "instructor/main";
+    }
+
     @GetMapping("/lecture/detail/{id}")
     public String lectureDetail(@PathVariable("id") Long id, Model model) {
 
