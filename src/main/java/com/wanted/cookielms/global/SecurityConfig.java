@@ -29,11 +29,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain configure(HttpSecurity http,
                                          AuthSuccessHandler authSuccessHandler) throws Exception {
-        http.authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/user/login", "/user/join", "/").permitAll()
-                            .requestMatchers("/instructor/**").hasRole("INSTRUCTOR")
-                            .requestMatchers("/user/**").hasRole("USER")
-                            .anyRequest().permitAll();
+            http.authorizeHttpRequests(auth -> {
+                        auth.requestMatchers("/user/login", "/user/join", "/user/joinsuccess", "/").permitAll()
+                                .requestMatchers("/instructor/**").hasRole("INSTRUCTOR")
+                                .requestMatchers("/user/**").hasRole("USER")
+                                .anyRequest().permitAll();
                 })
                 .formLogin(login -> {
                     login.loginPage("/user/login");
