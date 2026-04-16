@@ -49,7 +49,11 @@ public class SecurityConfig {
                                     "/css/**",          // 💡 중요: 에러 페이지 디자인 유지
                                     "/js/**",
                                     "/images/**",
-                                    "/favicon.ico"
+                                    "/favicon.ico",
+                                    "/user/find_password",
+                                    "/user/reset_password",
+                                    "/user/find_id"
+
                             ).permitAll()
                             .requestMatchers("/instructor/**").hasRole("INSTRUCTOR")
                             .requestMatchers("/user/**").hasRole("USER")

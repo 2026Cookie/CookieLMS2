@@ -2,6 +2,7 @@ package com.wanted.cookielms.domain.user.service;
 
 import com.wanted.cookielms.domain.user.dto.JoinUserDTO;
 import com.wanted.cookielms.domain.user.dto.LoginUserDTO;
+import com.wanted.cookielms.domain.user.dto.ResetPasswordDTO;
 import com.wanted.cookielms.domain.user.entity.User;
 import com.wanted.cookielms.domain.user.enums.Role;
 import com.wanted.cookielms.domain.user.enums.Status;
@@ -62,4 +63,18 @@ public class UserService {
         Optional<User> lostIdUser = userRepository.findByNameAndPhone(name, phone);
         return lostIdUser.map(User -> User.getLoginId()).orElse(null);
     }
+
+    public Boolean findByLoginIdAndNameAndPhone(String loginId, String name, String phone) {
+        Optional<User> lostpwdUser = userRepository.findByLoginIdAndNameAndPhone(loginId, name, phone);
+        return lostpwdUser.isPresent();
+    }
+
+    @Transactional
+    public void updatePassword(String loginId, String newPassword ) {
+        userRepository.findByLoginId(loginId)
+                .ifPresent(user -> {user.updatePassword(passwordEncoder.encode(newPassword));
+                });
+
+    }
+
 }
