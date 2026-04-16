@@ -16,11 +16,14 @@
     <p>마감 기한: <span th:text="${#temporals.format(assignment.dueDate, 'yyyy-MM-dd HH:mm')}"></span></p>
 </div>
 
-<form id="uploadForm" th:action="@{|/student/assignments/${assignment.assignmentId}/submit|}" method="post" enctype="multipart/form-data" onsubmit="return showProgress(event)">
+<form id="uploadForm" th:action="@{|/student/assignments/${assignment.assignmentId}/submit|}" method="post"
+      enctype="multipart/form-data" onsubmit="return showProgress(event)">
 
     <div>
         <label for="uploadFile">첨부 파일 (PDF만 가능, 최대 5MB):</label>
-        <input type="file" id="uploadFile" name="uploadFile" accept=".pdf" required>
+        <input type="file" id="uploadFile" name="uploadFile" accept=".pdf" required
+               th:disabled="${assignment.dueDate != null and assignment.dueDate.isBefore(#temporals.createNow())}"
+               th:style="${assignment.dueDate != null and assignment.dueDate.isBefore(#temporals.createNow()) ? 'cursor: not-allowed;' : ''}">
     </div>
 
     <div id="progressContainer" style="display: none;">
@@ -28,53 +31,41 @@
     </div>
 
     <br>
-    <button type="submit" id="submitBtn">과제 제출하기</button>
+    <div th:if="${assignment.dueDate != null and assignment.dueDate.isBefore(#temporals.createNow())}"
+         style="color: red; margin-bottom: 10px; font-weight: bold;">
+        ⏳ 마감 기한이 지나 더 이상 제출할 수 없습니다.
+    </div>
+
+    <button type="submit"
+            th:disabled="${assignment.dueDate != null and assignment.dueDate.isBefore(#temporals.createNow())}"
+            th:style="${assignment.dueDate != null and assignment.dueDate.isBefore(#temporals.createNow()) ? 'background-color: #cccccc; cursor: not-allowed;' : ''}">
+        제출하기
+    </button>
     <button type="button" onclick="history.back()">뒤로 가기</button>
 </form>
 
 <script>
-    function showProgress(event) {
+    document.addEventListener("DOMContentLoaded", function () {
+        // 파일 입력(input) 칸을 찾습니다. (ID가 uploadFile이라고 가정)
         const fileInput = document.getElementById('uploadFile');
 
-        if (fileInput.files.length > 0) {
-            const file = fileInput.files[0];
-            const maxSize = 5 * 1024 * 1024;
+        if (fileInput) {
+            // 파일이 선택될 때(change)마다 이 함수를 실행합니다.
+            fileInput.addEventListener('change', function () {
+                const maxSize = 5 * 1024 * 1024; // 5MB를 바이트(Byte) 단위로 계산
 
-            if (file.size > maxSize) {
-                alert("5MB를 초과하는 파일은 업로드할 수 없습니다.");
-                fileInput.value = '';
-                event.preventDefault();
-                return false;
-            }
+                // 사용자가 파일을 선택했다면 용량을 검사합니다.
+                if (this.files && this.files[0]) {
+                    const fileSize = this.files[0].size;
 
-            if (!file.name.toLowerCase().endsWith('.pdf')) {
-                alert("PDF 파일만 업로드 가능합니다.");
-                fileInput.value = '';
-                event.preventDefault();
-                return false;
-            }
+                    if (fileSize > maxSize) {
+                        alert("❌ 5MB를 초과합니다. 5MB 이하의 파일을 업로드 해주세요.");
+                        this.value = '';
+                    }
+                }
+            });
         }
-
-        const submitBtn = document.getElementById('submitBtn');
-        submitBtn.disabled = true;
-        submitBtn.innerText = '서버로 전송 중입니다...';
-
-        document.getElementById('progressContainer').style.display = 'block';
-
-        let progress = 0;
-        const progressText = document.getElementById('progressText');
-
-        const interval = setInterval(() => {
-            progress += Math.floor(Math.random() * 15) + 5;
-            if (progress >= 95) {
-                progress = 95;
-                clearInterval(interval);
-            }
-            progressText.innerText = progress + '%';
-        }, 300);
-
-        return true;
-    }
+    });
 </script>
 </body>
 </html>
