@@ -58,7 +58,7 @@ public class UserController {
 
     @GetMapping("/enrollments")
     public String enrollment() {
-        return "user/enrollment";
+        return "user/enrollments";
     }
 
 
