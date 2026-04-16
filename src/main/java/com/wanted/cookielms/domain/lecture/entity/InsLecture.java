@@ -55,6 +55,8 @@ public class InsLecture {
     @Column(name = "user_id")
     private Long instructorId;
 
+
+
     @Builder
     private InsLecture(String title, String description, String videoUrl, String fileSavedName, String fileOriginName,
                        Integer maxCapacity, String lectureDay, LocalTime startTime, LocalTime endTime,Long instructorId) {

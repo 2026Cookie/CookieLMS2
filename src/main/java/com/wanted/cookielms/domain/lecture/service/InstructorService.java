@@ -7,17 +7,13 @@ import com.wanted.cookielms.domain.lecture.repository.LectureInsRepository;
 import com.wanted.cookielms.domain.lecture.repository.LectureStuRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
 import java.io.IOException;
 import java.time.LocalTime;
-import java.util.UUID;
+
 
 @Service
 @RequiredArgsConstructor
@@ -27,9 +23,8 @@ public class InstructorService {
     private final LectureInsRepository lectureInsRepository;
     private final LectureStuRepository lectureStuRepository;
     private final ModelMapper modelMapper;
+    private final InsFileService insFileService;
 
-    @Value("${file.upload.path:C:/cookielms/uploads/}")
-    private String uploadPath;
 
 
     public Page<LectureStuDTO> getMyLectures(Long instructorId, Pageable pageable) {
@@ -40,13 +35,13 @@ public class InstructorService {
 
     @Transactional
     public void registLecture(LectureInsDTO dto, Long instructorId) throws IOException {
-        String fileSavedName = saveFile(dto.getLectureFile());
+        String savedName = insFileService.storeFile(dto.getLectureFile(), ".pdf");
 
         InsLecture lecture = InsLecture.builder()
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .videoUrl(dto.getVideoUrl())
-                .fileSavedName(fileSavedName)
+                .fileSavedName(savedName)
                 .fileOriginName(dto.getLectureFile() != null ? dto.getLectureFile().getOriginalFilename() : null)
                 .maxCapacity(dto.getMaxCapacity())
                 .lectureDay(dto.getLectureDay())
@@ -70,7 +65,7 @@ public class InstructorService {
         }
 
         if (dto.getLectureFile() != null && !dto.getLectureFile().isEmpty()) {
-            String savedName = saveFile(dto.getLectureFile());
+            String savedName = insFileService.storeFile(dto.getLectureFile(), ".pdf");
             lecture.updateFileName(dto.getLectureFile().getOriginalFilename(), savedName);
         }
 
@@ -100,22 +95,5 @@ public class InstructorService {
         return dto;
     }
 
-    private String saveFile(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty()) return null;
 
-        String originalName = file.getOriginalFilename();
-        if (originalName == null || !originalName.toLowerCase().endsWith(".pdf")) {
-            throw new IllegalArgumentException("PDF 파일만 업로드 가능합니다.");
-        }
-
-        String savedName = UUID.randomUUID().toString() + ".pdf";
-        File target = new File(uploadPath, savedName);
-
-        if (!target.getParentFile().exists()) {
-            target.getParentFile().mkdirs();
-        }
-        file.transferTo(target);
-
-        return savedName;
-    }
 }
