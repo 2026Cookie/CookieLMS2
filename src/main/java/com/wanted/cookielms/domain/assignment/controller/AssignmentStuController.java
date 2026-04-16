@@ -22,7 +22,7 @@ public class AssignmentStuController {
     public String showAssignmentForm(@PathVariable Long assignmentId, Model model, RedirectAttributes redirectAttributes) {
         try {
             model.addAttribute("assignment", assignmentStuService.getAssignment(assignmentId));
-            return "role/student/assignment_submit";
+            return "user/assignment_submit";
         } catch (IllegalArgumentException e) {
             // 과제가 없어서 에러가 터지면 낚아채서 메시지를 담고, 원래 있던 강의 상세 페이지로 되돌려 보냅니다!
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -50,7 +50,7 @@ public class AssignmentStuController {
     // 3. 제출 성공 페이지 (GET)
     @GetMapping("/{assignmentId}/success")
     public String showSuccessPage() {
-        return "role/student/assignment_success";
+        return "user/assignment_success";
     }
 
     // 4. [정책] 5MB 초과 파일 업로드 시 에러 핸들링

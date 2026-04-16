@@ -16,12 +16,12 @@ public class IndexController {
 
     @GetMapping("/instructor")
     public String instructorMainPage(){
-        return "instructor/dashboard";
+        return "instructor/main";
     }
 
     @GetMapping("/student")
     public String studentMainPage(){
-        return "student/dashboard";
+        return "user/main";
     }
 
     @GetMapping("/admin")

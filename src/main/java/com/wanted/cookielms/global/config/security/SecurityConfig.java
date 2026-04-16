@@ -43,6 +43,7 @@ public class SecurityConfig {
                     auth.requestMatchers(
                                     "/user/login",
                                     "/user/join",
+                                    "/user/joinsuccess",
                                     "/",
                                     "/error",           // 💡 중요: 에러 페이지 접근 허용
                                     "/css/**",          // 💡 중요: 에러 페이지 디자인 유지

@@ -9,11 +9,11 @@ public class LectureStuViewController {
 
     @GetMapping("/student/lectures")
     public String studentLectureList() {
-        return "role/student/lecture_stu_list";
+        return "user/lecture_stu_list";
     }
 
     @GetMapping("/student/lectures/{lectureId}")
     public String studentLectureDetail(@PathVariable Long lectureId) {
-        return "role/student/lecture_detail";
+        return "user/lecture_detail";
     }
 }

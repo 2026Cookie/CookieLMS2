@@ -43,7 +43,7 @@ public class InstructorController {
         model.addAttribute("instructorId", instructorId);
 
 
-        return "role/instructor/lecture_list";
+        return "instructor/lecture_list";
     }
     @GetMapping("/main")
     public String main(){
@@ -58,7 +58,7 @@ public class InstructorController {
 
         // HTML(lecture_detail.html)에서 사용할 수 있도록 모델에 담습니다.
         model.addAttribute("lecture", lecture);
-        return "role/student/lecture_detail";
+        return "user/lecture_detail";
     }
     /**
      * 강의 등록 페이지 이동
@@ -67,7 +67,7 @@ public class InstructorController {
     public String registPage(Model model) {
         model.addAttribute("lecture", new LectureInsDTO()); // 빈 바구니를 넣어줘야 에러가 안 납니다!
         model.addAttribute("isEdit", false);
-        return "role/instructor/lecture_regist"; // templates/lectureRegist.html과 매핑
+        return "instructor/lecture_regist";
     }
 
     /**
