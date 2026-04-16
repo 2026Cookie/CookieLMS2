@@ -3,12 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <title>강사 메인</title>
+  <style>
+    /* 메뉴 영역을 깔끔하게 보여주기 위한 간단한 스타일 추가 */
+    .menu-box {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      max-width: 400px;
+      background-color: #f9f9f9;
+    }
+    .menu-box a {
+      display: block;
+      margin-bottom: 10px;
+      padding: 10px;
+      text-decoration: none;
+      color: #007bff;
+      background-color: white;
+      border: 1px solid #007bff;
+      border-radius: 4px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .menu-box a:hover {
+      background-color: #007bff;
+      color: white;
+    }
+  </style>
 </head>
 <body>
 <h1>강사 메인 페이지</h1>
 <p>환영합니다, 강사님!</p>
-<form th:action="@{/logout}" method="post">
-  <button type="submit">로그아웃</button>
+
+<div class="menu-box">
+  <h3>📚 강의 관리 메뉴</h3>
+  <a th:href="@{/instructor/lectures}">내 강의 목록 보기</a>
+  <a th:href="@{/instructor/lecture/regist}">새 강의 등록하기</a>
+</div>
+<form th:action="@{/logout}" method="post" style="margin-top: 30px;">
+  <button type="submit" style="padding: 5px 15px; cursor: pointer;">로그아웃</button>
 </form>
 </body>
 </html>

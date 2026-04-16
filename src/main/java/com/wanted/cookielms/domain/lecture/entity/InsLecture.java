@@ -18,6 +18,7 @@ public class InsLecture {
     @Column(name = "lecture_id")
     private Long id;
 
+    @Column(name = "title")
     private String title;
 
     @Column(columnDefinition = "TEXT")
