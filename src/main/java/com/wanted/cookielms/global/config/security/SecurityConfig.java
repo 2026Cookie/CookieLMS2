@@ -44,6 +44,7 @@ public class SecurityConfig {
                                     "/user/login",
                                     "/user/join",
                                     "/user/joinsuccess",
+                                    "/user/find_id",
                                     "/",
                                     "/error",           // 💡 중요: 에러 페이지 접근 허용
                                     "/css/**",          // 💡 중요: 에러 페이지 디자인 유지

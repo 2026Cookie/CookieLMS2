@@ -1,5 +1,6 @@
 package com.wanted.cookielms.domain.user.controller;
 
+import org.springframework.ui.Model;
 import com.wanted.cookielms.domain.user.dto.JoinUserDTO;
 import com.wanted.cookielms.domain.user.service.UserService;
 import jakarta.validation.Valid;
@@ -7,10 +8,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 
 @Controller
@@ -59,6 +57,26 @@ public class UserController {
     @GetMapping("/enrollments")
     public String enrollment() {
         return "user/enrollment";
+    }
+
+    // GET: 아이디 찾기 폼 페이지
+    @GetMapping("/find_id")
+    public String findIdForm() {
+        return "user/find_id";
+    }
+
+    // POST: 이름 + 전화번호로 아이디 조회
+    @PostMapping("/find_id")
+    public String findId(@RequestParam String name,
+                         @RequestParam String phone,
+                         Model model) {
+        String loginId = userService.findLoginIdByNameAndPhone(name, phone);
+        if (loginId == null) {
+            model.addAttribute("error", "일치하는 정보가 없습니다.");
+        } else {
+            model.addAttribute("loginId", loginId);
+        }
+        return "user/find_id";
     }
 
 
