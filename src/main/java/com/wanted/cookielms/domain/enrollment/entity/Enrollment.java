@@ -33,6 +33,10 @@ public class Enrollment {
     @Column(length = 20, nullable = false)
     private String status;
 
+    public void changeStatus(String status) {
+        this.status = status;
+    }
+
     @Builder
     private Enrollment(Long userId, Long lectureId, String status) {
         this.userId = userId;

@@ -58,8 +58,8 @@ public class UserService {
         return userOptional.map(user -> modelMapper.map(user, LoginUserDTO.class)).orElse(null);
     }
 
-//    public String findLoginIdByNameAndPhone(String name, String phone) {
-//        Optional<User> lostIdUser = userRepository.findByNameAndPhone(name, phone);
-//        return lostIdUser.map(User -> User.getLoginId()).orElse(null);
-//    }
+    public String findLoginIdByNameAndPhone(String name, String phone) {
+        Optional<User> lostIdUser = userRepository.findByNameAndPhone(name, phone);
+        return lostIdUser.map(User -> User.getLoginId()).orElse(null);
+    }
 }

@@ -2,37 +2,30 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>CookieLMS - 강의 목록</title>
+    <title>강의 등록 | CookieLMS</title>
     <style>
         body { font-family: 'Arial', sans-serif; padding: 20px; background-color: #f8f9fa; }
         h1 { color: #333; text-align: center; margin-bottom: 20px; }
 
-        /* 검색창 디자인 */
+        .back-btn { display: inline-block; margin-bottom: 20px; padding: 8px 16px; background-color: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 14px; }
+        .back-btn:hover { background-color: #5a6268; }
+
         .search-container { text-align: center; margin-bottom: 30px; }
         .search-input { padding: 10px; width: 300px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; }
         .search-btn { padding: 10px 20px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
         .search-btn:hover { background-color: #0056b3; }
 
         .lecture-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 1000px; margin: 0 auto; }
-
-        /* 🌟 클릭 가능하도록 cursor 추가 및 스타일 수정 */
-        .lecture-card {
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-            cursor: pointer;
-        }
-        .lecture-card:hover { transform: translateY(-5px); border-color: #007bff; }
-
+        .lecture-card { background-color: white; border: 1px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .lecture-card:hover { transform: translateY(-5px); }
         .lecture-title { font-size: 1.2em; font-weight: bold; color: #007bff; margin-bottom: 15px; }
-        .lecture-info { color: #555; font-size: 0.9em; line-height: 1.6; }
-        .thumbnail-box { background-color: #e9ecef; height: 120px; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; color: #888; font-weight: bold; overflow: hidden; }
-        .thumbnail-box img { width: 100%; height: 100%; object-fit: cover; }
+        .lecture-info { color: #555; font-size: 0.9em; line-height: 1.6; margin-bottom: 15px; }
+        .thumbnail-box { background-color: #e9ecef; height: 120px; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; color: #888; font-weight: bold; }
 
-        /* 페이지 네비게이션 컨테이너 */
+        .enroll-btn { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .enroll-btn:hover { background-color: #218838; }
+        .enroll-btn:disabled { background-color: #adb5bd; cursor: not-allowed; }
+
         .pagination { display: flex; justify-content: center; margin-top: 40px; gap: 10px; }
         .page-btn { padding: 8px 15px; border: 1px solid #007bff; background-color: white; color: #007bff; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .page-btn.active { background-color: #007bff; color: white; }
@@ -40,7 +33,9 @@
 </head>
 <body>
 
-<h1>📚 CookieLMS 전체 강의 목록</h1>
+<a href="/main" class="back-btn">← 메인으로 돌아가기</a>
+
+<h1>📋 강의 등록 페이지</h1>
 
 <div class="search-container">
     <input type="text" id="searchInput" class="search-input" placeholder="강의 제목을 검색해보세요!" onkeyup="if(event.keyCode===13) searchLectures()">
@@ -51,7 +46,9 @@
 <div id="pagination" class="pagination"></div>
 
 <script>
-    // 맨 처음 화면이 켜지면 0페이지(1페이지)를 불러옵니다.
+    let currentKeyword = '';
+    let currentPage = 0;
+
     loadLectures('', 0);
 
     function searchLectures() {
@@ -60,6 +57,9 @@
     }
 
     function loadLectures(keyword, page) {
+        currentKeyword = keyword;
+        currentPage = page;
+
         let url = `/lectures?page=${page}&size=6`;
         if (keyword) {
             url += `&keyword=${encodeURIComponent(keyword)}`;
@@ -73,32 +73,33 @@
 
                 const lectures = data.content;
 
-                if(lectures.length === 0) {
+                if (lectures.length === 0) {
                     lectureListDiv.innerHTML = '<p style="grid-column: span 3; text-align: center;">강의가 없습니다.</p>';
                     document.getElementById('pagination').innerHTML = '';
                     return;
                 }
 
-                // 1. 강의 카드 그리기
                 lectures.forEach(lecture => {
-                    // 🌟 클릭 시 상세 페이지로 이동하도록 onclick 추가
-                    // 기존: ${lecture.current_enrollment} -> 변경: ${lecture.currentEnrollment}
+                    const remaining = lecture.maxCapacity - lecture.currentEnrollment;
+                    const isFull = remaining <= 0;
+
                     const cardHtml = `
-                        <div class="lecture-card" onclick="location.href='/student/lectures/${lecture.lectureId}'">
-                            <div class="thumbnail-box">
-                                ${lecture.thumbnail ? `<img src="/images/${lecture.thumbnail}" alt="썸네일">` : `썸네일 없음`}
-                            </div>
+                        <div class="lecture-card">
+                            <div class="thumbnail-box">썸네일: ${lecture.thumbnail ?? '없음'}</div>
                             <div class="lecture-title">${lecture.title}</div>
                             <div class="lecture-info">
-                                👨‍🏫 강사 ID: ${lecture.instructorId} <br>
-                                👥 수강 인원: ${lecture.currentEnrollment} / ${lecture.maxCapacity} 명
+                                👨‍🏫 강사 ID: ${lecture.instructorId}<br>
+                                👥 수강 인원: ${lecture.currentEnrollment} / ${lecture.maxCapacity} 명<br>
+                                🪑 잔여 정원: ${isFull ? '마감' : remaining + '명'}
                             </div>
+                            <button class="enroll-btn" ${isFull ? 'disabled' : ''} onclick="enroll(${lecture.lectureId})">
+                                ${isFull ? '정원 마감' : '수강 신청'}
+                            </button>
                         </div>
                     `;
                     lectureListDiv.innerHTML += cardHtml;
                 });
 
-                // 2. 하단 페이지 버튼 그리기
                 renderPagination(data.totalPages, data.number, keyword);
             })
             .catch(error => console.error('에러 발생:', error));
@@ -107,7 +108,6 @@
     function renderPagination(totalPages, currentPage, keyword) {
         const paginationDiv = document.getElementById('pagination');
         paginationDiv.innerHTML = '';
-
         if (totalPages <= 1) return;
 
         for (let i = 0; i < totalPages; i++) {
@@ -117,6 +117,16 @@
             btn.onclick = () => loadLectures(keyword, i);
             paginationDiv.appendChild(btn);
         }
+    }
+
+    function enroll(lectureId) {
+        fetch(`/api/enrollments/${lectureId}`, { method: 'POST' })
+            .then(res => res.text())
+            .then(message => {
+                alert(message);
+                loadLectures(currentKeyword, currentPage);
+            })
+            .catch(() => alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'));
     }
 </script>
 </body>

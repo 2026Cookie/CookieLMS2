@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>강의 상세</title>
+</head>
+<body>
+
+<div th:if="${errorMessage}" style="color: red;">
+  <strong>안내:</strong> <span th:text="${errorMessage}"></span>
+</div>
+
+<div id="thumbnailArea">로딩 중...</div>
+
+<hr>
+
+<div>
+  <div>
+    <span id="instructorInfo">강사: 로딩 중</span> |
+    <span id="capacityInfo">인원: 로딩 중</span>
+  </div>
+  <h1 id="lectureTitle">강의 제목을 불러오는 중입니다...</h1>
+  <p id="lectureDesc">강의 상세 설명을 불러오는 중입니다.</p>
+
+  <div id="buttonArea"></div>
+</div>
+
+<div id="videoModal" style="display: none; border: 1px solid black; padding: 20px; margin-top: 20px;">
+  <div>
+    <strong id="modalTitle">강의 영상 재생</strong>
+    <button onclick="closeVideo()">닫기</button>
+  </div>
+  <br>
+  <div>
+    <iframe id="videoPlayer" src="" frameborder="0" allowfullscreen width="640" height="360"></iframe>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const pathParts = window.location.pathname.split('/');
+    const lectureId = pathParts[pathParts.length - 1];
+
+    fetch(`/lectures/${lectureId}`)
+            .then(response => {
+              if(!response.ok) throw new Error("강의 정보를 불러오지 못했습니다.");
+              return response.json();
+            })
+            .then(data => {
+              document.getElementById('lectureTitle').innerText = data.title;
+              document.getElementById('modalTitle').innerText = data.title;
+              document.getElementById('lectureDesc').innerText = data.description;
+              document.getElementById('instructorInfo').innerText = `강사 ID: ${data.instructorId}`;
+              document.getElementById('capacityInfo').innerText = `인원: ${data.currentEnrollment} / ${data.maxCapacity} 명`;
+
+              if(data.thumbnail) {
+                // 썸네일 width를 200 지정
+                document.getElementById('thumbnailArea').innerHTML = `<img src="/images/${data.thumbnail}" alt="${data.title} 썸네일" width="200" onerror="this.style.display='none'; this.parentNode.innerText='이미지 없음';">`;
+              } else {
+                document.getElementById('thumbnailArea').innerText = '등록된 썸네일이 없습니다.';
+              }
+
+              const buttonArea = document.getElementById('buttonArea');
+              const isEnrolled = data.enrolled === true || data.isEnrolled === true;
+
+              if (isEnrolled) {
+                buttonArea.innerHTML = `
+                        <button onclick="playVideo(${lectureId})">강의 영상 재생</button>
+                        <button onclick="downloadMaterial(${lectureId})">학습 자료 다운로드</button>
+                        <button onclick="goToAssignment(${lectureId})">과제 제출하기</button>
+                    `;
+              } else {
+                buttonArea.innerHTML = `
+                        <div>
+                            🔒 강의를 시청하시려면 먼저 수강신청을 완료해주세요.<br>
+                            <small>(수강신청은 '강의 등록' 페이지에서 진행)</small>
+                        </div>
+                    `;
+              }
+            })
+            .catch(error => {
+              console.error("Error:", error);
+              alert("강의 정보를 불러오는 중 오류가 발생했습니다.");
+            });
+  });
+
+  function playVideo(lectureId) {
+    fetch(`/lectures/${lectureId}/video`)
+            .then(response => {
+              if (response.status === 403) { throw new Error("수강생만 시청할 수 있습니다."); }
+              if (!response.ok) { throw new Error("영상을 불러오는데 실패했습니다."); }
+              return response.text();
+            })
+            .then(url => {
+              let finalUrl = url;
+              if(url.includes("video.url")) {
+                finalUrl = "https://www.youtube.com/embed/jNQXAC9IVRw";
+              }
+              document.getElementById('videoPlayer').src = finalUrl;
+              document.getElementById('videoModal').style.display = 'block'; // flex 대신 블록으로 표시
+            })
+            .catch(error => { alert(error.message); });
+  }
+
+  function closeVideo() {
+    const modal = document.getElementById('videoModal');
+    const iframe = document.getElementById('videoPlayer');
+    modal.style.display = 'none';
+    iframe.src = "";
+  }
+
+  function downloadMaterial(lectureId) {
+    if(!lectureId) { alert("강의 정보를 찾을 수 없습니다."); return; }
+    window.location.href = `/lectures/${lectureId}/material`;
+  }
+
+  function goToAssignment(lectureId) {
+    if(!lectureId) { alert("강의 정보를 찾을 수 없습니다."); return; }
+    window.location.href = `/student/assignments/${lectureId}`;
+  }
+</script>
+
+</body>
+</html>
