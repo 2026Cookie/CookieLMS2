@@ -17,11 +17,7 @@ spring:
         highlight_sql: true # SQL 키워드 강조
         dialect: org.hibernate.dialect.MySQLDialect # MySQL 방언 명시
 
-  # Flyway 설정
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
-    baseline-on-migrate: true
+
 
   # [추가] 파일 업로드 용량 제한 설정
   # 유튜브 링크 방식을 사용하므로 영상 용량은 필요 없지만,
