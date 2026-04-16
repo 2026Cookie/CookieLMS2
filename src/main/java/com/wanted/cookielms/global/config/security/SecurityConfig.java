@@ -44,12 +44,17 @@ public class SecurityConfig {
                                     "/user/login",
                                     "/user/join",
                                     "/user/joinsuccess",
+                                    "/user/find_id",
                                     "/",
                                     "/error",           // 💡 중요: 에러 페이지 접근 허용
                                     "/css/**",          // 💡 중요: 에러 페이지 디자인 유지
                                     "/js/**",
                                     "/images/**",
-                                    "/favicon.ico"
+                                    "/favicon.ico",
+                                    "/user/find_password",
+                                    "/user/reset_password",
+                                    "/user/find_id"
+
                             ).permitAll()
                             .requestMatchers("/instructor/**").hasRole("INSTRUCTOR")
                             .requestMatchers("/user/**").hasRole("USER")

@@ -1,4 +1,4 @@
-package com.wanted.cookielms.domain.lecture.dto; // 🌟 패키지 경로 수정
+package com.wanted.cookielms.domain.lecture.dto;
 
 import lombok.*;
 
@@ -13,14 +13,20 @@ public class LectureStuDTO {
     private String description;
     private Long instructorId;
     private int maxCapacity;
-    private int currentEnrollment; // 🌟 엔티티와 이름 맞춤 (언더바 제거)
+    private int currentEnrollment;
     private String videoUrl;
     private String thumbnail;
     private String materialId;
 
-    private boolean isEnrolled;
+    // 🌟 ModelMapper가 헷갈리지 않게 전혀 다른 이름으로 변경!
+    private boolean userEnrolled;
+    private boolean userInstructor;
 
-    public void setEnrolled(boolean enrolled) {
-        this.isEnrolled = enrolled;
+    public void setUserEnrolled(boolean userEnrolled) {
+        this.userEnrolled = userEnrolled;
+    }
+
+    public void setUserInstructor(boolean userInstructor) {
+        this.userInstructor = userInstructor;
     }
 }
