@@ -67,4 +67,13 @@ public class User {
         this.password = encodedPassword;
         this.updatedAt = LocalDateTime.now();
     }
+
+
+    public void updateInfo(String name, String nickname, String email, String phone) {
+        this.name = name;
+        this.nickname = nickname;
+        this.email = email;
+        this.phone = phone;
+        this.updatedAt = LocalDateTime.now();
+    }
 }

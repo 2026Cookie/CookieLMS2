@@ -2,10 +2,13 @@ package com.wanted.cookielms.domain.user.controller;
 
 import org.springframework.ui.Model;
 import com.wanted.cookielms.domain.user.dto.JoinUserDTO;
+import com.wanted.cookielms.domain.user.dto.LoginUserDTO;
+import com.wanted.cookielms.domain.user.dto.ModifyUserInfo;
 import com.wanted.cookielms.domain.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -153,6 +156,78 @@ public class UserController {
         session.removeAttribute("resetLoginId");
         return "redirect:/user/login";
     }
+
+    //마이페이지 정보 조회용
+    @GetMapping("/mypage")
+    public String mypage(Model model) {
+        String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
+        LoginUserDTO userInfo = userService.findByUsername(loginId);
+        model.addAttribute("userInfo", userInfo);
+        return "user/mypage";
+    }
+
+    @GetMapping("/verify-password")
+    public String verifyPassword() {
+        return "user/verify_password";
+    }
+
+    @PostMapping("/verify-password")
+    public String verifyPassword(@RequestParam String password,
+                                 HttpSession session,
+                                 Model model) {
+        String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
+        boolean verified = userService.verifyPassword(loginId, password);
+        if (!verified) {
+            model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
+            return "user/verify_password";
+        }
+        session.setAttribute("verifiedLoginId", loginId);
+        return "redirect:/user/mypage/info";
+    }
+
+    @GetMapping("/mypage/info")
+    public String mypageInfo(HttpSession session, Model model) {
+        if (session.getAttribute("verifiedLoginId") == null) {
+            return "redirect:/user/verify-password";
+        }
+        String loginId = (String) session.getAttribute("verifiedLoginId");
+        LoginUserDTO userInfo = userService.findByUsername(loginId);
+        model.addAttribute("userInfo", userInfo);
+        return "user/mypage_info";
+    }
+
+    @GetMapping("/mypage/edit")
+    public String mypageEdit(HttpSession session, Model model) {
+        if (session.getAttribute("verifiedLoginId") == null) {
+            return "redirect:/user/verify-password";
+        }
+        String loginId = (String) session.getAttribute("verifiedLoginId");
+        LoginUserDTO userInfo = userService.findByUsername(loginId);
+        model.addAttribute("userInfo", userInfo);
+        model.addAttribute("modifyUserInfo", new ModifyUserInfo());
+        return "user/mypage_edit";
+    }
+
+    @PostMapping("/mypage/edit")
+    public String mypageEdit(@Valid @ModelAttribute ModifyUserInfo modifyUserInfo,
+                             BindingResult bindingResult,
+                             HttpSession session,
+                             Model model) {
+        if (session.getAttribute("verifiedLoginId") == null) {
+            return "redirect:/user/verify-password";
+        }
+        if (bindingResult.hasErrors()) {
+            return "user/mypage_edit";
+        }
+        String loginId = (String) session.getAttribute("verifiedLoginId");
+        boolean result = userService.updateUserInfo(loginId, modifyUserInfo);
+        if (!result) {
+            model.addAttribute("error", "현재 비밀번호가 일치하지 않거나 새 비밀번호가 맞지 않습니다.");
+            return "user/mypage_edit";
+        }
+        return "redirect:/user/mypage/info";
+    }
+
 
 
 }

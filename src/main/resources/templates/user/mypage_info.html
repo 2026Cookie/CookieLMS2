@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>내 정보</title>
+</head>
+<body>
+<h1>내 정보</h1>
+<p>아이디: <span th:text="${userInfo.loginId}"></span></p>
+<p>이름: <span th:text="${userInfo.name}"></span></p>
+<p>닉네임: <span th:text="${userInfo.nickname}"></span></p>
+<p>이메일: <span th:text="${userInfo.email}"></span></p>
+<p>전화번호: <span th:text="${userInfo.phone}"></span></p>
+<a th:href="@{/user/mypage/edit}">정보 수정</a><br>
+<a th:href="@{/user/mypage}">마이페이지로 돌아가기</a>
+</body>
+</html>
