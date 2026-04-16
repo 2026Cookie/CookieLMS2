@@ -53,7 +53,7 @@ public class InsLecture {
     private LocalTime endTime;
 
     @Column(name = "user_id")
-    private Long instructorId = 2L; // "// TODO: 로그인 연동 후 세션 기반으로 변경 예정"
+    private Long instructorId;
 
     @Builder
     private InsLecture(String title, String description, String videoUrl, String fileSavedName, String fileOriginName,
@@ -85,7 +85,7 @@ public class InsLecture {
         this.endTime = endTime;
     }
 
-    // 파일 정보 수정 메서드
+
     public void updateFileName(String fileOriginName, String fileSavedName) {
         this.fileOriginName = fileOriginName;
         this.fileSavedName = fileSavedName;
