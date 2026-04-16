@@ -2,7 +2,7 @@ package com.wanted.cookielms.domain.auth.handler;
 
 import com.wanted.cookielms.global.error.model.entity.ErrorLogEntity;
 import com.wanted.cookielms.global.error.model.entity.enums.ErrorSeverity;
-import com.wanted.cookielms.global.error.service.ErrorLogService;
+import com.wanted.cookielms.global.error.model.service.ErrorLogService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

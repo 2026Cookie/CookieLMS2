@@ -2,12 +2,14 @@ package com.wanted.cookielms.global.error.controller;
 
 import com.wanted.cookielms.global.error.model.entity.ErrorLogEntity;
 import com.wanted.cookielms.global.error.model.entity.enums.ErrorSeverity;
-import com.wanted.cookielms.global.error.service.ErrorLogService;
+import com.wanted.cookielms.global.error.model.service.ErrorLogService;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.servlet.error.ErrorController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +20,8 @@ import java.util.UUID;
 
 /**
  * [Phase 4] 최후의 방어선: ErrorController
- * 스프링 MVC(Advice)가 잡지 못하는 404, 401, 403 및 필터 에러를 처리합니다.
+ * 스프링 MVC(Advice)가 잡지 못하는 에러를 처리합니다.
+ * (404, 401, 403, 500 등 모든 에러를 business-error.html로 통일 처리)
  */
 @Slf4j
 @Controller
@@ -53,14 +56,12 @@ public class CustomErrorController implements ErrorController {
         // 관리자 정보 (필요시 사용)
         model.addAttribute("adminEmail", "admin@cookielms.com");
 
-        // 5. 상태별 뷰 라우팅
-        if (status == 404) return "error/404";
-        if (status >= 500) return "error/5xx";
-        return "error/4xx"; // 400, 401, 403 등
+        // 5. 모든 에러를 business-error.html로 통일
+        return "error/business-error";
     }
 
     /**
-     * 필터/404 에러를 우리 에러 로그 시스템(Phase 3)에 전송
+     * 필터 레벨 에러를 우리 에러 로그 시스템에 전송
      */
     private void saveErrorLog(Integer status, String message, String requestUri,
                               HttpServletRequest request, String traceId, Throwable t) {
@@ -69,6 +70,9 @@ public class CustomErrorController implements ErrorController {
             ErrorSeverity severity = (status >= 500 || status == 401 || status == 403)
                     ? ErrorSeverity.CRITICAL : ErrorSeverity.WARNING;
 
+            // Security에서 현재 사용자 가져오기
+            String userId = getCurrentUserId();
+
             ErrorLogEntity errorLog = ErrorLogEntity.builder()
                     .errorCode(getErrorCodeForStatus(status))
                     .errorMessage(message != null ? message : getDefaultMessage(status))
@@ -76,7 +80,7 @@ public class CustomErrorController implements ErrorController {
                     .requestUri(requestUri != null ? requestUri : request.getRequestURI())
                     .httpMethod(request.getMethod())
                     .clientIp(getClientIp(request))
-                    .userId("ANONYMOUS") // 나중에 시큐리티 연동 시 수정
+                    .userId(userId)
                     .stackTrace(t != null ? t.toString() : "No StackTrace (Out of MVC)")
                     .traceId(traceId)
                     .severity(severity)
@@ -86,6 +90,14 @@ public class CustomErrorController implements ErrorController {
         } catch (Exception e) {
             log.error("Critical: Error logging failed in ErrorController", e);
         }
+    }
+
+    private String getCurrentUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+            return auth.getName();
+        }
+        return "ANONYMOUS";
     }
 
     private String getErrorCodeForStatus(Integer status) {

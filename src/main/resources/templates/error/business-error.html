@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <title>안내 - CookieLMS</title>
-    <style th:replace="~{error/error-style :: error-css}"></style>
 </head>
 <body>
 <div class="error-container">
-    <div class="error-code">📢</div>
-    <div class="error-title">확인이 필요합니다</div>
-    <div class="error-message" th:text="${message}">요청하신 작업을 처리할 수 없습니다.</div>
+    <div class="error-code" th:text="${status}">404</div>
+    <div class="error-title">요청 처리에 실패했습니다</div>
+    <div class="error-message" th:text="${message}">입력하신 주소가 잘못되었거나 삭제된 페이지입니다.</div>
 
     <div class="error-details">
-        <div class="detail-item" th:if="${traceId}">
+        <div class="detail-item">
+            <span class="detail-label">요청 경로:</span>
+            <span class="detail-value" th:text="${requestUri}">/unknown-page</span>
+        </div>
+        <div class="detail-item">
             <span class="detail-label">추적 ID:</span>
-            <span class="detail-value" th:text="${traceId}"></span>
+            <span class="detail-value" th:text="${traceId}">trace-id</span>
         </div>
     </div>
 

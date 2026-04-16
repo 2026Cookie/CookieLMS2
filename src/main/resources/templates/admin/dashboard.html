@@ -429,7 +429,36 @@
         }
 
         function displayMetrics(data, container) {
-            // 성능 메트릭 데이터 표시 로직
+            let html = '';
+
+            // 호출 많은 API Top 10
+            html += '<h3 style="margin:10px 0 6px;font-size:14px;">호출 많은 API TOP 10</h3>';
+            html += '<table class="data-table"><thead><tr><th>엔드포인트</th><th>호출 수</th><th>평균 응답(ms)</th></tr></thead><tbody>';
+            const avgMap = {};
+            (data.slowEndpoints || []).forEach(e => { avgMap[e.endpoint] = e.avgMs; });
+            (data.topEndpoints || []).forEach(e => {
+                const avg = avgMap[e.endpoint] ? avgMap[e.endpoint].toFixed(1) : '-';
+                html += '<tr><td>' + e.endpoint + '</td><td>' + e.callCount + '</td><td>' + avg + '</td></tr>';
+            });
+            html += '</tbody></table>';
+
+            // 일별 호출 수 (최근 14일)
+            html += '<h3 style="margin:14px 0 6px;font-size:14px;">일별 호출 (최근 14일)</h3>';
+            html += '<table class="data-table"><thead><tr><th>날짜</th><th>호출 수</th></tr></thead><tbody>';
+            (data.dailyCalls || []).forEach(d => {
+                html += '<tr><td>' + d.day + '</td><td>' + d.callCount + '</td></tr>';
+            });
+            html += '</tbody></table>';
+
+            // 오늘 시간별 트래픽
+            html += '<h3 style="margin:14px 0 6px;font-size:14px;">오늘 시간별 트래픽</h3>';
+            html += '<table class="data-table"><thead><tr><th>시간</th><th>호출 수</th></tr></thead><tbody>';
+            (data.hourlyTraffic || []).forEach(h => {
+                html += '<tr><td>' + String(h.hour).padStart(2, '0') + ':00</td><td>' + h.callCount + '</td></tr>';
+            });
+            html += '</tbody></table>';
+
+            container.innerHTML = html || '<div class="info-box">데이터가 없습니다.</div>';
         }
 
         // 페이지 로드 시 모든 데이터 초기화

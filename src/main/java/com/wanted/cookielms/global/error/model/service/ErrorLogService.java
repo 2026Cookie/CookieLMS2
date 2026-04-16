@@ -1,4 +1,4 @@
-package com.wanted.cookielms.global.error.service;
+package com.wanted.cookielms.global.error.model.service;
 
 import com.wanted.cookielms.global.error.model.DTO.ErrorLogResponseDTO;
 import com.wanted.cookielms.global.error.model.entity.ErrorLogEntity;
@@ -23,6 +23,7 @@ public class ErrorLogService {
     /**
      * [1] 에러 로그 비동기 저장
      * Propagation.REQUIRES_NEW: 기존 비즈니스 로직의 트랜잭션 롤백과 무관하게 무조건 커밋
+     *
      * @Async: 사용자 응답 속도에 영향을 주지 않도록 별도 스레드에서 DB 저장 실행
      */
     @Async
