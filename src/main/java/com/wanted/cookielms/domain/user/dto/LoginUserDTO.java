@@ -12,6 +12,7 @@ import lombok.ToString;
 @NoArgsConstructor
 public class LoginUserDTO {
 
+    private Long userId;
     private String loginId;
     private String password;
     private String name;
