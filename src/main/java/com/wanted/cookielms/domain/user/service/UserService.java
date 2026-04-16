@@ -35,17 +35,18 @@ public class UserService {
         }
 
 
-        User user = new User();
-        user.setName(joinUserDTO.getName());
-        user.setLoginId(joinUserDTO.getLoginId());
-        user.setPassword(passwordEncoder.encode(joinUserDTO.getPassword()));
-        user.setEmail(joinUserDTO.getEmail());
-        user.setNickname(joinUserDTO.getNickname());
-        user.setPhone(joinUserDTO.getPhone());
-        user.setRole(joinUserDTO.getRole());
-        user.setStatus(Status.ACTIVE);
-        user.setCreatedAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDateTime.now());
+        User user = new User(
+                joinUserDTO.getEmail(),
+                joinUserDTO.getLoginId(),
+                passwordEncoder.encode(joinUserDTO.getPassword()),
+                joinUserDTO.getName(),
+                joinUserDTO.getNickname(),
+                joinUserDTO.getPhone(),
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                joinUserDTO.getRole(),
+                Status.ACTIVE
+        );
         userRepository.save(user); // 맨 마지막에!
         return "success";
 
@@ -55,5 +56,10 @@ public class UserService {
     public LoginUserDTO findByUsername(String username) {
         Optional<User> userOptional = userRepository.findByLoginId(username);
         return userOptional.map(user -> modelMapper.map(user, LoginUserDTO.class)).orElse(null);
+    }
+
+    public String findLoginIdByNameAndPhone(String name, String phone) {
+        Optional<User> lostIdUser = userRepository.findByNameAndPhone(name, phone);
+        return lostIdUser.map(User -> User.getLoginId()).orElse(null);
     }
 }

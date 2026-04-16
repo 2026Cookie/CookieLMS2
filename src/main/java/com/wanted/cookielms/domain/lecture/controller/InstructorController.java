@@ -6,12 +6,13 @@ import com.wanted.cookielms.domain.lecture.service.InstructorService;
 import com.wanted.cookielms.domain.lecture.service.LectureStuService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
@@ -28,6 +29,22 @@ public class InstructorController {
     private final InstructorService instructorService;
     private final LectureStuService lectureStuService;
 
+
+    @GetMapping("/lectures")
+    public String lectureList(
+
+            @PageableDefault(size = 6, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
+            Model model) {
+        Long instructorId = 1L; // TODO: 로그인 연동 후 세션 기반으로 변경 예정"
+        // 서비스에서 Page 객체를 받아옵니다.
+        Page<LectureStuDTO> lectures = instructorService.getMyLectures(instructorId, pageable);
+
+        model.addAttribute("lectures", lectures);
+        model.addAttribute("instructorId", instructorId);
+
+
+        return "instructor/lecture_list";
+    }
     @GetMapping("/main")
     public String main(){
         return "instructor/main";
@@ -39,18 +56,18 @@ public class InstructorController {
         // 이때 DB의 'lecture' 테이블에서 id로 데이터를 한 건 조회합니다.
         LectureStuDTO lecture = lectureStuService.getLectureDetail(id);
 
-        // 친구의 HTML(lecture_detail.html)에서 사용할 수 있도록 모델에 담습니다.
+        // HTML(lecture_detail.html)에서 사용할 수 있도록 모델에 담습니다.
         model.addAttribute("lecture", lecture);
-
-
-        return "role/student/lecture_detail";
+        return "user/lecture_detail";
     }
     /**
      * 강의 등록 페이지 이동
      */
     @GetMapping("/lecture/regist")
-    public String registPage() {
-        return "role/instructor/lecture_regist"; // templates/lectureRegist.html과 매핑
+    public String registPage(Model model) {
+        model.addAttribute("lecture", new LectureInsDTO()); // 빈 바구니를 넣어줘야 에러가 안 납니다!
+        model.addAttribute("isEdit", false);
+        return "instructor/lecture_regist";
     }
 
     /**
@@ -58,24 +75,64 @@ public class InstructorController {
      * [이미지 예시 스타일] 파라미터에서 DTO를 직접 선언하여 수신
      */
     @PostMapping("/lecture/regist")
-    public String registLecture(LectureInsDTO lectureInsDTO, RedirectAttributes redirectAttributes) {
+    public String registLecture(
+            LectureInsDTO lectureInsDTO,
+
+
+            RedirectAttributes redirectAttributes) {
         try {
-            instructorService.registLecture(lectureInsDTO);
+            Long instructorId = 1L;
+            instructorService.registLecture(lectureInsDTO,instructorId);
             log.info("✅ 강의 등록 성공: {}", lectureInsDTO.getTitle());
             // 성공 시 FlashAttribute 사용
             redirectAttributes.addFlashAttribute("message", "✅ 강의 등록이 완료되었습니다!");
-            return "redirect:/instructor/lecture/regist?status=success";
+            return "redirect:/instructor/lectures";
 
         } catch (IllegalArgumentException e) {
-            // 서비스에서 던진 메시지("5MB를 초과합니다..."
+
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/instructor/lecture/regist";
 
         } catch (IOException e) {
             log.error("❌ 파일 저장 에러", e);
             redirectAttributes.addFlashAttribute("errorMessage", "파일 저장 중 오류가 발생했습니다.");
-            return "redirect:/instructor/lecture/regist";
+           //return "redirect:/instructor/lecture/regist";
+           return "redirect:/instructor/lectures?instructorId=1";
         }
 
+
+    }
+
+
+    /**
+     * 1. 수정 페이지로 이동 (GET)
+     */
+    @GetMapping("/lecture/edit/{id}")
+    public String inseditPage(@PathVariable("id") Long id, Model model) {
+
+        LectureInsDTO lecture = instructorService.getLectureForEdit(id);
+
+        model.addAttribute("lecture", lecture);
+        model.addAttribute("isEdit", true);
+        return "role/instructor/lecture_regist";
+    }
+
+    /**
+     * 2. 수정 실행 (POST)
+     */
+    @PostMapping("/lecture/edit/{id}")
+    public String updateLecture(
+            @PathVariable("id") Long id,
+            @ModelAttribute LectureInsDTO lectureInsDTO,
+            RedirectAttributes redirectAttributes) {
+        try {
+            instructorService.updateLecture(id, lectureInsDTO);
+            redirectAttributes.addFlashAttribute("message", "✅ 강의 수정이 완료되었습니다!");
+            return "redirect:/instructor/lecture/detail/" + id;
+        } catch (Exception e) {
+            log.error("❌ 수정 중 오류 발생: ", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "수정 중 오류가 발생했습니다.");
+            return "redirect:/instructor/lecture/edit/" + id;
+        }
     }
 }

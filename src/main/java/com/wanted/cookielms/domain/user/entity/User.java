@@ -11,13 +11,12 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
-@AllArgsConstructor
 @NoArgsConstructor
 @Getter
-@Setter
 @ToString
 @Entity
 @Table(name = "users")
+
 public class User {
 
     @Id
@@ -47,4 +46,20 @@ public class User {
     // userDetails 는 앤티티에 있으면 안된다, 수정 반드시 필요!!
     private Role role;
     private Status status;
+
+    public User(String email, String loginId, String password,
+                String name, String nickname, String phone,
+                LocalDateTime createdAt, LocalDateTime updatedAt,
+                Role role, Status status) {
+        this.email = email;
+        this.loginId = loginId;
+        this.password = password;
+        this.name = name;
+        this.nickname = nickname;
+        this.phone = phone;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.role = role;
+        this.status = status;
+    }
 }

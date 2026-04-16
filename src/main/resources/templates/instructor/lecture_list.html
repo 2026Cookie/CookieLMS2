@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>강의 목록</title>
+</head>
+<body>
+<h2>강사 나의 강의 목록 페이지</h2>
+<p>현재 로그인한 강사님이 등록한 강의 목록입니다.</p>
+
+<div th:each="lecture : ${lectures.content}" style="margin-bottom: 15px;">
+    <p>
+        <span th:text="${lecture.lectureId}">강의번호</span>
+        <span th:text="${lecture.title}" style="font-weight: bold;">강의 제목</span>
+        <button th:onclick="|location.href='@{/instructor/lecture/edit/{id}(id=${lecture.lectureId})}'|">수정하기</button>
+    </p>
+</div>
+<button th:onclick="|location.href='@{/instructor/lecture/regist}'|">새 강의 등록하기</button>
+</body>
+</html>

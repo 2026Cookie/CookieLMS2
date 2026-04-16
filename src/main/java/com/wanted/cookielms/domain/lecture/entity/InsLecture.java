@@ -26,10 +26,13 @@ public class InsLecture {
     @Column(name = "video_url")
     private String videoUrl;
 
-    @Column(name = "material_id") // 친구 컬럼명과 매핑
+    @Column(name = "material_id") // 컬럼명과 매핑
     private String fileSavedName;
 
-    // ⭐ [여기서부터 추가된 필드들입니다!] ⭐
+    @Column(name = "file_origin_name")
+    private String fileOriginName;
+
+
     @Column(name = "max_capacity")
     private Integer maxCapacity;
 
@@ -49,11 +52,11 @@ public class InsLecture {
     private LocalTime endTime;
 
     @Column(name = "user_id")
-    private Long instructorId = 2L; // 친구 테스트용 강사 ID 고정
+    private Long instructorId = 2L; // "// TODO: 로그인 연동 후 세션 기반으로 변경 예정"
 
     @Builder
-    private InsLecture(String title, String description, String videoUrl, String fileSavedName,
-                       Integer maxCapacity, String lectureDay, LocalTime startTime, LocalTime endTime) {
+    private InsLecture(String title, String description, String videoUrl, String fileSavedName, String fileOriginName,
+                       Integer maxCapacity, String lectureDay, LocalTime startTime, LocalTime endTime,Long instructorId) {
         this.title = title;
         this.description = description;
         this.videoUrl = videoUrl;
@@ -65,7 +68,25 @@ public class InsLecture {
         this.endTime = endTime;
         //  기본값 설정
         this.currentEnrollment = 0;
+        this.instructorId = instructorId;
         this.status = "OPEN";
-        this.instructorId = 2L;
+
+    }
+    public void updateInfo(String title, String description, String videoUrl,
+                           Integer maxCapacity, String lectureDay,
+                           java.time.LocalTime startTime, java.time.LocalTime endTime) {
+        this.title = title;
+        this.description = description;
+        this.videoUrl = videoUrl;
+        this.maxCapacity = maxCapacity;
+        this.lectureDay = lectureDay;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
+
+    // 파일 정보 수정 메서드
+    public void updateFileName(String fileOriginName, String fileSavedName) {
+        this.fileOriginName = fileOriginName;
+        this.fileSavedName = fileSavedName;
     }
 }
