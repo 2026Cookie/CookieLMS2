@@ -4,8 +4,8 @@ import com.wanted.cookielms.domain.admin.service.AdminService;
 import com.wanted.cookielms.domain.admin.service.LogService;
 import com.wanted.cookielms.domain.admin.service.ApiPerformanceLog;
 import com.wanted.cookielms.domain.admin.service.UserBanService;
-import com.wanted.cookielms.global.error.model.entity.ErrorSeverity;
-import com.wanted.cookielms.global.error.model.DTO.ErrorLogResponse;
+import com.wanted.cookielms.global.error.model.entity.enums.ErrorSeverity;
+import com.wanted.cookielms.global.error.model.DTO.ErrorLogResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,7 +36,7 @@ public class AdminController {
      * 모든 에러 로그 조회 (페이징)
      */
     @GetMapping("/error-logs")
-    public Page<ErrorLogResponse> getAllErrorLogs(
+    public Page<ErrorLogResponseDTO> getAllErrorLogs(
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return logService.getAllErrorLogs(pageable);
     }
@@ -46,7 +46,7 @@ public class AdminController {
      * 특정 에러 상세 조회 (stackTrace 포함)
      */
     @GetMapping("/error-logs/{id}")
-    public ErrorLogResponse getErrorDetail(@PathVariable Long id) {
+    public ErrorLogResponseDTO getErrorDetail(@PathVariable Long id) {
         return logService.getErrorDetail(id);
     }
 
@@ -56,7 +56,7 @@ public class AdminController {
      * 예: GET /admin/error-logs/trace/a1b2c3d4-e5f6-47g8
      */
     @GetMapping("/error-logs/trace/{traceId}")
-    public List<ErrorLogResponse> getErrorsByTraceId(@PathVariable String traceId) {
+    public List<ErrorLogResponseDTO> getErrorsByTraceId(@PathVariable String traceId) {
         return logService.getErrorsByTraceId(traceId);
     }
 
@@ -66,7 +66,7 @@ public class AdminController {
      * 예: GET /admin/error-logs/severity/CRITICAL?page=0&size=20
      */
     @GetMapping("/error-logs/severity/{severity}")
-    public Page<ErrorLogResponse> getErrorsBySeverity(
+    public Page<ErrorLogResponseDTO> getErrorsBySeverity(
             @PathVariable ErrorSeverity severity,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return logService.getErrorsBySeverity(severity, pageable);
@@ -78,7 +78,7 @@ public class AdminController {
      * 예: GET /admin/error-logs/code/C001
      */
     @GetMapping("/error-logs/code/{code}")
-    public List<ErrorLogResponse> getErrorsByCode(@PathVariable String code) {
+    public List<ErrorLogResponseDTO> getErrorsByCode(@PathVariable String code) {
         return logService.getErrorsByCode(code);
     }
 
@@ -88,7 +88,7 @@ public class AdminController {
      * 예: GET /admin/error-logs/user/admin@test.com
      */
     @GetMapping("/error-logs/user/{userId}")
-    public List<ErrorLogResponse> getErrorsByUserId(@PathVariable String userId) {
+    public List<ErrorLogResponseDTO> getErrorsByUserId(@PathVariable String userId) {
         return logService.getErrorsByUserId(userId);
     }
 
@@ -98,7 +98,7 @@ public class AdminController {
      * 예: GET /admin/error-logs/date-range?startDate=2026-04-01T00:00:00&endDate=2026-04-15T23:59:59&page=0
      */
     @GetMapping("/error-logs/date-range")
-    public Page<ErrorLogResponse> getErrorsByDateRange(
+    public Page<ErrorLogResponseDTO> getErrorsByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -111,7 +111,7 @@ public class AdminController {
      * 예: GET /admin/error-logs/code-date-range?code=C001&startDate=2026-04-01T00:00:00&endDate=2026-04-15T23:59:59
      */
     @GetMapping("/error-logs/code-date-range")
-    public Page<ErrorLogResponse> getErrorsByCodeAndDateRange(
+    public Page<ErrorLogResponseDTO> getErrorsByCodeAndDateRange(
             @RequestParam String code,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
@@ -125,7 +125,7 @@ public class AdminController {
      * 예: GET /admin/error-logs/severity-date-range?severity=CRITICAL&startDate=2026-04-01T00:00:00&endDate=2026-04-15T23:59:59
      */
     @GetMapping("/error-logs/severity-date-range")
-    public Page<ErrorLogResponse> getErrorsBySeverityAndDateRange(
+    public Page<ErrorLogResponseDTO> getErrorsBySeverityAndDateRange(
             @RequestParam ErrorSeverity severity,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,

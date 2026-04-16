@@ -1,7 +1,7 @@
 package com.wanted.cookielms.global.error.model.DTO;
 
-import com.wanted.cookielms.global.error.model.entity.ErrorSeverity;
-import com.wanted.cookielms.global.error.model.entity.ErrorLog;
+import com.wanted.cookielms.global.error.model.entity.enums.ErrorSeverity;
+import com.wanted.cookielms.global.error.model.entity.ErrorLogEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +13,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ErrorLogResponse {
+public class ErrorLogResponseDTO {
+
 
     private Long id;
     private String errorCode;
@@ -32,8 +33,8 @@ public class ErrorLogResponse {
      * ErrorLog 엔티티 → Response DTO 변환
      * (모든 필드 포함)
      */
-    public static ErrorLogResponse from(ErrorLog errorLog) {
-        return ErrorLogResponse.builder()
+    public static ErrorLogResponseDTO from(ErrorLogEntity errorLog) {
+        return ErrorLogResponseDTO.builder()
                 .id(errorLog.getId())
                 .errorCode(errorLog.getErrorCode())
                 .errorMessage(errorLog.getErrorMessage())
@@ -52,8 +53,8 @@ public class ErrorLogResponse {
     /**
      * ErrorLog 엔티티 → Response DTO 변환 (List 조회용, stackTrace 제외)
      */
-    public static ErrorLogResponse fromList(ErrorLog errorLog) {
-        ErrorLogResponse response = from(errorLog);
+    public static ErrorLogResponseDTO fromList(ErrorLogEntity errorLog) {
+        ErrorLogResponseDTO response = from(errorLog);
         response.stackTrace = null;  // stackTrace 제외
         return response;
     }
