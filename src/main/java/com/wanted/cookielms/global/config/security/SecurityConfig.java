@@ -8,6 +8,8 @@ import com.wanted.cookielms.global.config.security.handler.CustomAuthenticationE
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -16,19 +18,31 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor // 💡 추가된 핸들러들을 생성자 주입으로 받습니다.
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
     private final AuthFailureHandler authFailureHandler;
+    private final CustomUserDetailsService customUserDetailsService; // 💡 추가됨
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // 💡 AuthSuccessHandler는 기존처럼 빈으로 관리 (UserService 주입)
+    /**
+     * 💡 AuthenticationProvider 명시적 등록
+     * 서비스와 인코더를 연결하여 ProviderNotFoundException 해결
+     */
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(customUserDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+
     @Bean
     public AuthSuccessHandler authSuccessHandler(UserService userService) {
         return new AuthSuccessHandler(userService);
@@ -46,19 +60,17 @@ public class SecurityConfig {
                                     "/user/joinsuccess",
                                     "/user/find_id",
                                     "/",
-                                    "/error",           // 💡 중요: 에러 페이지 접근 허용
-                                    "/css/**",          // 💡 중요: 에러 페이지 디자인 유지
+                                    "/error",
+                                    "/css/**",
                                     "/js/**",
                                     "/images/**",
                                     "/favicon.ico",
                                     "/user/find_password",
-                                    "/user/reset_password",
-                                    "/user/find_id"
-
+                                    "/user/reset_password"
                             ).permitAll()
                             .requestMatchers("/instructor/**").hasRole("INSTRUCTOR")
-                            .requestMatchers("/user/**").hasRole("USER")
-                            .anyRequest().authenticated(); // 나머지는 인증 필요
+                            .requestMatchers("/student/**").hasRole("USER") // 💡 /user/** 에서 /student/** 로 수정 (컨트롤러 경로 일치)
+                            .anyRequest().authenticated();
                 })
 
                 // 2. 로그인 설정
@@ -67,13 +79,13 @@ public class SecurityConfig {
                     login.usernameParameter("loginId");
                     login.passwordParameter("password");
                     login.successHandler(authSuccessHandler);
-                    login.failureHandler(authFailureHandler); // 💡 고정 Url 대신 커스텀 핸들러 연결
+                    login.failureHandler(authFailureHandler);
                 })
 
-                // 3. 예외 처리 설정 (사각지대 방어)
+                // 3. 예외 처리 설정
                 .exceptionHandling(exception -> {
-                    exception.authenticationEntryPoint(authenticationEntryPoint); // 401 에러
-                    exception.accessDeniedHandler(accessDeniedHandler);           // 403 에러
+                    exception.authenticationEntryPoint(authenticationEntryPoint);
+                    exception.accessDeniedHandler(accessDeniedHandler);
                 })
 
                 // 4. 로그아웃 설정

@@ -63,14 +63,21 @@ public class AuthFailureHandler extends SimpleUrlAuthenticationFailureHandler {
     }
 
     private String determineErrorMessage(AuthenticationException exception) {
+        // 💡 실제 어떤 예외인지 콘솔에 찍어서 확인합니다.
+        log.error("로그인 실패 상세 원인 (Exception): {}", exception.getClass().getName());
+        log.error("로그인 실패 메시지 (Message): {}", exception.getMessage());
+        if (exception.getCause() != null) {
+            log.error("Root Cause: {}", exception.getCause().getMessage());
+        }
+
         if (exception instanceof BadCredentialsException) {
             return "아이디 또는 비밀번호가 일치하지 않습니다.";
         } else if (exception instanceof InternalAuthenticationServiceException) {
-            return "내부 시스템 문제로 인해 요청을 처리할 수 없습니다. 관리자에게 문의하세요.";
+            return "내부 시스템 문제로 인해 요청을 처리할 수 없습니다.";
         } else if (exception instanceof UsernameNotFoundException) {
             return "존재하지 않는 계정입니다.";
         }
-        return "알 수 없는 이유로 로그인에 실패하였습니다.";
+        return "알 수 없는 이유로 로그인에 실패하였습니다. (에러타입: " + exception.getClass().getSimpleName() + ")";
     }
 
     private String getClientIp(HttpServletRequest request) {

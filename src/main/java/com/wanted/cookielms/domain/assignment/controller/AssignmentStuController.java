@@ -2,6 +2,7 @@ package com.wanted.cookielms.domain.assignment.controller;
 
 import com.wanted.cookielms.domain.assignment.service.AssignmentStuService;
 import com.wanted.cookielms.domain.auth.dto.AuthDetails;
+import com.wanted.cookielms.global.config.security.aop.OwnershipVerification; // import 추가
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -20,34 +21,24 @@ public class AssignmentStuController {
     private final AssignmentStuService assignmentStuService;
 
     @GetMapping("/{assignmentId}")
+    @OwnershipVerification(resourceType = "ASSIGNMENT") // 💡 소유권 검증 추가
     public String showAssignmentForm(@PathVariable Long assignmentId, Model model, RedirectAttributes redirectAttributes) {
-        try {
-            model.addAttribute("assignment", assignmentStuService.getAssignment(assignmentId));
-            return "user/assignment_submit";
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/student/lectures/" + assignmentId;
-        }
+        model.addAttribute("assignment", assignmentStuService.getAssignment(assignmentId));
+        return "user/assignment_submit";
     }
 
     @PostMapping("/{assignmentId}/submit")
+    @OwnershipVerification(resourceType = "ASSIGNMENT") // 💡 제출 전 소유권 검증 추가
     public String submitAssignment(@PathVariable Long assignmentId,
                                    @RequestParam("uploadFile") MultipartFile file,
                                    Authentication authentication,
                                    RedirectAttributes redirectAttributes) {
-        if (authentication == null) return "redirect:/user/login";
+        AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
+        Long realStudentId = authDetails.getLoginUserDTO().getUserId();
 
-        try {
-            AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
-            Long realStudentId = authDetails.getLoginUserDTO().getUserId();
-
-            assignmentStuService.submitAssignment(assignmentId, realStudentId, file);
-            redirectAttributes.addFlashAttribute("message", "과제가 성공적으로 제출되었습니다!");
-            return "redirect:/student/assignments/" + assignmentId + "/success";
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/student/assignments/" + assignmentId;
-        }
+        assignmentStuService.submitAssignment(assignmentId, realStudentId, file);
+        redirectAttributes.addFlashAttribute("message", "과제가 성공적으로 제출되었습니다!");
+        return "redirect:/student/assignments/" + assignmentId + "/success";
     }
 
     @GetMapping("/{assignmentId}/success")
