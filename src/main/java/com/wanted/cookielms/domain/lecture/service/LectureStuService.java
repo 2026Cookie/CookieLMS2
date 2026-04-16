@@ -1,5 +1,6 @@
 package com.wanted.cookielms.domain.lecture.service;
 
+import com.wanted.cookielms.domain.enrollment.repository.EnrollmentRepository;
 import com.wanted.cookielms.domain.lecture.dto.LectureStuDTO;
 import com.wanted.cookielms.domain.lecture.entity.LectureStuEntity;
 import com.wanted.cookielms.domain.lecture.repository.LectureStuRepository;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class LectureStuService {
 
     private final LectureStuRepository lectureStuRepository;
+    private final EnrollmentRepository enrollmentRepository;
     private final ModelMapper modelMapper;
 
     public Page<LectureStuDTO> getAllLectures(String keyword, Pageable pageable) {
@@ -28,53 +30,51 @@ public class LectureStuService {
         return lectures.map(entity -> modelMapper.map(entity, LectureStuDTO.class));
     }
 
-    public LectureStuDTO getLectureDetail(Long lectureId) {
+    // 학생용 상세 조회 (수강생/강사 여부 체크 포함)
+    public LectureStuDTO getLectureDetail(Long lectureId, Long userId) {
         LectureStuEntity entity = lectureStuRepository.findById(lectureId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 강의를 찾을 수 없습니다. ID: " + lectureId));
 
         LectureStuDTO dto = modelMapper.map(entity, LectureStuDTO.class);
 
-        if (entity.getInstructorId() == 2L) {
-            dto.setEnrolled(true);
-        } else {
-            dto.setEnrolled(false);
-        }
+        boolean isEnrolled = enrollmentRepository.existsByUserIdAndLectureIdAndStatus(userId, lectureId, "ENROLLED");
+        boolean isInstructor = entity.getInstructorId().equals(userId);
+
+        // 🌟 바뀐 이름으로 Setter 호출!
+        dto.setUserEnrolled(isEnrolled);
+        dto.setUserInstructor(isInstructor);
 
         return dto;
     }
 
-    // 영상 URL 조회 (권한 체크 포함)
-    public String getVideoUrl(Long lectureId) {
+    // 강사 컨트롤러 에러 방지를 위한 오버로딩 메서드
+    public LectureStuDTO getLectureDetail(Long lectureId) {
+        return getLectureDetail(lectureId, -1L);
+    }
+
+    public String getVideoUrl(Long lectureId, Long userId) {
         LectureStuEntity entity = lectureStuRepository.findById(lectureId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 강의를 찾을 수 없습니다."));
 
-        // [임시 권한 체크] 나중에 팀원 코드가 오면 SecurityContext에서 유저를 꺼내 Enrollment 테이블을 검증합니다.
-        // 이 로직이 추후 @PreAuthorize("hasRole('USER') and @enrollmentCheck.isEnrolled(#lectureId)") 같은 AOP로 대체됩니다.
-        boolean isEnrolled = (entity.getInstructorId() == 2L);
+        boolean isEnrolled = enrollmentRepository.existsByUserIdAndLectureIdAndStatus(userId, lectureId, "ENROLLED");
+        boolean isInstructor = entity.getInstructorId().equals(userId);
 
-        if (!isEnrolled) {
-            throw new SecurityException("수강생만 강의 영상을 재생할 수 있습니다.");
+        if (!isEnrolled && !isInstructor) {
+            throw new SecurityException("수강생 또는 담당 강사만 강의 영상을 재생할 수 있습니다.");
         }
-
         return entity.getVideoUrl();
     }
 
-    // 학습 자료 다운로드 (권한 체크 포함)
-    public String getMaterialId(Long lectureId) {
+    public String getMaterialId(Long lectureId, Long userId) {
         LectureStuEntity entity = lectureStuRepository.findById(lectureId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 강의를 찾을 수 없습니다."));
 
-        // [임시 권한 체크] 이 부분 역시 나중에 AOP나 시큐리티로 교체됩니다.
-        boolean isEnrolled = (entity.getInstructorId() == 2L);
+        boolean isEnrolled = enrollmentRepository.existsByUserIdAndLectureIdAndStatus(userId, lectureId, "ENROLLED");
+        boolean isInstructor = entity.getInstructorId().equals(userId);
 
-        if (!isEnrolled) {
-            throw new SecurityException("수강생만 학습 자료를 다운로드할 수 있습니다.");
+        if (!isEnrolled && !isInstructor) {
+            throw new SecurityException("수강생 또는 담당 강사만 학습 자료를 다운로드할 수 있습니다.");
         }
-
-        if (entity.getMaterialId() == null || entity.getMaterialId().isEmpty()) {
-            throw new IllegalArgumentException("등록된 학습 자료가 없습니다.");
-        }
-
         return entity.getMaterialId();
     }
 }
