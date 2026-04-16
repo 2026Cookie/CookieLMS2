@@ -18,4 +18,10 @@ public class LoginUserDTO {
     private String name;
     private Role role;
 
+    // 마이페이지용 필드 추가
+    private String email;
+    private String nickname;
+    private String phone;
+
+
 }

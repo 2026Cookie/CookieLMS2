@@ -57,7 +57,9 @@ public class SecurityConfig {
 
                             ).permitAll()
                             .requestMatchers("/instructor/**").hasRole("INSTRUCTOR")
+                            .requestMatchers("/user/mypage/**", "/user/mypage", "/user/verify-password").hasAnyRole("USER", "INSTRUCTOR")
                             .requestMatchers("/user/**").hasRole("USER")
+
                             .anyRequest().authenticated(); // 나머지는 인증 필요
                 })
 
