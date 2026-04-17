@@ -1,20 +1,12 @@
 package com.wanted.cookielms.domain.admin.controller;
 
-import com.wanted.cookielms.domain.admin.dto.ApiMetricsDto;
 import com.wanted.cookielms.domain.admin.service.AdminService;
 import com.wanted.cookielms.domain.admin.service.ApiPerformanceLogService;
-import com.wanted.cookielms.global.error.model.entity.enums.ErrorSeverity;
-import com.wanted.cookielms.global.error.model.DTO.ErrorLogResponseDTO;
+import com.wanted.cookielms.domain.admin.service.ErrorLogQueryService;
+import com.wanted.cookielms.domain.admin.service.BusinessServiceLogQueryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.List;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/admin")
@@ -23,6 +15,8 @@ public class AdminController {
 
     private final AdminService adminService;
     private final ApiPerformanceLogService apiPerformanceLogService;
+    private final ErrorLogQueryService errorLogQueryService;
+    private final BusinessServiceLogQueryService businessServiceLogQueryService;
 
-
+    // 대시보드 엔드포인트는 나중에 구현
 }

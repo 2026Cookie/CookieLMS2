@@ -16,7 +16,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ErrorLogService {
+public class ErrorLogQueryService {
 
     private final ErrorLogRepository errorLogRepository;
 
