@@ -2,68 +2,123 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>과제 제출</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>과제 제출 - Cookiego</title>
+    <style>
+        :root {
+            --parchment: #edede9; --dust-grey: #d6ccc2; --linen: #f5ebe0;
+            --powder-petal: #e3d5ca; --almond-silk: #d5bdaf;
+            --text-primary: #2c2010; --text-secondary: #5c4a3a;
+            --text-muted: #8b7355; --text-on-dark: #f5ebe0;
+            --btn-dark: #4a3728; --btn-dark-hover: #2c2010;
+            --error: #7a3020; --shadow: rgba(44,32,16,0.10);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--parchment); color: var(--text-primary);
+            min-height: 100vh; display: flex; justify-content: center;
+            align-items: flex-start; padding: 40px 20px;
+        }
+        .card {
+            background: var(--linen); border: 1px solid var(--dust-grey);
+            border-radius: 16px; box-shadow: 0 4px 24px var(--shadow);
+            padding: 48px 40px; width: 100%; max-width: 500px;
+        }
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 8px 16px; background: transparent; border: 1.5px solid var(--almond-silk);
+            border-radius: 7px; font-size: 13px; color: var(--text-secondary);
+            cursor: pointer; margin-bottom: 28px; transition: all 0.2s;
+        }
+        .back-btn:hover { background: var(--powder-petal); }
+        h2 { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
+        .info-box {
+            background: var(--parchment); border: 1px solid var(--dust-grey);
+            border-radius: 10px; padding: 16px 18px; margin-bottom: 24px;
+        }
+        .info-row { display: flex; gap: 8px; font-size: 14px; margin-bottom: 6px; }
+        .info-row:last-child { margin-bottom: 0; }
+        .info-label { color: var(--text-muted); font-weight: 600; width: 70px; flex-shrink: 0; }
+        .info-value { color: var(--text-primary); }
+        .msg-error-box { background: #f9ede9; border: 1px solid #e8c8c0; color: var(--error); border-radius: 8px; padding: 12px 14px; font-size: 14px; margin-bottom: 20px; }
+        .deadline-warn {
+            background: #f9ede9; border: 1px solid #e8c8c0; color: var(--error);
+            border-radius: 8px; padding: 12px 14px; font-size: 14px;
+            font-weight: 600; margin-bottom: 20px;
+        }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+        input[type="file"] {
+            width: 100%; padding: 10px 14px; border: 1px solid var(--dust-grey);
+            border-radius: 8px; background: var(--parchment); color: var(--text-primary);
+            font-size: 14px; outline: none;
+        }
+        .progress-box { background: var(--powder-petal); border-radius: 8px; padding: 12px 16px; font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; }
+        .btn-row { display: flex; gap: 10px; margin-top: 8px; }
+        .btn {
+            flex: 1; padding: 13px; border-radius: 8px; font-size: 15px;
+            font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;
+        }
+        .btn-primary { background: var(--btn-dark); color: var(--text-on-dark); }
+        .btn-primary:hover { background: var(--btn-dark-hover); }
+        .btn-primary:disabled { background: var(--dust-grey); cursor: not-allowed; }
+        .btn-secondary { background: var(--almond-silk); color: var(--text-primary); }
+        .btn-secondary:hover { background: var(--powder-petal); }
+    </style>
 </head>
 <body>
-
-<div th:if="${errorMessage}" style="color: red;">
-    <strong>오류 발생:</strong> <span th:text="${errorMessage}"></span>
-</div>
-
-<div>
+<div class="card">
+    <button type="button" class="back-btn" onclick="history.back()">← 뒤로 가기</button>
     <h2>과제 제출</h2>
-    <p>과제명: <span th:text="${assignment.title}"></span></p>
-    <p>마감 기한: <span th:text="${#temporals.format(assignment.dueDate, 'yyyy-MM-dd HH:mm')}"></span></p>
-</div>
 
-<form id="uploadForm" th:action="@{|/student/assignments/${assignment.assignmentId}/submit|}" method="post"
-      enctype="multipart/form-data" onsubmit="return showProgress(event)">
-
-    <div>
-        <label for="uploadFile">첨부 파일 (PDF만 가능, 최대 5MB):</label>
-        <input type="file" id="uploadFile" name="uploadFile" accept=".pdf" required
-               th:disabled="${assignment.dueDate != null and assignment.dueDate.isBefore(#temporals.createNow())}"
-               th:style="${assignment.dueDate != null and assignment.dueDate.isBefore(#temporals.createNow()) ? 'cursor: not-allowed;' : ''}">
+    <div class="msg-error-box" th:if="${errorMessage}">
+        <strong>오류:</strong> <span th:text="${errorMessage}"></span>
     </div>
 
-    <div id="progressContainer" style="display: none;">
-        <p>업로드 진행 중... <span id="progressText">0%</span></p>
+    <div class="info-box">
+        <div class="info-row">
+            <span class="info-label">과제명</span>
+            <span class="info-value" th:text="${assignment.title}"></span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">마감 기한</span>
+            <span class="info-value" th:text="${#temporals.format(assignment.dueDate, 'yyyy-MM-dd HH:mm')}"></span>
+        </div>
     </div>
 
-    <br>
-    <div th:if="${assignment.dueDate != null and assignment.dueDate.isBefore(#temporals.createNow())}"
-         style="color: red; margin-bottom: 10px; font-weight: bold;">
+    <div class="deadline-warn"
+         th:if="${assignment.dueDate != null and assignment.dueDate.isBefore(#temporals.createNow())}">
         ⏳ 마감 기한이 지나 더 이상 제출할 수 없습니다.
     </div>
 
-    <button type="submit"
-            th:disabled="${assignment.dueDate != null and assignment.dueDate.isBefore(#temporals.createNow())}"
-            th:style="${assignment.dueDate != null and assignment.dueDate.isBefore(#temporals.createNow()) ? 'background-color: #cccccc; cursor: not-allowed;' : ''}">
-        제출하기
-    </button>
-    <button type="button" onclick="history.back()">뒤로 가기</button>
-</form>
+    <form id="uploadForm"
+          th:action="@{|/student/assignments/${assignment.assignmentId}/submit|}"
+          method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label>첨부 파일 (PDF만 가능, 최대 5MB)</label>
+            <input type="file" id="uploadFile" name="uploadFile" accept=".pdf" required
+                   th:disabled="${assignment.dueDate != null and assignment.dueDate.isBefore(#temporals.createNow())}">
+        </div>
 
+        <div id="progressContainer" class="progress-box" style="display:none;">
+            업로드 진행 중... <span id="progressText">0%</span>
+        </div>
+
+        <div class="btn-row">
+            <button type="submit" class="btn btn-primary"
+                    th:disabled="${assignment.dueDate != null and assignment.dueDate.isBefore(#temporals.createNow())}">
+                제출하기
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="history.back()">취소</button>
+        </div>
+    </form>
+</div>
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // 파일 입력(input) 칸을 찾습니다. (ID가 uploadFile이라고 가정)
-        const fileInput = document.getElementById('uploadFile');
-
-        if (fileInput) {
-            // 파일이 선택될 때(change)마다 이 함수를 실행합니다.
-            fileInput.addEventListener('change', function () {
-                const maxSize = 5 * 1024 * 1024; // 5MB를 바이트(Byte) 단위로 계산
-
-                // 사용자가 파일을 선택했다면 용량을 검사합니다.
-                if (this.files && this.files[0]) {
-                    const fileSize = this.files[0].size;
-
-                    if (fileSize > maxSize) {
-                        alert("❌ 5MB를 초과합니다. 5MB 이하의 파일을 업로드 해주세요.");
-                        this.value = '';
-                    }
-                }
-            });
+    document.getElementById('uploadFile')?.addEventListener('change', function() {
+        if (this.files?.[0]?.size > 5 * 1024 * 1024) {
+            alert('5MB를 초과합니다. 5MB 이하의 파일을 업로드해 주세요.');
+            this.value = '';
         }
     });
 </script>

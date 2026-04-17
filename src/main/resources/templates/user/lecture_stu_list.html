@@ -2,90 +2,128 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>강의 목록</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전체 강의 목록 - Cookiego</title>
+    <style>
+        :root {
+            --parchment: #edede9; --dust-grey: #d6ccc2; --linen: #f5ebe0;
+            --powder-petal: #e3d5ca; --almond-silk: #d5bdaf;
+            --text-primary: #2c2010; --text-secondary: #5c4a3a;
+            --text-muted: #8b7355; --text-on-dark: #f5ebe0;
+            --btn-dark: #4a3728; --btn-dark-hover: #2c2010;
+            --shadow: rgba(44,32,16,0.10);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--parchment); color: var(--text-primary); min-height: 100vh; }
+        header {
+            background: var(--linen); border-bottom: 1px solid var(--dust-grey);
+            padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .logo { font-size: 18px; font-weight: 700; }
+        .back-link { font-size: 14px; color: var(--text-secondary); text-decoration: none; }
+        .back-link:hover { color: var(--text-primary); }
+        .main { max-width: 1040px; margin: 0 auto; padding: 40px 24px; }
+        .page-title { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
+        .search-bar { display: flex; gap: 10px; margin-bottom: 32px; }
+        .search-input {
+            flex: 1; padding: 11px 16px; border: 1px solid var(--dust-grey);
+            border-radius: 8px; background: var(--linen); color: var(--text-primary);
+            font-size: 15px; outline: none; transition: border-color 0.2s;
+        }
+        .search-input:focus { border-color: var(--almond-silk); background: #fff; }
+        .search-btn {
+            padding: 11px 22px; background: var(--btn-dark); color: var(--text-on-dark);
+            border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .search-btn:hover { background: var(--btn-dark-hover); }
+        .lecture-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+        .lecture-card {
+            background: var(--linen); border: 1px solid var(--dust-grey);
+            border-radius: 12px; overflow: hidden; cursor: pointer;
+            box-shadow: 0 2px 10px var(--shadow); transition: all 0.2s;
+        }
+        .lecture-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px var(--shadow); border-color: var(--almond-silk); }
+        .thumbnail {
+            height: 130px; background: var(--powder-petal);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; color: var(--text-muted);
+        }
+        .thumbnail img { width: 100%; height: 100%; object-fit: cover; }
+        .card-body { padding: 16px; }
+        .card-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; line-height: 1.4; }
+        .card-info { font-size: 13px; color: var(--text-muted); line-height: 1.7; }
+        .empty { grid-column: span 3; text-align: center; padding: 60px 0; color: var(--text-muted); font-size: 15px; }
+        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 40px; }
+        .page-btn {
+            padding: 8px 14px; border: 1px solid var(--dust-grey); background: var(--linen);
+            color: var(--text-secondary); border-radius: 6px; cursor: pointer; font-size: 14px;
+            font-weight: 600; transition: all 0.2s;
+        }
+        .page-btn.active { background: var(--btn-dark); color: var(--text-on-dark); border-color: var(--btn-dark); }
+        .page-btn:hover:not(.active) { background: var(--powder-petal); }
+        @media (max-width: 720px) { .lecture-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 480px) { .lecture-grid { grid-template-columns: 1fr; } }
+    </style>
 </head>
 <body>
+<header>
+    <div class="logo">Cookiego</div>
+    <a href="/user/main" class="back-link">← 메인으로</a>
+</header>
 
-<h1>전체 강의 목록</h1>
-
-<div>
-    <input type="text" id="searchInput" placeholder="강의 제목을 검색해보세요!" onkeyup="if(event.keyCode===13) searchLectures()">
-    <button onclick="searchLectures()">검색</button>
+<div class="main">
+    <div class="page-title">전체 강의 목록</div>
+    <div class="search-bar">
+        <input type="text" id="searchInput" class="search-input" placeholder="강의 제목을 검색해보세요" onkeyup="if(event.keyCode===13) searchLectures()">
+        <button class="search-btn" onclick="searchLectures()">검색</button>
+    </div>
+    <div class="lecture-grid" id="lectureList"></div>
+    <div id="pagination" class="pagination"></div>
 </div>
-
-<hr>
-
-<div id="lectureList"></div>
-
-<br>
-
-<div id="pagination"></div>
 
 <script>
     loadLectures('', 0);
 
-    function searchLectures() {
-        const keyword = document.getElementById('searchInput').value;
-        loadLectures(keyword, 0);
-    }
+    function searchLectures() { loadLectures(document.getElementById('searchInput').value, 0); }
 
     function loadLectures(keyword, page) {
         let url = `/lectures?page=${page}&size=6`;
-        if (keyword) {
-            url += `&keyword=${encodeURIComponent(keyword)}`;
-        }
-
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                const lectureListDiv = document.getElementById('lectureList');
-                lectureListDiv.innerHTML = '';
-
-                const lectures = data.content;
-
-                if(lectures.length === 0) {
-                    lectureListDiv.innerHTML = '<p>강의가 없습니다.</p>';
-                    document.getElementById('pagination').innerHTML = '';
-                    return;
-                }
-
-                // 카드 그리기
-                lectures.forEach(lecture => {
-                    const cardHtml = `
-                        <div onclick="location.href='/student/lectures/${lecture.lectureId}'" style="border: 1px solid black; margin: 10px; padding: 10px; cursor: pointer;">
-                            <div>
-                                ${lecture.thumbnail ? `<img src="/images/${lecture.thumbnail}" alt="썸네일" width="150">` : `썸네일 없음`}
-                            </div>
-                            <h3>${lecture.title}</h3>
-                            <div>
-                                강사 ID: ${lecture.instructorId} <br>
-                                수강 인원: ${lecture.currentEnrollment} / ${lecture.maxCapacity} 명
+        if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+        fetch(url).then(r => r.json()).then(data => {
+            const grid = document.getElementById('lectureList');
+            grid.innerHTML = '';
+            if (!data.content.length) { grid.innerHTML = '<div class="empty">강의가 없습니다.</div>'; document.getElementById('pagination').innerHTML = ''; return; }
+            data.content.forEach(l => {
+                const thumb = l.thumbnail
+                    ? `<img src="/images/${l.thumbnail}" alt="썸네일">`
+                    : '썸네일 없음';
+                grid.innerHTML += `
+                    <div class="lecture-card" onclick="location.href='/student/lectures/${l.lectureId}'">
+                        <div class="thumbnail">${thumb}</div>
+                        <div class="card-body">
+                            <div class="card-title">${l.title}</div>
+                            <div class="card-info">
+                                강사 ID: ${l.instructorId}<br>
+                                수강 인원: ${l.currentEnrollment} / ${l.maxCapacity} 명
                             </div>
                         </div>
-                    `;
-                    lectureListDiv.innerHTML += cardHtml;
-                });
-
-                renderPagination(data.totalPages, data.number, keyword);
-            })
-            .catch(error => console.error('에러 발생:', error));
+                    </div>`;
+            });
+            renderPagination(data.totalPages, data.number, keyword);
+        }).catch(e => console.error(e));
     }
 
-    function renderPagination(totalPages, currentPage, keyword) {
-        const paginationDiv = document.getElementById('pagination');
-        paginationDiv.innerHTML = '';
-
-        if (totalPages <= 1) return;
-
-        for (let i = 0; i < totalPages; i++) {
-            const btn = document.createElement('button');
-            btn.innerText = i + 1;
-
-            if (i === currentPage) {
-                btn.style.fontWeight = 'bold';
-            }
-            btn.onclick = () => loadLectures(keyword, i);
-            paginationDiv.appendChild(btn);
+    function renderPagination(total, cur, keyword) {
+        const div = document.getElementById('pagination');
+        div.innerHTML = '';
+        if (total <= 1) return;
+        for (let i = 0; i < total; i++) {
+            const b = document.createElement('button');
+            b.innerText = i + 1;
+            b.className = 'page-btn' + (i === cur ? ' active' : '');
+            b.onclick = () => loadLectures(keyword, i);
+            div.appendChild(b);
         }
     }
 </script>

@@ -1,475 +1,179 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>관리자 대시보드</title>
+    <title>관리자 대시보드 - Cookiego</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --parchment: #edede9; --dust-grey: #d6ccc2; --linen: #f5ebe0;
+            --powder-petal: #e3d5ca; --almond-silk: #d5bdaf;
+            --text-primary: #2c2010; --text-secondary: #5c4a3a;
+            --text-muted: #8b7355; --text-on-dark: #f5ebe0;
+            --btn-dark: #4a3728; --btn-dark-hover: #2c2010;
+            --error: #7a3020; --success: #3a6a50; --warning: #7a5c20;
+            --shadow: rgba(44,32,16,0.10);
         }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--parchment); color: var(--text-primary); min-height: 100vh; }
+        header {
+            background: var(--btn-dark); color: var(--text-on-dark);
+            padding: 18px 32px; display: flex; align-items: center; justify-content: space-between;
         }
-
-        .header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
+        .header-left h1 { font-size: 20px; font-weight: 700; }
+        .header-left p { font-size: 13px; opacity: 0.7; margin-top: 2px; }
+        .main { max-width: 1360px; margin: 0 auto; padding: 32px 24px; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px; }
         .widget {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            padding: 20px;
-            transition: box-shadow 0.3s ease;
+            background: var(--linen); border: 1px solid var(--dust-grey);
+            border-radius: 12px; box-shadow: 0 2px 12px var(--shadow);
+            overflow: hidden; transition: box-shadow 0.2s;
         }
-
-        .widget:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
+        .widget:hover { box-shadow: 0 4px 20px var(--shadow); }
         .widget-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #ecf0f1;
-            padding-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 18px; background: var(--powder-petal);
+            border-bottom: 1px solid var(--dust-grey);
         }
-
-        .widget-header h2 {
-            font-size: 18px;
-            color: #2c3e50;
-        }
-
+        .widget-header h2 { font-size: 15px; font-weight: 700; color: var(--text-primary); }
         .widget-header button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: background-color 0.2s;
+            padding: 6px 14px; background: var(--btn-dark); color: var(--text-on-dark);
+            border: none; border-radius: 6px; font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: background 0.2s;
         }
-
-        .widget-header button:hover {
-            background-color: #2980b9;
-        }
-
-        .widget-content {
-            min-height: 200px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .loading {
-            text-align: center;
-            color: #95a5a6;
-            padding: 40px;
-            font-size: 14px;
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-
+        .widget-header button:hover { background: var(--btn-dark-hover); }
+        .widget-content { min-height: 200px; max-height: 380px; overflow-y: auto; padding: 4px 0; }
+        .loading { text-align: center; color: var(--text-muted); padding: 40px; font-size: 14px; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .data-table th {
-            background-color: #ecf0f1;
-            padding: 10px;
-            text-align: left;
-            border-bottom: 2px solid #bdc3c7;
+            background: var(--parchment); padding: 10px 14px; text-align: left;
+            font-size: 12px; font-weight: 700; color: var(--text-muted);
+            border-bottom: 1px solid var(--dust-grey); text-transform: uppercase; letter-spacing: 0.3px;
         }
-
-        .data-table td {
-            padding: 10px;
-            border-bottom: 1px solid #ecf0f1;
-        }
-
-        .data-table tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        .error-message {
-            color: #e74c3c;
-            padding: 10px;
-            background-color: #fadbd8;
-            border-radius: 4px;
-            margin: 10px 0;
-        }
-
-        .success-message {
-            color: #27ae60;
-            padding: 10px;
-            background-color: #d5f4e6;
-            border-radius: 4px;
-            margin: 10px 0;
-        }
-
-        .info-box {
-            background-color: #ecf0f1;
-            padding: 15px;
-            border-left: 4px solid #3498db;
-            border-radius: 4px;
-            margin: 10px 0;
-        }
-
+        .data-table td { padding: 10px 14px; border-bottom: 1px solid var(--dust-grey); color: var(--text-primary); }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: var(--powder-petal); }
         .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: bold;
-            margin: 2px 2px;
+            display: inline-block; padding: 3px 8px; border-radius: 10px;
+            font-size: 11px; font-weight: 700;
         }
-
-        .badge-danger {
-            background-color: #e74c3c;
-            color: white;
-        }
-
-        .badge-warning {
-            background-color: #f39c12;
-            color: white;
-        }
-
-        .badge-success {
-            background-color: #27ae60;
-            color: white;
-        }
-
-        .badge-info {
-            background-color: #3498db;
-            color: white;
-        }
-
-        .metric-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2c3e50;
-            margin: 10px 0;
-        }
-
-        .metric-label {
-            font-size: 12px;
-            color: #95a5a6;
-            text-transform: uppercase;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: background-color 0.2s;
-        }
-
-        .btn-primary {
-            background-color: #3498db;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #2980b9;
-        }
-
-        .btn-secondary {
-            background-color: #95a5a6;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background-color: #7f8c8d;
-        }
-
-        .btn-danger {
-            background-color: #e74c3c;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background-color: #c0392b;
-        }
-
-        @media (max-width: 768px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .header h1 {
-                font-size: 20px;
-            }
-        }
+        .badge-danger { background: #f9ede9; color: var(--error); }
+        .badge-warning { background: #f9f0e0; color: var(--warning); }
+        .badge-success { background: #eaf2ed; color: var(--success); }
+        .badge-info { background: var(--powder-petal); color: var(--text-secondary); }
+        .msg-error { color: var(--error); background: #f9ede9; border: 1px solid #e8c8c0; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin: 12px; }
+        .info-box { background: var(--powder-petal); border-left: 3px solid var(--almond-silk); border-radius: 6px; padding: 12px 16px; font-size: 13px; color: var(--text-secondary); margin: 12px; }
+        .section-title { font-size: 12px; font-weight: 700; color: var(--text-muted); padding: 12px 14px 6px; text-transform: uppercase; letter-spacing: 0.3px; }
+        @media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🔐 관리자 대시보드</h1>
+<header>
+    <div class="header-left">
+        <h1>관리자 대시보드</h1>
         <p>시스템 모니터링 및 관리 센터</p>
     </div>
+</header>
 
-    <div class="container">
-        <div class="dashboard-grid">
-            <!-- 위험 로그 조회 -->
-            <div class="widget">
-                <div class="widget-header">
-                    <h2>⚠️ 위험 로그</h2>
-                    <button onclick="loadDangerList()">새로고침</button>
-                </div>
-                <div class="widget-content" id="dangerListContent">
-                    <div class="loading">데이터를 불러오는 중...</div>
-                </div>
+<div class="main">
+    <div class="dashboard-grid">
+        <div class="widget">
+            <div class="widget-header">
+                <h2>⚠️ 위험 로그</h2>
+                <button onclick="loadDangerList()">새로고침</button>
             </div>
+            <div class="widget-content" id="dangerListContent"><div class="loading">데이터를 불러오는 중...</div></div>
+        </div>
 
-            <!-- 전체 로그 조회 -->
-            <div class="widget">
-                <div class="widget-header">
-                    <h2>📋 전체 로그</h2>
-                    <button onclick="loadLogs()">새로고침</button>
-                </div>
-                <div class="widget-content" id="logsContent">
-                    <div class="loading">데이터를 불러오는 중...</div>
-                </div>
+        <div class="widget">
+            <div class="widget-header">
+                <h2>📋 전체 로그</h2>
+                <button onclick="loadLogs()">새로고침</button>
             </div>
+            <div class="widget-content" id="logsContent"><div class="loading">데이터를 불러오는 중...</div></div>
+        </div>
 
-            <!-- 회원 관리 -->
-            <div class="widget">
-                <div class="widget-header">
-                    <h2>👥 회원 관리</h2>
-                    <button onclick="loadUsers()">새로고침</button>
-                </div>
-                <div class="widget-content" id="usersContent">
-                    <div class="loading">데이터를 불러오는 중...</div>
-                </div>
+        <div class="widget">
+            <div class="widget-header">
+                <h2>👥 회원 관리</h2>
+                <button onclick="loadUsers()">새로고침</button>
             </div>
+            <div class="widget-content" id="usersContent"><div class="loading">데이터를 불러오는 중...</div></div>
+        </div>
 
-            <!-- 승인요청 강사 조회 -->
-            <div class="widget">
-                <div class="widget-header">
-                    <h2>👨‍🏫 강사 승인요청</h2>
-                    <button onclick="loadInstructorApplications()">새로고침</button>
-                </div>
-                <div class="widget-content" id="instructorApplicationsContent">
-                    <div class="loading">데이터를 불러오는 중...</div>
-                </div>
+        <div class="widget">
+            <div class="widget-header">
+                <h2>👨‍🏫 강사 승인요청</h2>
+                <button onclick="loadInstructorApplications()">새로고침</button>
             </div>
+            <div class="widget-content" id="instructorApplicationsContent"><div class="loading">데이터를 불러오는 중...</div></div>
+        </div>
 
-            <!-- 최근 벤 내역 -->
-            <div class="widget">
-                <div class="widget-header">
-                    <h2>🚫 최근 벤 내역</h2>
-                    <button onclick="loadRecentBans()">새로고침</button>
-                </div>
-                <div class="widget-content" id="recentBansContent">
-                    <div class="loading">데이터를 불러오는 중...</div>
-                </div>
+        <div class="widget">
+            <div class="widget-header">
+                <h2>🚫 최근 벤 내역</h2>
+                <button onclick="loadRecentBans()">새로고침</button>
             </div>
+            <div class="widget-content" id="recentBansContent"><div class="loading">데이터를 불러오는 중...</div></div>
+        </div>
 
-            <!-- 트랜잭션 속도 조회 -->
-            <div class="widget">
-                <div class="widget-header">
-                    <h2>⚡ 성능 메트릭</h2>
-                    <button onclick="loadMetrics()">새로고침</button>
-                </div>
-                <div class="widget-content" id="metricsContent">
-                    <div class="loading">데이터를 불러오는 중...</div>
-                </div>
+        <div class="widget">
+            <div class="widget-header">
+                <h2>⚡ 성능 메트릭</h2>
+                <button onclick="loadMetrics()">새로고침</button>
             </div>
+            <div class="widget-content" id="metricsContent"><div class="loading">데이터를 불러오는 중...</div></div>
         </div>
     </div>
+</div>
 
-    <script>
-        // API 호출 함수들
-        function loadDangerList() {
-            const content = document.getElementById('dangerListContent');
-            content.innerHTML = '<div class="loading">데이터를 불러오는 중...</div>';
+<script>
+    function fetchWidget(url, contentId, onSuccess) {
+        const el = document.getElementById(contentId);
+        el.innerHTML = '<div class="loading">데이터를 불러오는 중...</div>';
+        fetch(url).then(r => r.json()).then(d => onSuccess(d, el))
+            .catch(() => { el.innerHTML = '<div class="msg-error">데이터를 불러올 수 없습니다.</div>'; });
+    }
 
-            fetch('/admin/logs/DangerList')
-                .then(response => response.json())
-                .then(data => {
-                    // 데이터 처리
-                    displayDangerList(data, content);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    content.innerHTML = '<div class="error-message">데이터를 불러올 수 없습니다.</div>';
-                });
-        }
+    function loadDangerList() { fetchWidget('/admin/logs/DangerList', 'dangerListContent', displayDangerList); }
+    function loadLogs() { fetchWidget('/admin/logs', 'logsContent', displayLogs); }
+    function loadUsers() { fetchWidget('/admin/users', 'usersContent', displayUsers); }
+    function loadInstructorApplications() { fetchWidget('/admin/instructor/Applications', 'instructorApplicationsContent', displayInstructorApplications); }
+    function loadRecentBans() { fetchWidget('/admin/users/RecentBans', 'recentBansContent', displayRecentBans); }
+    function loadMetrics() { fetchWidget('/admin/metrics/speed', 'metricsContent', displayMetrics); }
 
-        function loadLogs() {
-            const content = document.getElementById('logsContent');
-            content.innerHTML = '<div class="loading">데이터를 불러오는 중...</div>';
+    function displayDangerList(data, el) { el.innerHTML = '<div class="info-box">데이터가 없습니다.</div>'; }
+    function displayLogs(data, el) { el.innerHTML = '<div class="info-box">데이터가 없습니다.</div>'; }
+    function displayUsers(data, el) { el.innerHTML = '<div class="info-box">데이터가 없습니다.</div>'; }
+    function displayInstructorApplications(data, el) { el.innerHTML = '<div class="info-box">데이터가 없습니다.</div>'; }
+    function displayRecentBans(data, el) { el.innerHTML = '<div class="info-box">데이터가 없습니다.</div>'; }
 
-            fetch('/admin/logs')
-                .then(response => response.json())
-                .then(data => {
-                    displayLogs(data, content);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    content.innerHTML = '<div class="error-message">데이터를 불러올 수 없습니다.</div>';
-                });
-        }
-
-        function loadUsers() {
-            const content = document.getElementById('usersContent');
-            content.innerHTML = '<div class="loading">데이터를 불러오는 중...</div>';
-
-            fetch('/admin/users')
-                .then(response => response.json())
-                .then(data => {
-                    displayUsers(data, content);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    content.innerHTML = '<div class="error-message">데이터를 불러올 수 없습니다.</div>';
-                });
-        }
-
-        function loadInstructorApplications() {
-            const content = document.getElementById('instructorApplicationsContent');
-            content.innerHTML = '<div class="loading">데이터를 불러오는 중...</div>';
-
-            fetch('/admin/instructor/Applications')
-                .then(response => response.json())
-                .then(data => {
-                    displayInstructorApplications(data, content);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    content.innerHTML = '<div class="error-message">데이터를 불러올 수 없습니다.</div>';
-                });
-        }
-
-        function loadRecentBans() {
-            const content = document.getElementById('recentBansContent');
-            content.innerHTML = '<div class="loading">데이터를 불러오는 중...</div>';
-
-            fetch('/admin/users/RecentBans')
-                .then(response => response.json())
-                .then(data => {
-                    displayRecentBans(data, content);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    content.innerHTML = '<div class="error-message">데이터를 불러올 수 없습니다.</div>';
-                });
-        }
-
-        function loadMetrics() {
-            const content = document.getElementById('metricsContent');
-            content.innerHTML = '<div class="loading">데이터를 불러오는 중...</div>';
-
-            fetch('/admin/metrics/speed')
-                .then(response => response.json())
-                .then(data => {
-                    displayMetrics(data, content);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    content.innerHTML = '<div class="error-message">데이터를 불러올 수 없습니다.</div>';
-                });
-        }
-
-        // 데이터 표시 함수들 (템플릿)
-        function displayDangerList(data, container) {
-            // 위험 로그 데이터 표시 로직
-        }
-
-        function displayLogs(data, container) {
-            // 전체 로그 데이터 표시 로직
-        }
-
-        function displayUsers(data, container) {
-            // 회원 데이터 표시 로직
-        }
-
-        function displayInstructorApplications(data, container) {
-            // 강사 승인요청 데이터 표시 로직
-        }
-
-        function displayRecentBans(data, container) {
-            // 최근 벤 내역 데이터 표시 로직
-        }
-
-        function displayMetrics(data, container) {
-            let html = '';
-
-            // 호출 많은 API Top 10
-            html += '<h3 style="margin:10px 0 6px;font-size:14px;">호출 많은 API TOP 10</h3>';
-            html += '<table class="data-table"><thead><tr><th>엔드포인트</th><th>호출 수</th><th>평균 응답(ms)</th></tr></thead><tbody>';
-            const avgMap = {};
-            (data.slowEndpoints || []).forEach(e => { avgMap[e.endpoint] = e.avgMs; });
-            (data.topEndpoints || []).forEach(e => {
-                const avg = avgMap[e.endpoint] ? avgMap[e.endpoint].toFixed(1) : '-';
-                html += '<tr><td>' + e.endpoint + '</td><td>' + e.callCount + '</td><td>' + avg + '</td></tr>';
-            });
-            html += '</tbody></table>';
-
-            // 일별 호출 수 (최근 14일)
-            html += '<h3 style="margin:14px 0 6px;font-size:14px;">일별 호출 (최근 14일)</h3>';
-            html += '<table class="data-table"><thead><tr><th>날짜</th><th>호출 수</th></tr></thead><tbody>';
-            (data.dailyCalls || []).forEach(d => {
-                html += '<tr><td>' + d.day + '</td><td>' + d.callCount + '</td></tr>';
-            });
-            html += '</tbody></table>';
-
-            // 오늘 시간별 트래픽
-            html += '<h3 style="margin:14px 0 6px;font-size:14px;">오늘 시간별 트래픽</h3>';
-            html += '<table class="data-table"><thead><tr><th>시간</th><th>호출 수</th></tr></thead><tbody>';
-            (data.hourlyTraffic || []).forEach(h => {
-                html += '<tr><td>' + String(h.hour).padStart(2, '0') + ':00</td><td>' + h.callCount + '</td></tr>';
-            });
-            html += '</tbody></table>';
-
-            container.innerHTML = html || '<div class="info-box">데이터가 없습니다.</div>';
-        }
-
-        // 페이지 로드 시 모든 데이터 초기화
-        window.addEventListener('load', function() {
-            loadDangerList();
-            loadLogs();
-            loadUsers();
-            loadInstructorApplications();
-            loadRecentBans();
-            loadMetrics();
+    function displayMetrics(data, el) {
+        let html = '';
+        html += '<div class="section-title">호출 많은 API TOP 10</div>';
+        html += '<table class="data-table"><thead><tr><th>엔드포인트</th><th>호출 수</th><th>평균 응답(ms)</th></tr></thead><tbody>';
+        const avgMap = {};
+        (data.slowEndpoints || []).forEach(e => { avgMap[e.endpoint] = e.avgMs; });
+        (data.topEndpoints || []).forEach(e => {
+            const avg = avgMap[e.endpoint] ? avgMap[e.endpoint].toFixed(1) : '-';
+            html += `<tr><td>${e.endpoint}</td><td>${e.callCount}</td><td>${avg}</td></tr>`;
         });
-    </script>
+        html += '</tbody></table>';
+        html += '<div class="section-title">일별 호출 (최근 14일)</div>';
+        html += '<table class="data-table"><thead><tr><th>날짜</th><th>호출 수</th></tr></thead><tbody>';
+        (data.dailyCalls || []).forEach(d => { html += `<tr><td>${d.day}</td><td>${d.callCount}</td></tr>`; });
+        html += '</tbody></table>';
+        html += '<div class="section-title">오늘 시간별 트래픽</div>';
+        html += '<table class="data-table"><thead><tr><th>시간</th><th>호출 수</th></tr></thead><tbody>';
+        (data.hourlyTraffic || []).forEach(h => { html += `<tr><td>${String(h.hour).padStart(2,'0')}:00</td><td>${h.callCount}</td></tr>`; });
+        html += '</tbody></table>';
+        el.innerHTML = html || '<div class="info-box">데이터가 없습니다.</div>';
+    }
+
+    window.addEventListener('load', () => {
+        loadDangerList(); loadLogs(); loadUsers();
+        loadInstructorApplications(); loadRecentBans(); loadMetrics();
+    });
+</script>
 </body>
 </html>

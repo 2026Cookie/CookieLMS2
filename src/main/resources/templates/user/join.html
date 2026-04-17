@@ -1,36 +1,131 @@
-<!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>회원가입</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 - Cookiego</title>
+    <style>
+        :root {
+            --parchment: #edede9; --dust-grey: #d6ccc2; --linen: #f5ebe0;
+            --powder-petal: #e3d5ca; --almond-silk: #d5bdaf;
+            --text-primary: #2c2010; --text-secondary: #5c4a3a;
+            --text-muted: #8b7355; --text-on-dark: #f5ebe0;
+            --btn-dark: #4a3728; --btn-dark-hover: #2c2010;
+            --shadow: rgba(44,32,16,0.10);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--parchment); color: var(--text-primary);
+            min-height: 100vh; display: flex; justify-content: center;
+            align-items: flex-start; padding: 40px 20px;
+        }
+        .card {
+            background: var(--linen); border: 1px solid var(--dust-grey);
+            border-radius: 16px; box-shadow: 0 4px 24px var(--shadow);
+            padding: 48px 40px; width: 100%; max-width: 440px;
+        }
+        .back-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--text-muted); margin-bottom: 28px; text-decoration: none; }
+        .back-link:hover { color: var(--text-secondary); }
+        h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+        .subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 32px; }
+
+        /* Role select */
+        .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px; }
+        .role-btn {
+            padding: 20px 16px; border: 2px solid var(--dust-grey);
+            border-radius: 10px; background: var(--parchment);
+            cursor: pointer; text-align: center; transition: all 0.2s;
+            font-size: 15px; font-weight: 600; color: var(--text-secondary);
+        }
+        .role-btn:hover { border-color: var(--almond-silk); background: var(--powder-petal); }
+        .role-btn .icon { font-size: 28px; display: block; margin-bottom: 6px; }
+
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%; padding: 11px 14px; border: 1px solid var(--dust-grey);
+            border-radius: 8px; background: var(--parchment); color: var(--text-primary);
+            font-size: 15px; outline: none; transition: border-color 0.2s;
+        }
+        input:focus { border-color: var(--almond-silk); background: #fff; }
+        .btn-submit {
+            width: 100%; padding: 13px; background: var(--btn-dark); color: var(--text-on-dark);
+            border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
+            cursor: pointer; margin-top: 8px; transition: background 0.2s;
+        }
+        .btn-submit:hover { background: var(--btn-dark-hover); }
+        .login-link { text-align: center; margin-top: 20px; font-size: 13px; color: var(--text-muted); }
+        .login-link a { color: var(--text-secondary); text-decoration: none; font-weight: 600; }
+        .login-link a:hover { text-decoration: underline; }
+        .role-label {
+            display: inline-block; background: var(--powder-petal); color: var(--text-secondary);
+            font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
-<h1>회원가입</h1>
+<div class="card">
+    <a href="/user/login" class="back-link">← 로그인으로 돌아가기</a>
+    <h1>회원가입</h1>
+    <p class="subtitle">역할을 선택하고 정보를 입력해 주세요</p>
 
-<!-- 권한 선택 버튼 -->
-<div id="roleSelect">
-    <button type="button" onclick="selectRole('USER')">학생</button>
-    <button type="button" onclick="selectRole('INSTRUCTOR')">강사</button>
+    <!-- 역할 선택 -->
+    <div id="roleSelect">
+        <div class="role-grid">
+            <button type="button" class="role-btn" onclick="selectRole('USER')">
+                <span class="icon">🎓</span>학생
+            </button>
+            <button type="button" class="role-btn" onclick="selectRole('INSTRUCTOR')">
+                <span class="icon">👨‍🏫</span>강사
+            </button>
+        </div>
+    </div>
+
+    <!-- 가입 폼 -->
+    <form th:action="@{/user/join}" method="post" id="joinForm" style="display:none">
+        <input type="hidden" name="role" id="roleInput">
+        <div id="roleTag"></div>
+        <div class="form-group">
+            <label>이름</label>
+            <input type="text" name="name" placeholder="이름을 입력하세요">
+        </div>
+        <div class="form-group">
+            <label>닉네임</label>
+            <input type="text" name="nickname" placeholder="닉네임을 입력하세요">
+        </div>
+        <div class="form-group">
+            <label>이메일</label>
+            <input type="email" name="email" placeholder="이메일을 입력하세요">
+        </div>
+        <div class="form-group">
+            <label>아이디</label>
+            <input type="text" name="loginId" placeholder="아이디를 입력하세요">
+        </div>
+        <div class="form-group">
+            <label>비밀번호</label>
+            <input type="password" name="password" placeholder="비밀번호를 입력하세요">
+        </div>
+        <div class="form-group">
+            <label>비밀번호 확인</label>
+            <input type="password" name="passwordConfirm" placeholder="비밀번호를 다시 입력하세요">
+        </div>
+        <div class="form-group">
+            <label>전화번호</label>
+            <input type="text" name="phone" placeholder="전화번호를 입력하세요">
+        </div>
+        <button type="submit" class="btn-submit">가입하기</button>
+    </form>
+
+    <div class="login-link">이미 계정이 있으신가요? <a th:href="@{/user/login}">로그인</a></div>
 </div>
-
-<!-- 폼 (처음엔 숨김) -->
-<form th:action="@{/user/join}" method="post" id="joinForm" style="display:none">
-    <input type="hidden" name="role" id="roleInput">
-    <input type="text" name="name" placeholder="이름"><br>
-    <input type="text" name="nickname" placeholder="닉네임"><br>
-    <input type="email" name="email" placeholder="이메일"><br>
-    <input type="text" name="loginId" placeholder="아이디"><br>
-    <input type="password" name="password" placeholder="비밀번호"><br>
-    <input type="password" name="passwordConfirm" placeholder="비밀번호 확인"><br>
-    <input type="text" name="phone" placeholder="전화번호"><br>
-    <button type="submit">가입하기</button>
-</form>
-
 <script>
     function selectRole(role) {
         document.getElementById('roleInput').value = role;
         document.getElementById('roleSelect').style.display = 'none';
         document.getElementById('joinForm').style.display = 'block';
+        document.getElementById('roleTag').innerHTML =
+            `<span class="role-label">${role === 'USER' ? '🎓 학생' : '👨‍🏫 강사'}</span>`;
     }
 </script>
 </body>

@@ -1,26 +1,81 @@
-<!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>학생 메인</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학생 메인 - Cookiego</title>
+    <style>
+        :root {
+            --parchment: #edede9; --dust-grey: #d6ccc2; --linen: #f5ebe0;
+            --powder-petal: #e3d5ca; --almond-silk: #d5bdaf;
+            --text-primary: #2c2010; --text-secondary: #5c4a3a;
+            --text-muted: #8b7355; --text-on-dark: #f5ebe0;
+            --btn-dark: #4a3728; --btn-dark-hover: #2c2010;
+            --shadow: rgba(44,32,16,0.10);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--parchment); color: var(--text-primary); min-height: 100vh;
+        }
+        header {
+            background: var(--linen); border-bottom: 1px solid var(--dust-grey);
+            padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .logo { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .header-right a { font-size: 14px; color: var(--text-secondary); text-decoration: none; }
+        .header-right a:hover { color: var(--text-primary); }
+        .btn-logout {
+            padding: 7px 16px; background: transparent; border: 1.5px solid var(--almond-silk);
+            border-radius: 6px; font-size: 13px; color: var(--text-secondary);
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-logout:hover { background: var(--powder-petal); }
+        .main { max-width: 800px; margin: 60px auto; padding: 0 24px; }
+        .greeting { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+        .greeting-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 40px; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .menu-card {
+            background: var(--linen); border: 1px solid var(--dust-grey);
+            border-radius: 14px; padding: 28px 24px;
+            text-decoration: none; color: var(--text-primary);
+            transition: all 0.2s; box-shadow: 0 2px 10px var(--shadow);
+        }
+        .menu-card:hover { background: var(--powder-petal); border-color: var(--almond-silk); transform: translateY(-2px); box-shadow: 0 4px 16px var(--shadow); }
+        .menu-icon { font-size: 32px; margin-bottom: 12px; }
+        .menu-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+        .menu-desc { font-size: 13px; color: var(--text-muted); }
+        @media (max-width: 480px) { .menu-grid { grid-template-columns: 1fr; } }
+    </style>
 </head>
 <body>
-<h1>학생 메인페이지</h1>
+<header>
+    <div class="logo">Cookiego</div>
+    <div class="header-right">
+        <a th:href="@{/user/mypage}">마이페이지</a>
+        <form th:action="@{/logout}" method="post" style="display:inline;">
+            <button type="submit" class="btn-logout">로그아웃</button>
+        </form>
+    </div>
+</header>
 
-<a th:href="@{/user/enrollments}">
-    <button>강의 등록 페이지로 이동</button>
-</a>
-<a th:href="@{/user/mypage}">마이페이지</a><br>
+<div class="main">
+    <div class="greeting">안녕하세요!</div>
+    <div class="greeting-sub">오늘도 즐거운 학습 되세요.</div>
 
-<a th:href="@{/student/lectures}">
-    <button>내 강의 목록 보기</button>
-</a>
-
-<br><br>
-
-<form th:action="@{/logout}" method="post">
-    <button type="submit">로그아웃</button>
-</form>
-
+    <div class="menu-grid">
+        <a th:href="@{/user/enrollments}" class="menu-card">
+            <div class="menu-icon">📋</div>
+            <div class="menu-title">강의 등록</div>
+            <div class="menu-desc">수강 신청 가능한 강의를 둘러보세요</div>
+        </a>
+        <a th:href="@{/student/lectures}" class="menu-card">
+            <div class="menu-icon">📚</div>
+            <div class="menu-title">내 강의 목록</div>
+            <div class="menu-desc">수강 중인 강의를 확인하세요</div>
+        </a>
+    </div>
+</div>
 </body>
 </html>
