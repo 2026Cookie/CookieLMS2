@@ -24,4 +24,7 @@ public class LoginUserDTO {
     private String phone;
 
 
+
+    private Boolean isDeleted;
+
 }
