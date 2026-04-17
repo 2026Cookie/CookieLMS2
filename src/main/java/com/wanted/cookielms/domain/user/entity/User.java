@@ -44,6 +44,7 @@ public class User {
     // eum 클래는 필드 순서를 따라 번호가 부여된다.
     // ordinal , string
     // userDetails 는 앤티티에 있으면 안된다, 수정 반드시 필요!!
+    @Enumerated(EnumType.STRING)
     private Role role;
     private Status status;
 
