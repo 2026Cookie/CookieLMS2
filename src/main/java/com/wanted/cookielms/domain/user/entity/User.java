@@ -76,4 +76,10 @@ public class User {
         this.phone = phone;
         this.updatedAt = LocalDateTime.now();
     }
+
+    public void withdraw() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+        this.status = Status.DORMANT;
+    }
 }

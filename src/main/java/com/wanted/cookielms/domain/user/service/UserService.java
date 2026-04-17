@@ -107,4 +107,17 @@ public class UserService {
         return true;
     }
 
+    @Transactional
+    public boolean withdrawUser(String loginId, String password) {
+        User user = userRepository.findByLoginId(loginId).orElse(null);
+        if (user == null) return false;
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            return false;
+        }
+
+        user.withdraw();
+        return true;
+    }
+
 }

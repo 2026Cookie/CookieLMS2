@@ -1,5 +1,6 @@
 package com.wanted.cookielms.domain.user.controller;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.ui.Model;
 import com.wanted.cookielms.domain.user.dto.JoinUserDTO;
 import com.wanted.cookielms.domain.user.dto.LoginUserDTO;
@@ -19,6 +20,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.wanted.cookielms.domain.user.dto.ResetPasswordDTO;
+
 
 @Controller
 @RequestMapping("/user")
@@ -210,6 +212,26 @@ public class UserController {
         return "redirect:/user/mypage/info";
     }
 
+
+
+    @GetMapping("/withdraw")
+    public String withdraw() {
+        return "user/withdraw";
+    }
+
+    @PostMapping("/withdraw")
+    public String withdraw(@RequestParam String password,
+                           HttpSession session,
+                           Model model) {
+        String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
+        boolean result = userService.withdrawUser(loginId, password);
+        if (!result) {
+            model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
+            return "user/withdraw";
+        }
+        session.invalidate();
+        return "redirect:/";
+    }
 
 
 }
