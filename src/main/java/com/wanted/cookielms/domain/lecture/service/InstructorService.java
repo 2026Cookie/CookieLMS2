@@ -3,6 +3,7 @@ package com.wanted.cookielms.domain.lecture.service;
 import com.wanted.cookielms.domain.lecture.dto.LectureInsDTO;
 import com.wanted.cookielms.domain.lecture.dto.LectureStuDTO;
 import com.wanted.cookielms.domain.lecture.entity.InsLecture;
+import com.wanted.cookielms.domain.lecture.enums.LectureDay;
 import com.wanted.cookielms.domain.lecture.repository.LectureInsRepository;
 import com.wanted.cookielms.domain.lecture.repository.LectureStuRepository;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +52,7 @@ public class InstructorService {
                 .fileSavedName(savedName)
                 .fileOriginName(dto.getLectureFile() != null ? dto.getLectureFile().getOriginalFilename() : null)
                 .maxCapacity(dto.getMaxCapacity())
-                .lectureDay(dto.getLectureDay())
+                .lectureDay(LectureDay.valueOf(dto.getLectureDay()))
                 .startTime(LocalTime.parse(dto.getStartTime()))
                 .endTime(LocalTime.parse(dto.getEndTime()))
                 .instructorId(instructorId)
@@ -81,7 +82,7 @@ public class InstructorService {
                 dto.getDescription(),
                 dto.getVideoUrl(),
                 dto.getMaxCapacity(),
-                dto.getLectureDay(),
+                LectureDay.valueOf(dto.getLectureDay()),
                 LocalTime.parse(dto.getStartTime()),
                 LocalTime.parse(dto.getEndTime())
         );
@@ -98,6 +99,7 @@ public class InstructorService {
         LectureInsDTO dto = modelMapper.map(lecture, LectureInsDTO.class);
         dto.setStartTime(lecture.getStartTime().toString());
         dto.setEndTime(lecture.getEndTime().toString());
+        dto.setLectureDay(lecture.getLectureDay().name());
 
         return dto;
     }
@@ -124,13 +126,14 @@ public class InstructorService {
         String savedName = UUID.randomUUID().toString() + ext;
 
         // 4. 물리적 저장
-        File target = new File(uploadPath, savedName);
-        if (!target.getParentFile().exists()) {
-            target.getParentFile().mkdirs();
+        File targetDir = new File(uploadPath).getAbsoluteFile();
+        if (!targetDir.exists()) {
+            targetDir.mkdirs();
         }
-        file.transferTo(target);
+
+        File targetFile = new File(targetDir, savedName);
+        file.transferTo(targetFile); // 이제 임시 폴더가 아닌 프로젝트 폴더 내 uploads에 저장됩니다.
 
         return savedName;
     }
-
 }
