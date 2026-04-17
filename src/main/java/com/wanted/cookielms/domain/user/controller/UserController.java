@@ -88,24 +88,6 @@ public class UserController {
         return "user/find_id";
     }
 
-    @GetMapping("/find_id")
-    public String findId() {
-        return "user/find_id";
-    }
-
-    @PostMapping("/find_id")
-    public String findId(@RequestParam String name,
-                         @RequestParam String phone,
-                         Model model) {
-        String loginId = userService.findLoginIdByNameAndPhone(name, phone);
-        if (loginId == null) {
-            model.addAttribute("error", "일치하는 회원 정보가 없습니다.");
-        } else {
-            model.addAttribute("loginId", loginId);
-        }
-        return "user/find_id";
-    }
-
 
     @GetMapping("/find_password")
     public String findPassword() {

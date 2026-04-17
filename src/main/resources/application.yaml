@@ -17,6 +17,7 @@ spring:
         highlight_sql: true # SQL 키워드 강조
         dialect: org.hibernate.dialect.MySQLDialect # MySQL 방언 명시
 
+
   # [추가] 파일 업로드 용량 제한 설정
   # 유튜브 링크 방식을 사용하므로 영상 용량은 필요 없지만,
   # PDF 등 수업 자료 업로드를 안전하게 제한하기 위해 설정합니다.
@@ -25,6 +26,8 @@ spring:
       enabled: true
       max-file-size: 10MB
       max-request-size: 10MB
+  flyway:
+    enabled: false
 
 # 로그 레벨 설정 (디버깅용)
 logging:
@@ -37,6 +40,9 @@ server:
     whitelabel:
       enabled: false  # Spring Boot 기본 에러 페이지 비활성화
     path: /error      # 에러 요청 매핑 경로
+
+
+# Flyway 비활성화
 
 # 애플리케이션 커스텀 설정
 app:
