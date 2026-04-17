@@ -7,12 +7,17 @@ import com.wanted.cookielms.domain.lecture.repository.LectureInsRepository;
 import com.wanted.cookielms.domain.lecture.repository.LectureStuRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalTime;
+import java.util.UUID;
 
 
 @Service
@@ -23,9 +28,11 @@ public class InstructorService {
     private final LectureInsRepository lectureInsRepository;
     private final LectureStuRepository lectureStuRepository;
     private final ModelMapper modelMapper;
-    private final InsFileService insFileService;
 
 
+
+    @Value("${file.upload.path:uploads/}")
+    private String uploadPath;
 
     public Page<LectureStuDTO> getMyLectures(Long instructorId, Pageable pageable) {
         Page<InsLecture> myLectures = lectureInsRepository.findByInstructorId(instructorId, pageable);
@@ -35,7 +42,7 @@ public class InstructorService {
 
     @Transactional
     public void registLecture(LectureInsDTO dto, Long instructorId) throws IOException {
-        String savedName = insFileService.storeFile(dto.getLectureFile(), ".pdf");
+        String savedName = storeFile(dto.getLectureFile(), ".pdf");
 
         InsLecture lecture = InsLecture.builder()
                 .title(dto.getTitle())
@@ -65,7 +72,7 @@ public class InstructorService {
         }
 
         if (dto.getLectureFile() != null && !dto.getLectureFile().isEmpty()) {
-            String savedName = insFileService.storeFile(dto.getLectureFile(), ".pdf");
+            String savedName = storeFile(dto.getLectureFile(), ".pdf");
             lecture.updateFileName(dto.getLectureFile().getOriginalFilename(), savedName);
         }
 
@@ -94,6 +101,36 @@ public class InstructorService {
 
         return dto;
     }
+    private String storeFile(MultipartFile file, String allowedExtension) throws IOException {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
 
+        String originalName = file.getOriginalFilename();
+
+        // 1. 확장자 검증
+        if (originalName == null || !originalName.toLowerCase().endsWith(allowedExtension)) {
+            throw new IllegalArgumentException(allowedExtension.toUpperCase() + " 형식의 파일만 업로드 가능합니다.");
+        }
+
+        // 2. 용량 검증 (5MB)
+        long maxSize = 5 * 1024 * 1024;
+        if (file.getSize() > maxSize) {
+            throw new IllegalArgumentException("파일 용량은 5MB를 초과할 수 없습니다.");
+        }
+
+        // 3. 고유 파일명 생성
+        String ext = originalName.substring(originalName.lastIndexOf("."));
+        String savedName = UUID.randomUUID().toString() + ext;
+
+        // 4. 물리적 저장
+        File target = new File(uploadPath, savedName);
+        if (!target.getParentFile().exists()) {
+            target.getParentFile().mkdirs();
+        }
+        file.transferTo(target);
+
+        return savedName;
+    }
 
 }
