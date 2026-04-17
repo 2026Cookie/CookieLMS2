@@ -1,5 +1,6 @@
 package com.wanted.cookielms.domain.lecture.entity;
 
+import com.wanted.cookielms.domain.lecture.enums.LectureDay;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -43,8 +44,9 @@ public class InsLecture {
     @Column(length = 20)
     private String status = "OPEN"; // 등록 시 기본값 OPEN
 
+    @Enumerated(EnumType.STRING) //
     @Column(name = "lecture_day")
-    private String lectureDay;
+    private LectureDay lectureDay;
 
     @Column(name = "start_time")
     private LocalTime startTime;
@@ -55,9 +57,11 @@ public class InsLecture {
     @Column(name = "user_id")
     private Long instructorId;
 
+
+
     @Builder
     private InsLecture(String title, String description, String videoUrl, String fileSavedName, String fileOriginName,
-                       Integer maxCapacity, String lectureDay, LocalTime startTime, LocalTime endTime,Long instructorId) {
+                       Integer maxCapacity, LectureDay lectureDay, LocalTime startTime, LocalTime endTime, Long instructorId) {
         this.title = title;
         this.description = description;
         this.videoUrl = videoUrl;
@@ -74,7 +78,7 @@ public class InsLecture {
 
     }
     public void updateInfo(String title, String description, String videoUrl,
-                           Integer maxCapacity, String lectureDay,
+                           Integer maxCapacity, LectureDay lectureDay,
                            java.time.LocalTime startTime, java.time.LocalTime endTime) {
         this.title = title;
         this.description = description;

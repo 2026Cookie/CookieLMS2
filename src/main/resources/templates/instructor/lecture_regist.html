@@ -88,7 +88,15 @@
                 </div>
                 <div class="form-group" style="margin-bottom:0;">
                     <label>강의 요일</label>
-                    <input type="text" name="lectureDay" th:value="${lecture?.lectureDay}" placeholder="예: 월요일" required>
+                    <select name="lectureDay" required
+                            style="width: 100%; padding: 11px 14px; border: 1px solid var(--dust-grey); border-radius: 8px; background: var(--parchment); color: var(--text-primary); font-size: 15px; outline: none; transition: border-color 0.2s; font-family: inherit;">
+                        <option value="" disabled th:selected="${lecture?.lectureDay == null}">요일 선택</option>
+                        <option value="MON" th:selected="${lecture?.lectureDay == 'MON'}">월요일</option>
+                        <option value="TUE" th:selected="${lecture?.lectureDay == 'TUE'}">화요일</option>
+                        <option value="WED" th:selected="${lecture?.lectureDay == 'WED'}">수요일</option>
+                        <option value="THU" th:selected="${lecture?.lectureDay == 'THU'}">목요일</option>
+                        <option value="FRI" th:selected="${lecture?.lectureDay == 'FRI'}">금요일</option>
+                    </select>
                 </div>
             </div>
             <div class="form-row" style="margin-bottom:0; margin-top:14px;">

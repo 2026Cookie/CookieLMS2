@@ -70,9 +70,9 @@
     <p class="subtitle">등록한 강의 목록입니다.</p>
 
     <div class="lecture-list" th:if="${not #lists.isEmpty(lectures.content)}">
-        <div class="lecture-item" th:each="lecture : ${lectures.content}">
+        <div class="lecture-item" th:each="lecture, iterStat : ${lectures.content}">
             <div class="lecture-info">
-                <div class="lecture-num" th:text="${lecture.lectureId}"></div>
+                <div class="lecture-num" th:text="${lectures.totalElements - (lectures.number * lectures.size) - iterStat.index}"></div>
                 <div class="lecture-title" th:text="${lecture.title}"></div>
             </div>
             <button class="btn-edit"
@@ -85,6 +85,18 @@
     <div class="empty" th:if="${#lists.isEmpty(lectures.content)}">
         등록된 강의가 없습니다. 첫 강의를 개설해보세요!
     </div>
+</div>
+<div style="display: flex; justify-content: center; gap: 8px; margin-top: 32px;">
+        <span th:each="i : ${#numbers.sequence(0, lectures.totalPages - 1)}">
+            <a th:href="@{/instructor/lectures(page=${i})}"
+               th:text="${i + 1}"
+               th:style="${i == lectures.number}
+                         ? 'padding: 8px 14px; background: var(--btn-dark); color: var(--text-on-dark); border-radius: 7px; font-size: 13px; font-weight: 700; text-decoration: none;'
+                         : 'padding: 8px 14px; background: var(--linen); border: 1.5px solid var(--almond-silk); border-radius: 7px; font-size: 13px; color: var(--text-secondary); text-decoration: none;'">
+            </a>
+        </span>
+</div>
+
 </div>
 </body>
 </html>

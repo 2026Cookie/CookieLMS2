@@ -3,6 +3,7 @@ package com.wanted.cookielms.domain.lecture.service;
 import com.wanted.cookielms.domain.lecture.dto.LectureInsDTO;
 import com.wanted.cookielms.domain.lecture.dto.LectureStuDTO;
 import com.wanted.cookielms.domain.lecture.entity.InsLecture;
+import com.wanted.cookielms.domain.lecture.enums.LectureDay;
 import com.wanted.cookielms.domain.lecture.repository.LectureInsRepository;
 import com.wanted.cookielms.domain.lecture.repository.LectureStuRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.time.LocalTime;
 import java.util.UUID;
 
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -28,9 +30,10 @@ public class InstructorService {
     private final LectureStuRepository lectureStuRepository;
     private final ModelMapper modelMapper;
 
-    @Value("${file.upload.path:C:/cookielms/uploads/}")
-    private String uploadPath;
 
+
+    @Value("${file.upload.path:uploads/}")
+    private String uploadPath;
 
     public Page<LectureStuDTO> getMyLectures(Long instructorId, Pageable pageable) {
         Page<InsLecture> myLectures = lectureInsRepository.findByInstructorId(instructorId, pageable);
@@ -40,16 +43,16 @@ public class InstructorService {
 
     @Transactional
     public void registLecture(LectureInsDTO dto, Long instructorId) throws IOException {
-        String fileSavedName = saveFile(dto.getLectureFile());
+        String savedName = storeFile(dto.getLectureFile(), ".pdf");
 
         InsLecture lecture = InsLecture.builder()
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .videoUrl(dto.getVideoUrl())
-                .fileSavedName(fileSavedName)
+                .fileSavedName(savedName)
                 .fileOriginName(dto.getLectureFile() != null ? dto.getLectureFile().getOriginalFilename() : null)
                 .maxCapacity(dto.getMaxCapacity())
-                .lectureDay(dto.getLectureDay())
+                .lectureDay(LectureDay.valueOf(dto.getLectureDay()))
                 .startTime(LocalTime.parse(dto.getStartTime()))
                 .endTime(LocalTime.parse(dto.getEndTime()))
                 .instructorId(instructorId)
@@ -70,7 +73,7 @@ public class InstructorService {
         }
 
         if (dto.getLectureFile() != null && !dto.getLectureFile().isEmpty()) {
-            String savedName = saveFile(dto.getLectureFile());
+            String savedName = storeFile(dto.getLectureFile(), ".pdf");
             lecture.updateFileName(dto.getLectureFile().getOriginalFilename(), savedName);
         }
 
@@ -79,7 +82,7 @@ public class InstructorService {
                 dto.getDescription(),
                 dto.getVideoUrl(),
                 dto.getMaxCapacity(),
-                dto.getLectureDay(),
+                LectureDay.valueOf(dto.getLectureDay()),
                 LocalTime.parse(dto.getStartTime()),
                 LocalTime.parse(dto.getEndTime())
         );
@@ -96,25 +99,40 @@ public class InstructorService {
         LectureInsDTO dto = modelMapper.map(lecture, LectureInsDTO.class);
         dto.setStartTime(lecture.getStartTime().toString());
         dto.setEndTime(lecture.getEndTime().toString());
+        dto.setLectureDay(lecture.getLectureDay().name());
 
         return dto;
     }
-
-    private String saveFile(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty()) return null;
+    private String storeFile(MultipartFile file, String allowedExtension) throws IOException {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
 
         String originalName = file.getOriginalFilename();
-        if (originalName == null || !originalName.toLowerCase().endsWith(".pdf")) {
-            throw new IllegalArgumentException("PDF 파일만 업로드 가능합니다.");
+
+        // 1. 확장자 검증
+        if (originalName == null || !originalName.toLowerCase().endsWith(allowedExtension)) {
+            throw new IllegalArgumentException(allowedExtension.toUpperCase() + " 형식의 파일만 업로드 가능합니다.");
         }
 
-        String savedName = UUID.randomUUID().toString() + ".pdf";
-        File target = new File(uploadPath, savedName);
-
-        if (!target.getParentFile().exists()) {
-            target.getParentFile().mkdirs();
+        // 2. 용량 검증 (5MB)
+        long maxSize = 5 * 1024 * 1024;
+        if (file.getSize() > maxSize) {
+            throw new IllegalArgumentException("파일 용량은 5MB를 초과할 수 없습니다.");
         }
-        file.transferTo(target);
+
+        // 3. 고유 파일명 생성
+        String ext = originalName.substring(originalName.lastIndexOf("."));
+        String savedName = UUID.randomUUID().toString() + ext;
+
+        // 4. 물리적 저장
+        File targetDir = new File(uploadPath).getAbsoluteFile();
+        if (!targetDir.exists()) {
+            targetDir.mkdirs();
+        }
+
+        File targetFile = new File(targetDir, savedName);
+        file.transferTo(targetFile); // 이제 임시 폴더가 아닌 프로젝트 폴더 내 uploads에 저장됩니다.
 
         return savedName;
     }

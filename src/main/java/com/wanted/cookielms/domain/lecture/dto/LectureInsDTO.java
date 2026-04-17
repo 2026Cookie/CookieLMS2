@@ -24,4 +24,6 @@ public class LectureInsDTO {
     private String startTime;
     private String endTime;
 
+
+
 }
