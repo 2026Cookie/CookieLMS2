@@ -74,12 +74,12 @@
                         <button onclick="goToAssignment(${lectureId})">과제 제출/확인하기</button>
                     `;
               } else {
-                // 권한이 없으면 자물쇠 표시
+                // 권한이 없으면 자물쇠 표시 + 바로가기 버튼
                 buttonArea.innerHTML = `
-                        <div>
-                            🔒 강의를 시청하시려면 먼저 수강신청을 완료해주세요.<br>
-                            <small>(수강신청은 '강의 등록' 페이지에서 진행)</small>
+                        <div style="margin-bottom: 15px;">
+                            🔒 강의를 시청하시려면 먼저 수강신청을 완료해주세요.
                         </div>
+                        <button onclick="location.href='/user/enrollments'">수강신청 하러 가기 🏃‍♂️</button>
                     `;
               }
             })
