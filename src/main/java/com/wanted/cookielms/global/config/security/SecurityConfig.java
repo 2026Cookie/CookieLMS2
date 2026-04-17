@@ -69,8 +69,10 @@ public class SecurityConfig {
                                     "/user/reset_password"
                             ).permitAll()
                             .requestMatchers("/instructor/**").hasRole("INSTRUCTOR")
-                            .requestMatchers("/student/**").hasRole("USER") // 💡 /user/** 에서 /student/** 로 수정 (컨트롤러 경로 일치)
-                            .anyRequest().authenticated();
+                            .requestMatchers("/user/mypage/**", "/user/mypage", "/user/verify-password").hasAnyRole("USER", "INSTRUCTOR")
+                            .requestMatchers("/user/**").hasRole("USER")
+
+                            .anyRequest().authenticated(); // 나머지는 인증 필요
                 })
 
                 // 2. 로그인 설정
