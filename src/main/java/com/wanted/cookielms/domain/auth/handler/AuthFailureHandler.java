@@ -74,11 +74,14 @@ public class AuthFailureHandler extends SimpleUrlAuthenticationFailureHandler {
         }
 
         if (exception instanceof BadCredentialsException) {
-            return "아이디 또는 비밀번호가 일치하지 않습니다.";
-        } else if (exception instanceof InternalAuthenticationServiceException) {
-            return "내부 시스템 문제로 인해 요청을 처리할 수 없습니다.";
+            return "비밀번호가 맞지 않습니다.";
         } else if (exception instanceof UsernameNotFoundException) {
-            return "존재하지 않는 계정입니다.";
+            return "등록된 회원 정보가 없습니다.";
+        } else if (exception instanceof InternalAuthenticationServiceException) {
+            if (exception.getCause() instanceof UsernameNotFoundException) {
+                return "등록된 회원 정보가 없습니다.";
+            }
+            return "내부 시스템 문제로 인해 요청을 처리할 수 없습니다.";
         }
         return "알 수 없는 이유로 로그인에 실패하였습니다. (에러타입: " + exception.getClass().getSimpleName() + ")";
     }

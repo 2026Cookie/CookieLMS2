@@ -64,18 +64,22 @@
         <div class="form-group">
             <label>이름</label>
             <input type="text" th:field="*{name}" placeholder="이름">
+            <p class="msg-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
         </div>
         <div class="form-group">
             <label>닉네임</label>
             <input type="text" th:field="*{nickname}" placeholder="닉네임">
+            <p class="msg-error" th:if="${#fields.hasErrors('nickname')}" th:errors="*{nickname}"></p>
         </div>
         <div class="form-group">
             <label>이메일</label>
             <input type="email" th:field="*{email}" placeholder="이메일">
+            <p class="msg-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
         </div>
         <div class="form-group">
             <label>전화번호</label>
             <input type="text" th:field="*{phone}" placeholder="전화번호">
+            <p class="msg-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></p>
         </div>
 
         <div class="section-label">비밀번호 변경</div>
@@ -100,5 +104,6 @@
         </div>
     </form>
 </div>
+<script src="/js/session-timer.js"></script>
 </body>
 </html>
