@@ -1,201 +1,147 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>CookieLMS - 강의 상세</title>
-  <style>
-    /* 기본 스타일 */
-    body { font-family: 'Arial', sans-serif; background-color: #f8f9fa; margin: 0; padding: 40px 20px; color: #333; }
-    .container { max-width: 800px; margin: 0 auto; background-color: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; }
-    .thumbnail-area { width: 100%; height: 300px; background-color: #e9ecef; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #888; }
-    .thumbnail-area img { width: 100%; height: 100%; object-fit: cover; }
-    .content-area { padding: 40px; }
-    .meta-info { font-size: 0.9rem; color: #666; margin-bottom: 10px; display: flex; gap: 15px; }
-    .lecture-title { font-size: 2rem; font-weight: bold; color: #212529; margin: 0 0 20px 0; }
-    .lecture-desc { font-size: 1.1rem; line-height: 1.6; color: #555; margin-bottom: 40px; padding-bottom: 30px; border-bottom: 1px solid #eee; }
-    .btn-group { display: flex; flex-direction: column; gap: 15px; }
-
-    /* 수강생용 버튼 */
-    .action-btn { padding: 15px 20px; font-size: 1.1rem; font-weight: bold; border: 1px solid #ddd; border-radius: 8px; background-color: white; color: #333; cursor: pointer; text-align: left; transition: all 0.2s; display: flex; align-items: center; }
-    .action-btn:hover { border-color: #007bff; background-color: #f1f7ff; color: #007bff; }
-
-    /* 미수강생용 안내 메시지 박스 스타일 */
-    .info-message-box {
-      background-color: #f1f7ff;
-      color: #0056b3;
-      padding: 20px;
-      border-radius: 8px;
-      text-align: center;
-      font-size: 1.1rem;
-      border: 1px solid #cce5ff;
-      line-height: 1.6;
-      font-weight: bold;
-    }
-    .info-message-box small {
-      display: block;
-      margin-top: 8px;
-      font-size: 0.9rem;
-      color: #666;
-      font-weight: normal;
-    }
-
-    /* 영상 재생 모달(팝업창) 디자인 */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; justify-content: center; align-items: center; }
-    .modal-content { background-color: #000; width: 80%; max-width: 1000px; border-radius: 10px; overflow: hidden; position: relative; }
-    .modal-header { background-color: #222; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
-    .modal-title { font-size: 1.2rem; font-weight: bold; }
-    .close-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; transition: color 0.2s; }
-    .close-btn:hover { color: #ff4d4d; }
-    .video-container { position: relative; padding-bottom: 56.25%; height: 0; }
-    .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>강의 상세 - Cookiego</title>
+    <style>
+        :root {
+            --parchment: #edede9; --dust-grey: #d6ccc2; --linen: #f5ebe0;
+            --powder-petal: #e3d5ca; --almond-silk: #d5bdaf;
+            --text-primary: #2c2010; --text-secondary: #5c4a3a;
+            --text-muted: #8b7355; --text-on-dark: #f5ebe0;
+            --btn-dark: #4a3728; --btn-dark-hover: #2c2010;
+            --shadow: rgba(44,32,16,0.10);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--parchment); color: var(--text-primary); min-height: 100vh; }
+        header {
+            background: var(--linen); border-bottom: 1px solid var(--dust-grey);
+            padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .logo { font-size: 18px; font-weight: 700; }
+        .back-link { font-size: 14px; color: var(--text-secondary); text-decoration: none; }
+        .back-link:hover { color: var(--text-primary); }
+        .main { max-width: 780px; margin: 0 auto; padding: 40px 24px; }
+        .card { background: var(--linen); border: 1px solid var(--dust-grey); border-radius: 14px; overflow: hidden; box-shadow: 0 2px 16px var(--shadow); }
+        .thumbnail-area {
+            width: 100%; height: 300px; background: var(--powder-petal);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); font-size: 15px;
+        }
+        .thumbnail-area img { width: 100%; height: 100%; object-fit: cover; }
+        .content { padding: 32px; }
+        .meta { display: flex; gap: 20px; font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+        .lecture-title { font-size: 24px; font-weight: 700; margin-bottom: 14px; line-height: 1.3; }
+        .lecture-desc { font-size: 15px; color: var(--text-secondary); line-height: 1.7; padding-bottom: 24px; border-bottom: 1px solid var(--dust-grey); margin-bottom: 24px; }
+        .btn-group { display: flex; flex-direction: column; gap: 10px; }
+        .action-btn {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 18px; background: var(--parchment);
+            border: 1px solid var(--dust-grey); border-radius: 10px;
+            font-size: 15px; font-weight: 600; color: var(--text-primary);
+            cursor: pointer; transition: all 0.2s;
+        }
+        .action-btn:hover { background: var(--powder-petal); border-color: var(--almond-silk); }
+        .locked-box {
+            background: var(--powder-petal); border: 1px solid var(--almond-silk);
+            border-radius: 10px; padding: 20px; text-align: center;
+            font-size: 15px; font-weight: 600; color: var(--text-secondary); line-height: 1.6;
+        }
+        .locked-box small { display: block; margin-top: 6px; font-size: 13px; color: var(--text-muted); font-weight: 400; }
+        .btn-back-instructor {
+            display: block; margin-top: 16px; padding: 14px;
+            background: var(--almond-silk); color: var(--text-primary);
+            border-radius: 10px; text-align: center; font-size: 15px; font-weight: 600;
+            text-decoration: none; transition: all 0.2s;
+        }
+        .btn-back-instructor:hover { background: var(--powder-petal); }
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: #111; width: 85%; max-width: 960px; border-radius: 12px; overflow: hidden; }
+        .modal-header { background: #222; color: #fff; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { font-size: 15px; font-weight: 600; }
+        .close-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; }
+        .close-btn:hover { color: #f88; }
+        .video-wrap { position: relative; padding-bottom: 56.25%; height: 0; }
+        .video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; }
+    </style>
 </head>
 <body>
+<header>
+    <div class="logo">Cookiego</div>
+    <a th:href="@{/instructor/main}" class="back-link">← 강사 메인으로</a>
+</header>
 
-<div class="container">
-  <div class="thumbnail-area" id="thumbnailArea">로딩 중...</div>
-  <div class="content-area">
-    <div class="meta-info">
-      <span id="instructorInfo">👨‍🏫 강사: 로딩 중</span>
-      <span id="capacityInfo">👥 인원: 로딩 중</span>
+<div class="main">
+    <div class="card">
+        <div class="thumbnail-area" id="thumbnailArea">로딩 중...</div>
+        <div class="content">
+            <div class="meta">
+                <span id="instructorInfo">강사: 로딩 중</span>
+                <span id="capacityInfo">인원: 로딩 중</span>
+            </div>
+            <h1 class="lecture-title" id="lectureTitle">강의 제목을 불러오는 중...</h1>
+            <div class="lecture-desc" id="lectureDesc">강의 설명을 불러오는 중입니다.</div>
+            <div class="btn-group" id="buttonArea"></div>
+        </div>
     </div>
-    <h1 class="lecture-title" id="lectureTitle">강의 제목을 불러오는 중입니다...</h1>
-    <div class="lecture-desc" id="lectureDesc">강의 상세 설명을 불러오는 중입니다.</div>
-    <div class="btn-group" id="buttonArea"></div>
-  </div>
-</div>
-<div style="max-width: 800px; margin: 20px auto; padding: 0 20px;">
-
-  <a th:href="@{/instructor/main}"
-
-     style="display: block; width: 100%; padding: 15px; background-color: #6c757d; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; text-align: center; text-decoration: none;">
-
-    ⬅️ 강사 메인페이지로 돌아가기
-    <!--하연이가 했을 때도 뜨는지 확인 !!!-->
-  </a>
+    <a th:href="@{/instructor/main}" class="btn-back-instructor">← 강사 메인페이지로 돌아가기</a>
 </div>
 
 <div id="videoModal" class="modal-overlay">
-  <div class="modal-content">
-    <div class="modal-header">
-      <span class="modal-title" id="modalTitle">강의 영상 재생</span>
-      <button class="close-btn" onclick="closeVideo()">✖</button>
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="modal-title" id="modalTitle">강의 영상 재생</span>
+            <button class="close-btn" onclick="closeVideo()">✕</button>
+        </div>
+        <div class="video-wrap">
+            <iframe id="videoPlayer" src="" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+        </div>
     </div>
-    <div class="video-container">
-      <iframe id="videoPlayer" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-    </div>
-  </div>
 </div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const pathParts = window.location.pathname.split('/');
-    const lectureId = pathParts[pathParts.length - 1];
+    document.addEventListener("DOMContentLoaded", function() {
+        const lectureId = window.location.pathname.split('/').pop();
+        fetch(`/lectures/${lectureId}`)
+            .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+            .then(d => {
+                document.getElementById('lectureTitle').innerText = d.title;
+                document.getElementById('modalTitle').innerText = d.title;
+                document.getElementById('lectureDesc').innerText = d.description;
+                document.getElementById('instructorInfo').innerText = `강사 ID: ${d.instructorId}`;
+                document.getElementById('capacityInfo').innerText = `인원: ${d.currentEnrollment} / ${d.maxCapacity} 명`;
+                if (d.thumbnail) {
+                    document.getElementById('thumbnailArea').innerHTML = `<img src="/images/${d.thumbnail}" alt="${d.title}" onerror="this.style.display='none';this.parentNode.innerText='이미지 없음';">`;
+                } else {
+                    document.getElementById('thumbnailArea').innerText = '등록된 썸네일이 없습니다.';
+                }
+                const area = document.getElementById('buttonArea');
+                const isEnrolled = d.enrolled === true || d.isEnrolled === true;
+                if (isEnrolled) {
+                    area.innerHTML = `
+                        <button class="action-btn" onclick="playVideo(${lectureId})">▶ 강의 영상 재생</button>
+                        <button class="action-btn" onclick="downloadMaterial(${lectureId})">↓ 학습 자료 다운로드</button>
+                        <button class="action-btn" onclick="goToAssignment(${lectureId})">✎ 과제 제출하기</button>`;
+                } else {
+                    area.innerHTML = `<div class="locked-box">🔒 강의를 시청하시려면 먼저 수강신청을 완료해주세요.<small>수강신청은 '강의 등록' 페이지에서 진행하실 수 있습니다.</small></div>`;
+                }
+            }).catch(() => alert("강의 정보를 불러오는 중 오류가 발생했습니다."));
+    });
 
-    fetch(`/lectures/${lectureId}`)
-            .then(response => {
-              if(!response.ok) throw new Error("강의 정보를 불러오지 못했습니다.");
-              return response.json();
-            })
-            .then(data => {
-              document.getElementById('lectureTitle').innerText = data.title;
-              document.getElementById('modalTitle').innerText = data.title;
-              document.getElementById('lectureDesc').innerText = data.description;
-              document.getElementById('instructorInfo').innerText = `👨‍🏫 강사 ID: ${data.instructorId}`;
-              document.getElementById('capacityInfo').innerText = `👥 인원: ${data.currentEnrollment} / ${data.maxCapacity} 명`;
-
-              if(data.thumbnail) {
-                document.getElementById('thumbnailArea').innerHTML = `<img src="/images/${data.thumbnail}" alt="${data.title} 썸네일" onerror="this.style.display='none'; this.parentNode.innerText='이미지 없음';">`;
-              } else {
-                document.getElementById('thumbnailArea').innerText = '등록된 썸네일이 없습니다.';
-              }
-
-              const buttonArea = document.getElementById('buttonArea');
-              const isEnrolled = data.enrolled === true || data.isEnrolled === true;
-
-              if (isEnrolled) {
-                // [수강 중] 기능 버튼
-                buttonArea.innerHTML = `
-                        <button class="action-btn" onclick="playVideo(${lectureId})">
-                            ▶️ 강의 영상 재생
-                        </button>
-                        <button class="action-btn" onclick="downloadMaterial(${lectureId})">
-                            📥 학습 자료 다운로드
-                        </button>
-                        <button class="action-btn" onclick="goToAssignment(${lectureId})">
-                            📝 과제 제출하기
-                        </button>
-                    `;
-              } else {
-                // [미수강] 안내 메시지 박스 표시
-                buttonArea.innerHTML = `
-                        <div class="info-message-box">
-                            🔒 강의를 시청하시려면 먼저 수강신청을 완료해주세요.
-                            <small>수강신청은 '강의 등록' 페이지에서 진행하실 수 있습니다.</small>
-                        </div>
-                    `;
-              }
-            })
-            .catch(error => {
-              console.error("Error:", error);
-              alert("강의 정보를 불러오는 중 오류가 발생했습니다.");
-            });
-  });
-
-  // 영상 재생 함수
-  function playVideo(lectureId) {
-    fetch(`/lectures/${lectureId}/video`)
-            .then(response => {
-              if (response.status === 403) {
-                throw new Error("수강생만 시청할 수 있습니다.");
-              }
-              if (!response.ok) {
-                throw new Error("영상을 불러오는데 실패했습니다.");
-              }
-              return response.text();
-            })
+    function playVideo(id) {
+        fetch(`/lectures/${id}/video`)
+            .then(r => { if (r.status===403) throw new Error("수강생만 시청할 수 있습니다."); if (!r.ok) throw new Error("영상을 불러오는데 실패했습니다."); return r.text(); })
             .then(url => {
-              let finalUrl = url;
-              if(url.includes("video.url")) {
-                finalUrl = "https://www.youtube.com/embed/jNQXAC9IVRw";
-              }
-              document.getElementById('videoPlayer').src = finalUrl;
-              document.getElementById('videoModal').style.display = 'flex';
-            })
-            .catch(error => {
-              alert(error.message);
-            });
-  }
-
-  function closeVideo() {
-    const modal = document.getElementById('videoModal');
-    const iframe = document.getElementById('videoPlayer');
-    modal.style.display = 'none';
-    iframe.src = "";
-  }
-
-  window.onclick = function(event) {
-    const modal = document.getElementById('videoModal');
-    if (event.target === modal) {
-      closeVideo();
+                document.getElementById('videoPlayer').src = url.includes("video.url") ? "https://www.youtube.com/embed/jNQXAC9IVRw" : url;
+                document.getElementById('videoModal').style.display = 'flex';
+            }).catch(e => alert(e.message));
     }
-  }
-
-  // 다운로드 함수 수정
-  // 파일 다운로드는 fetch를 쓰면 처리가 복잡해지므로,
-  // window.location.href를 통해 직접 API 엔드포인트를 호출하는 것이 가장 깔끔합니다.
-  function downloadMaterial(lectureId) {
-    if(!lectureId) {
-      alert("강의 정보를 찾을 수 없습니다.");
-      return;
-    }
-
-    // 이 주소로 이동하면 백엔드가 "attachment(첨부파일)" 헤더를 주기 때문에
-    // 화면이 넘어가지 않고 브라우저 하단에 파일이 쏙 다운로드 됩니다!
-    window.location.href = `/lectures/${lectureId}/material`;
-  }
-  function goToAssignment(id) { alert(id + "번 강의 과제 제출 페이지로 이동합니다."); }
+    function closeVideo() { document.getElementById('videoModal').style.display='none'; document.getElementById('videoPlayer').src=''; }
+    window.onclick = e => { if (e.target === document.getElementById('videoModal')) closeVideo(); };
+    function downloadMaterial(id) { window.location.href = `/lectures/${id}/material`; }
+    function goToAssignment(id) { alert(id + "번 강의 과제 제출 페이지로 이동합니다."); }
 </script>
-
 </body>
 </html>
