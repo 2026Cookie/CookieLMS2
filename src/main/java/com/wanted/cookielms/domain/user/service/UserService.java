@@ -28,11 +28,11 @@ public class UserService {
     @Transactional
     public String join(JoinUserDTO joinUserDTO){
 
-        if (userRepository.existsByLoginId(joinUserDTO.getLoginId())) {
+        if (userRepository.existsByLoginIdAndIsDeletedFalse(joinUserDTO.getLoginId())) {
             return null; // 중복된 아이디가 존재함을 null로 표시
         }
 
-        if (userRepository.existsByEmail(joinUserDTO.getEmail())) {
+        if (userRepository.existsByEmailAndIsDeletedFalse(joinUserDTO.getEmail())) {
             return null;
         }
 
@@ -56,23 +56,23 @@ public class UserService {
     }
 
     public LoginUserDTO findByUsername(String username) {
-        Optional<User> userOptional = userRepository.findByLoginId(username);
+        Optional<User> userOptional = userRepository.findByLoginIdAndIsDeletedFalse(username);
         return userOptional.map(user -> modelMapper.map(user, LoginUserDTO.class)).orElse(null);
     }
 
     public String findLoginIdByNameAndPhone(String name, String phone) {
-        Optional<User> lostIdUser = userRepository.findByNameAndPhone(name, phone);
+        Optional<User> lostIdUser = userRepository.findByNameAndPhoneAndIsDeletedFalse(name, phone);
         return lostIdUser.map(User -> User.getLoginId()).orElse(null);
     }
 
     public Boolean findByLoginIdAndNameAndPhone(String loginId, String name, String phone) {
-        Optional<User> lostpwdUser = userRepository.findByLoginIdAndNameAndPhone(loginId, name, phone);
+        Optional<User> lostpwdUser = userRepository.findByLoginIdAndNameAndPhoneAndIsDeletedFalse(loginId, name, phone);
         return lostpwdUser.isPresent();
     }
 
     @Transactional
     public void updatePassword(String loginId, String newPassword ) {
-        userRepository.findByLoginId(loginId)
+        userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .ifPresent(user -> {user.updatePassword(passwordEncoder.encode(newPassword));
                 });
 
@@ -80,7 +80,7 @@ public class UserService {
 
     // 정보 조회 비번 확인용
     public boolean verifyPassword(String loginId, String password) {
-        return userRepository.findByLoginId(loginId)
+        return userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .map(user -> passwordEncoder.matches(password, user.getPassword()))
                 .orElse(false);
     }
@@ -88,7 +88,7 @@ public class UserService {
 
     @Transactional
     public boolean updateUserInfo(String loginId, ModifyUserInfo dto) {
-        User user = userRepository.findByLoginId(loginId).orElse(null);
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElse(null);
         if (user == null) return false;
 
         if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
@@ -109,7 +109,7 @@ public class UserService {
 
     @Transactional
     public boolean withdrawUser(String loginId, String password) {
-        User user = userRepository.findByLoginId(loginId).orElse(null);
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElse(null);
         if (user == null) return false;
 
         if (!passwordEncoder.matches(password, user.getPassword())) {

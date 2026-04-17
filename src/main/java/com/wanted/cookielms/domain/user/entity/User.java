@@ -62,6 +62,7 @@ public class User {
         this.updatedAt = updatedAt;
         this.role = role;
         this.status = status;
+        this.isDeleted = false;
     }
 
     public void updatePassword(String encodedPassword) {
