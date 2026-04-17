@@ -1,11 +1,12 @@
-package com.wanted.cookielms.domain.admin.entity;
+package com.wanted.cookielms.global.logging.api.entity;
 
+import com.wanted.cookielms.domain.admin.enums.HttpMethod;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import com.wanted.cookielms.domain.admin.enums.HttpMethod;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ApiPerformanceLog {
+public class ApiPerformanceLogEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,16 +1,18 @@
 package com.wanted.cookielms.global.config.security.handler;
 
-import com.wanted.cookielms.global.error.model.entity.ErrorLogEntity;
-import com.wanted.cookielms.global.error.model.entity.enums.ErrorSeverity;
-import com.wanted.cookielms.global.error.model.service.ErrorLogService;
+import com.wanted.cookielms.global.logging.error.entity.ErrorLogEntity;
+import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
+import com.wanted.cookielms.global.logging.error.service.ErrorLogService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
+import org.slf4j.MDC;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -26,7 +28,10 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {
 
-        String traceId = UUID.randomUUID().toString();
+        String traceId = MDC.get("traceId");
+        if (traceId == null) {
+            traceId = UUID.randomUUID().toString();
+        }
 
         ErrorLogEntity errorLog = ErrorLogEntity.builder()
                 .errorCode("UNAUTHORIZED") // 401
@@ -43,7 +48,10 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
         errorLogService.saveErrorLogAsync(errorLog);
 
-        // 로그인 페이지로 보내거나, 예쁜 에러 화면으로 전송
-        response.sendRedirect("/user/login?error=unauthorized&traceId=" + traceId);
+// 세션에 에러 메시지 저장
+        HttpSession session = request.getSession();
+        session.setAttribute("loginError", "로그인이 필요합니다");
+
+        response.sendRedirect("/user/login");
     }
 }

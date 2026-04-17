@@ -2,7 +2,7 @@ package com.wanted.cookielms.global.interceptor;
 
 import com.wanted.cookielms.domain.admin.dto.ApiPerformanceLogDto;
 import com.wanted.cookielms.domain.admin.enums.HttpMethod;
-import com.wanted.cookielms.domain.admin.service.ApiPerformanceLogService;
+import com.wanted.cookielms.global.logging.api.service.ApiPerformanceLogService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

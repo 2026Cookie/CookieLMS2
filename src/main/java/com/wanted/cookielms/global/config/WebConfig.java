@@ -1,4 +1,4 @@
-package com.wanted.cookielms.global;
+package com.wanted.cookielms.global.config;
 
 import com.wanted.cookielms.global.interceptor.ApiTrackingInterceptor;
 import lombok.RequiredArgsConstructor;

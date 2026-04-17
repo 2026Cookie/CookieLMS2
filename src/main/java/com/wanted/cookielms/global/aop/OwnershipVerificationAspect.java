@@ -1,4 +1,4 @@
-package com.wanted.cookielms.global.config.security.aop;
+package com.wanted.cookielms.global.aop;
 
 import com.wanted.cookielms.domain.assignment.service.AssignmentStuService;
 import com.wanted.cookielms.domain.auth.dto.AuthDetails;

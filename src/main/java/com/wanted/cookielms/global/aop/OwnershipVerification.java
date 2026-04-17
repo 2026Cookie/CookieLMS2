@@ -1,4 +1,4 @@
-package com.wanted.cookielms.global.config.security.aop;
+package com.wanted.cookielms.global.aop;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

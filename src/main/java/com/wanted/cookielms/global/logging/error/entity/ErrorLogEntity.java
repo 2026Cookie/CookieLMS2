@@ -1,6 +1,6 @@
-package com.wanted.cookielms.global.error.model.entity;
+package com.wanted.cookielms.global.logging.error.entity;
 
-import com.wanted.cookielms.global.error.model.entity.enums.ErrorSeverity;
+import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

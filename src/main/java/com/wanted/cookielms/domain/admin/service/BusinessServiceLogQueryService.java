@@ -1,8 +1,8 @@
 package com.wanted.cookielms.domain.admin.service;
 
-import com.wanted.cookielms.global.logging.entity.BusinessServiceLogEntity;
-import com.wanted.cookielms.global.logging.repository.BusinessServiceLogRepository;
-import com.wanted.cookielms.global.error.model.repository.ErrorLogRepository;
+import com.wanted.cookielms.global.logging.businessService.entity.BusinessServiceLogEntity;
+import com.wanted.cookielms.global.logging.businessService.repository.BusinessServiceLogRepository;
+import com.wanted.cookielms.global.logging.error.repository.ErrorLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

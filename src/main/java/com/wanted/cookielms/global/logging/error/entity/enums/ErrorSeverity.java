@@ -1,4 +1,4 @@
-package com.wanted.cookielms.global.error.model.entity.enums;
+package com.wanted.cookielms.global.logging.error.entity.enums;
 
 import lombok.Getter;
 
@@ -26,7 +26,7 @@ public enum ErrorSeverity {
     CRITICAL("심각", 3);
 
     private final String displayName;
-    private final int priority;  // 우선순위 (높을수록 심각함)
+    private final int priority;
 
     ErrorSeverity(String displayName, int priority) {
         this.displayName = displayName;

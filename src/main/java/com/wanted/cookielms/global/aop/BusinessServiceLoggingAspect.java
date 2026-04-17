@@ -1,7 +1,7 @@
 package com.wanted.cookielms.global.aop;
 
-import com.wanted.cookielms.global.logging.entity.BusinessServiceLogEntity;
-import com.wanted.cookielms.global.logging.service.BusinessServiceLogService;
+import com.wanted.cookielms.global.logging.businessService.entity.BusinessServiceLogEntity;
+import com.wanted.cookielms.global.logging.businessService.service.BusinessServiceLogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;

@@ -1,6 +1,6 @@
-package com.wanted.cookielms.global.logging.repository;
+package com.wanted.cookielms.global.logging.businessService.repository;
 
-import com.wanted.cookielms.global.logging.entity.BusinessServiceLogEntity;
+import com.wanted.cookielms.global.logging.businessService.entity.BusinessServiceLogEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

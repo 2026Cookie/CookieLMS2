@@ -2,7 +2,7 @@ package com.wanted.cookielms.domain.assignment.controller;
 
 import com.wanted.cookielms.domain.assignment.service.AssignmentStuService;
 import com.wanted.cookielms.domain.auth.dto.AuthDetails;
-import com.wanted.cookielms.global.config.security.aop.OwnershipVerification; // import 추가
+import com.wanted.cookielms.global.aop.OwnershipVerification; // import 추가
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;

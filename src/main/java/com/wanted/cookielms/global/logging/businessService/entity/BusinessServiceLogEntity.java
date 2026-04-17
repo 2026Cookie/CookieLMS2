@@ -1,4 +1,4 @@
-package com.wanted.cookielms.global.logging.entity;
+package com.wanted.cookielms.global.logging.businessService.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

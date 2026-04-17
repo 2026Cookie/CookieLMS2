@@ -1,4 +1,4 @@
-package com.wanted.cookielms.global;
+package com.wanted.cookielms.global.config;
 
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Configuration;

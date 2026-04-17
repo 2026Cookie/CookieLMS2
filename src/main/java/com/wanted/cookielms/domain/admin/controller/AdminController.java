@@ -1,7 +1,7 @@
 package com.wanted.cookielms.domain.admin.controller;
 
 import com.wanted.cookielms.domain.admin.service.AdminService;
-import com.wanted.cookielms.domain.admin.service.ApiPerformanceLogService;
+import com.wanted.cookielms.domain.admin.service.ApiPerformanceLogQueryService;
 import com.wanted.cookielms.domain.admin.service.ErrorLogQueryService;
 import com.wanted.cookielms.domain.admin.service.BusinessServiceLogQueryService;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
 
     private final AdminService adminService;
-    private final ApiPerformanceLogService apiPerformanceLogService;
+    private final ApiPerformanceLogQueryService apiPerformanceLogQueryService;
     private final ErrorLogQueryService errorLogQueryService;
     private final BusinessServiceLogQueryService businessServiceLogQueryService;
 

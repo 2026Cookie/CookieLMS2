@@ -1,9 +1,9 @@
 package com.wanted.cookielms.domain.admin.service;
 
-import com.wanted.cookielms.global.error.model.entity.enums.ErrorSeverity;
-import com.wanted.cookielms.global.error.model.DTO.ErrorLogResponseDTO;
-import com.wanted.cookielms.global.error.model.entity.ErrorLogEntity;
-import com.wanted.cookielms.global.error.model.repository.ErrorLogRepository;
+import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
+import com.wanted.cookielms.global.logging.error.dto.ErrorLogResponseDTO;
+import com.wanted.cookielms.global.logging.error.entity.ErrorLogEntity;
+import com.wanted.cookielms.global.logging.error.repository.ErrorLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

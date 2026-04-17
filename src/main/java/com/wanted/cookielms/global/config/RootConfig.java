@@ -1,4 +1,4 @@
-package com.wanted.cookielms.global;
+package com.wanted.cookielms.global.config;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
