@@ -188,7 +188,13 @@ public class UserController {
         String loginId = (String) session.getAttribute("verifiedLoginId");
         LoginUserDTO userInfo = userService.findByUsername(loginId);
         model.addAttribute("userInfo", userInfo);
-        model.addAttribute("modifyUserInfo", new ModifyUserInfo());
+
+        ModifyUserInfo modifyUserInfo = new ModifyUserInfo();
+        modifyUserInfo.setName(userInfo.getName());
+        modifyUserInfo.setNickname(userInfo.getNickname());
+        modifyUserInfo.setEmail(userInfo.getEmail());
+        modifyUserInfo.setPhone(userInfo.getPhone());
+        model.addAttribute("modifyUserInfo", modifyUserInfo);
         return "user/mypage_edit";
     }
 
