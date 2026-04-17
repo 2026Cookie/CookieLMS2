@@ -2,6 +2,7 @@ package com.wanted.cookielms.domain.user.service;
 
 import com.wanted.cookielms.domain.user.dto.JoinUserDTO;
 import com.wanted.cookielms.domain.user.dto.LoginUserDTO;
+import com.wanted.cookielms.domain.user.dto.ModifyUserInfo;
 import com.wanted.cookielms.domain.user.dto.ResetPasswordDTO;
 import com.wanted.cookielms.domain.user.entity.User;
 import com.wanted.cookielms.domain.user.enums.Role;
@@ -75,6 +76,48 @@ public class UserService {
                 .ifPresent(user -> {user.updatePassword(passwordEncoder.encode(newPassword));
                 });
 
+    }
+
+    // 정보 조회 비번 확인용
+    public boolean verifyPassword(String loginId, String password) {
+        return userRepository.findByLoginId(loginId)
+                .map(user -> passwordEncoder.matches(password, user.getPassword()))
+                .orElse(false);
+    }
+
+
+    @Transactional
+    public boolean updateUserInfo(String loginId, ModifyUserInfo dto) {
+        User user = userRepository.findByLoginId(loginId).orElse(null);
+        if (user == null) return false;
+
+        if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
+            return false;
+        }
+
+        user.updateInfo(dto.getName(), dto.getNickname(), dto.getEmail(), dto.getPhone());
+
+        if (dto.getNewPassword() != null && !dto.getNewPassword().isBlank()) {
+            if (!dto.getNewPassword().equals(dto.getNewPasswordConfirm())) {
+                return false;
+            }
+            user.updatePassword(passwordEncoder.encode(dto.getNewPassword()));
+        }
+
+        return true;
+    }
+
+    @Transactional
+    public boolean withdrawUser(String loginId, String password) {
+        User user = userRepository.findByLoginId(loginId).orElse(null);
+        if (user == null) return false;
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            return false;
+        }
+
+        user.withdraw();
+        return true;
     }
 
 }

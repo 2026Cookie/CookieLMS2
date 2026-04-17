@@ -44,6 +44,7 @@ public class User {
     // eum 클래는 필드 순서를 따라 번호가 부여된다.
     // ordinal , string
     // userDetails 는 앤티티에 있으면 안된다, 수정 반드시 필요!!
+    @Enumerated(EnumType.STRING)
     private Role role;
     private Status status;
 
@@ -66,5 +67,20 @@ public class User {
     public void updatePassword(String encodedPassword) {
         this.password = encodedPassword;
         this.updatedAt = LocalDateTime.now();
+    }
+
+
+    public void updateInfo(String name, String nickname, String email, String phone) {
+        this.name = name;
+        this.nickname = nickname;
+        this.email = email;
+        this.phone = phone;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void withdraw() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+        this.status = Status.DORMANT;
     }
 }

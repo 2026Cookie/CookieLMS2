@@ -1,8 +1,9 @@
 package com.wanted.cookielms.domain.admin.controller;
 
+import com.wanted.cookielms.domain.admin.dto.ApiMetricsDto;
 import com.wanted.cookielms.domain.admin.service.AdminService;
+import com.wanted.cookielms.domain.admin.service.ApiPerformanceLogService;
 import com.wanted.cookielms.domain.admin.service.LogService;
-import com.wanted.cookielms.domain.admin.service.ApiPerformanceLog;
 import com.wanted.cookielms.domain.admin.service.UserBanService;
 import com.wanted.cookielms.global.error.model.entity.enums.ErrorSeverity;
 import com.wanted.cookielms.global.error.model.DTO.ErrorLogResponseDTO;
@@ -24,7 +25,7 @@ public class AdminController {
 
     private final AdminService adminService;
     private final LogService logService;
-    private final ApiPerformanceLog apiPerformanceLog;
+    private final ApiPerformanceLogService apiPerformanceLogService;
     private final UserBanService userBanService;
 
     // =========================================================================
@@ -131,5 +132,14 @@ public class AdminController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return logService.getErrorsBySeverityAndDateRange(severity, startDate, endDate, pageable);
+    }
+
+    /**
+     * [GET] /admin/metrics/speed
+     * API 성능 메트릭 조회 (대시보드용)
+     */
+    @GetMapping("/metrics/speed")
+    public ApiMetricsDto getMetrics() {
+        return apiPerformanceLogService.getMetrics();
     }
 }

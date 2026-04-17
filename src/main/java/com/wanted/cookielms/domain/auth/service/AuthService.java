@@ -31,6 +31,12 @@ public class AuthService implements UserDetailsService {
             throw new UsernameNotFoundException("회원정보가 존재하지 않습니다.");
         }
 
+        if (Boolean.TRUE.equals(login.getIsDeleted())) {
+            throw new UsernameNotFoundException("탈퇴한 회원입니다.");
+        }
+
         return new AuthDetails(login);
     }
+
+
 }

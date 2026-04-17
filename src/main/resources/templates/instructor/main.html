@@ -1,46 +1,80 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>강사 메인</title>
-  <style>
-    .menu-box {
-      margin: 20px 0;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      max-width: 400px;
-      background-color: #f9f9f9;
-    }
-    .menu-box a {
-      display: block;
-      margin-bottom: 10px;
-      padding: 10px;
-      text-decoration: none;
-      color: #007bff;
-      background-color: white;
-      border: 1px solid #007bff;
-      border-radius: 4px;
-      text-align: center;
-      font-weight: bold;
-    }
-    .menu-box a:hover {
-      background-color: #007bff;
-      color: white;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>강사 메인 - Cookiego</title>
+    <style>
+        :root {
+            --parchment: #edede9; --dust-grey: #d6ccc2; --linen: #f5ebe0;
+            --powder-petal: #e3d5ca; --almond-silk: #d5bdaf;
+            --text-primary: #2c2010; --text-secondary: #5c4a3a;
+            --text-muted: #8b7355; --text-on-dark: #f5ebe0;
+            --btn-dark: #4a3728; --btn-dark-hover: #2c2010;
+            --shadow: rgba(44,32,16,0.10);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--parchment); color: var(--text-primary); min-height: 100vh; }
+        header {
+            background: var(--linen); border-bottom: 1px solid var(--dust-grey);
+            padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .logo { font-size: 18px; font-weight: 700; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .header-right a { font-size: 14px; color: var(--text-secondary); text-decoration: none; }
+        .header-right a:hover { color: var(--text-primary); }
+        .btn-logout {
+            padding: 7px 16px; background: transparent; border: 1.5px solid var(--almond-silk);
+            border-radius: 6px; font-size: 13px; color: var(--text-secondary);
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-logout:hover { background: var(--powder-petal); }
+        .main { max-width: 800px; margin: 60px auto; padding: 0 24px; }
+        .greeting { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+        .greeting-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 40px; }
+        .section-title { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .menu-card {
+            background: var(--linen); border: 1px solid var(--dust-grey);
+            border-radius: 14px; padding: 28px 24px;
+            text-decoration: none; color: var(--text-primary);
+            transition: all 0.2s; box-shadow: 0 2px 10px var(--shadow);
+        }
+        .menu-card:hover { background: var(--powder-petal); border-color: var(--almond-silk); transform: translateY(-2px); box-shadow: 0 4px 16px var(--shadow); }
+        .menu-icon { font-size: 32px; margin-bottom: 12px; }
+        .menu-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+        .menu-desc { font-size: 13px; color: var(--text-muted); }
+        @media (max-width: 480px) { .menu-grid { grid-template-columns: 1fr; } }
+    </style>
 </head>
 <body>
-<h1>강사 메인 페이지</h1>
-<p>환영합니다, 강사님!</p>
+<header>
+    <div class="logo">Cookiego</div>
+    <div class="header-right">
+        <a th:href="@{/user/mypage}">마이페이지</a>
+        <form th:action="@{/logout}" method="post" style="display:inline;">
+            <button type="submit" class="btn-logout">로그아웃</button>
+        </form>
+    </div>
+</header>
 
-<div class="menu-box">
-  <h3>📚 강의 관리 메뉴</h3>
-  <a th:href="@{/instructor/lectures}">내 강의 목록 보기</a>
-  <a th:href="@{/instructor/lecture/regist}">새 강의 등록하기</a>
+<div class="main">
+    <div class="greeting">안녕하세요, 강사님!</div>
+    <div class="greeting-sub">오늘도 좋은 강의 부탁드립니다.</div>
+
+    <div class="section-title">강의 관리</div>
+    <div class="menu-grid">
+        <a th:href="@{/instructor/lectures}" class="menu-card">
+            <div class="menu-icon">📚</div>
+            <div class="menu-title">내 강의 목록</div>
+            <div class="menu-desc">등록한 강의를 확인하고 관리하세요</div>
+        </a>
+        <a th:href="@{/instructor/lecture/regist}" class="menu-card">
+            <div class="menu-icon">➕</div>
+            <div class="menu-title">새 강의 등록</div>
+            <div class="menu-desc">새로운 강의를 개설하세요</div>
+        </a>
+    </div>
 </div>
-<form th:action="@{/logout}" method="post" style="margin-top: 30px;">
-  <button type="submit" style="padding: 5px 15px; cursor: pointer;">로그아웃</button>
-</form>
 </body>
 </html>

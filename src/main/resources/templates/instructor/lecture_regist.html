@@ -1,138 +1,138 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>강의 등록/수정</title>
-  <style>
-    body { font-family: 'Malgun Gothic', sans-serif; padding: 20px; background-color: #f4f7f6; color: #333; }
-    .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    h2 { border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 25px; color: #007bff; }
-    div { margin-bottom: 20px; }
-    label { display: block; margin-bottom: 8px; font-weight: bold; }
-    input[type="text"], textarea { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-    textarea { height: 100px; resize: none; }
-    button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; cursor: pointer; border-radius: 6px; font-size: 16px; font-weight: bold; }
-    button:hover { background-color: #0056b3; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>강의 등록/수정 - Cookiego</title>
+    <style>
+        :root {
+            --parchment: #edede9; --dust-grey: #d6ccc2; --linen: #f5ebe0;
+            --powder-petal: #e3d5ca; --almond-silk: #d5bdaf;
+            --text-primary: #2c2010; --text-secondary: #5c4a3a;
+            --text-muted: #8b7355; --text-on-dark: #f5ebe0;
+            --btn-dark: #4a3728; --btn-dark-hover: #2c2010;
+            --shadow: rgba(44,32,16,0.10);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--parchment); color: var(--text-primary);
+            min-height: 100vh; display: flex; justify-content: center;
+            align-items: flex-start; padding: 40px 20px;
+        }
+        .card {
+            background: var(--linen); border: 1px solid var(--dust-grey);
+            border-radius: 16px; box-shadow: 0 4px 24px var(--shadow);
+            padding: 48px 40px; width: 100%; max-width: 560px;
+        }
+        .back-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--text-muted); margin-bottom: 28px; text-decoration: none; }
+        .back-link:hover { color: var(--text-secondary); }
+        h2 { font-size: 22px; font-weight: 700; margin-bottom: 28px; }
+        .section-label {
+            font-size: 12px; font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin: 24px 0 14px; padding-bottom: 6px; border-bottom: 1px solid var(--dust-grey);
+        }
+        .form-group { margin-bottom: 16px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+        input[type="text"], input[type="number"], input[type="time"], input[type="file"], textarea {
+            width: 100%; padding: 11px 14px; border: 1px solid var(--dust-grey);
+            border-radius: 8px; background: var(--parchment); color: var(--text-primary);
+            font-size: 15px; outline: none; transition: border-color 0.2s; font-family: inherit;
+        }
+        textarea { height: 100px; resize: none; }
+        input:focus, textarea:focus { border-color: var(--almond-silk); background: #fff; }
+        .schedule-box {
+            background: var(--powder-petal); border: 1px solid var(--almond-silk);
+            border-radius: 10px; padding: 20px; margin-bottom: 16px;
+        }
+        .schedule-box .section-label { margin-top: 0; border-bottom-color: var(--almond-silk); }
+        .hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+        .btn-submit {
+            width: 100%; padding: 14px; background: var(--btn-dark); color: var(--text-on-dark);
+            border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
+            cursor: pointer; margin-top: 24px; transition: background 0.2s;
+        }
+        .btn-submit:hover { background: var(--btn-dark-hover); }
+    </style>
 </head>
 <body>
-<div class="container">
+<div class="card">
+    <a th:href="@{/instructor/lectures}" class="back-link">← 강의 목록으로</a>
+    <h2 th:text="${isEdit} ? '강의 수정' : '새 강의 등록'">강의 등록</h2>
 
-  <!-- 1. 제목 분기 -->
-  <h2 th:text="${isEdit} ? '강의 수정 (강사용)' : '강의 등록 (강사용)'">강의 등록 (강사용)</h2>
-
-
-  <form th:action="${isEdit} ? @{/instructor/lecture/edit/{id}(id=${lecture.lectureId})} : @{/instructor/lecture/regist}"
+    <form th:action="${isEdit} ? '/instructor/lecture/edit/' + ${lecture.lectureId} : '/instructor/lecture/regist'"
         method="post" enctype="multipart/form-data">
 
-    <!-- 3. 기존 값 채우기 -->
-    <div>
-      <label>강의 제목:</label>
-      <input type="text" name="title" th:value="${lecture?.title}" required placeholder="강의 제목을 입력하세요">
-    </div>
-
-    <div>
-      <label>강의 설명:</label>
-      <textarea name="description" required placeholder="강의 상세 설명"
-                th:text="${lecture?.description}"></textarea>
-    </div>
-
-    <div>
-      <label>유튜브 영상 주소:</label>
-      <input type="text" name="videoUrl" th:value="${lecture?.videoUrl}"
-             placeholder="https://..." required autocomplete="off">
-    </div>
-
-    <div style="padding: 20px; background: #FFEB3B; border: 3px dashed #F44336; border-radius: 12px; margin: 20px 0;">
-      <h3 style="margin-top: 0; color: #d32f2f;">⭐ 강의 세부 설정 (꼭 입력!) ⭐</h3>
-
-      <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-        <div style="flex: 1;">
-          <label style="color: #333;">👥 최대 인원</label>
-          <input type="number" name="maxCapacity"
-                 th:value="${lecture?.maxCapacity} ?: 30"
-                 required style="width: 100%; height: 40px; font-size: 16px;">
+        <div class="section-label">기본 정보</div>
+        <div class="form-group">
+            <label>강의 제목</label>
+            <input type="text" name="title" th:value="${lecture?.title}" placeholder="강의 제목을 입력하세요" required>
         </div>
-        <div style="flex: 1;">
-          <label style="color: #333;">📅 강의 요일</label>
-          <input type="text" name="lectureDay"
-                 th:value="${lecture?.lectureDay}"
-                 placeholder="예: 월요일" required style="width: 100%; height: 40px; font-size: 16px;">
+        <div class="form-group">
+            <label>강의 설명</label>
+            <textarea name="description" placeholder="강의 상세 설명" th:text="${lecture?.description}" required></textarea>
         </div>
-      </div>
-
-      <div style="display: flex; gap: 15px;">
-        <div style="flex: 1;">
-          <label style="color: #333;">⏰ 시작 시간</label>
-          <input type="time" name="startTime"
-                 th:value="${lecture?.startTime}"
-                 required style="width: 100%; height: 40px; font-size: 16px;">
+        <div class="form-group">
+            <label>유튜브 영상 주소</label>
+            <input type="text" name="videoUrl" th:value="${lecture?.videoUrl}" placeholder="https://..." required autocomplete="off">
         </div>
-        <div style="flex: 1;">
-          <label style="color: #333;">⌛ 종료 시간</label>
-          <input type="time" name="endTime"
-                 th:value="${lecture?.endTime}"
-                 required style="width: 100%; height: 40px; font-size: 16px;">
+
+        <div class="schedule-box">
+            <div class="section-label">강의 세부 설정</div>
+            <div class="form-row">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>최대 인원</label>
+                    <input type="number" name="maxCapacity" th:value="${lecture?.maxCapacity} ?: 30" required>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>강의 요일</label>
+                    <input type="text" name="lectureDay" th:value="${lecture?.lectureDay}" placeholder="예: 월요일" required>
+                </div>
+            </div>
+            <div class="form-row" style="margin-bottom:0; margin-top:14px;">
+                <div>
+                    <label>시작 시간</label>
+                    <input type="time" name="startTime" th:value="${lecture?.startTime}" required>
+                </div>
+                <div>
+                    <label>종료 시간</label>
+                    <input type="time" name="endTime" th:value="${lecture?.endTime}" required>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
 
-    <!-- 4. 파일 업로드 (수정 시 required 해제) -->
-    <div>
-      <label>수업 자료 (PDF만 가능, 최대 5MB):</label>
-      <input type="file" name="lectureFile" id="lectureFile"
-             accept=".pdf"
-             th:required="${!isEdit}"
-             onchange="validateFile(this)">
-      <p th:if="${isEdit}" style="font-size: 12px; color: #666;">
-        * 파일을 선택하지 않으면 기존 파일이 유지됩니다.
-      </p>
-    </div>
+        <div class="form-group">
+            <label>수업 자료 (PDF, 최대 5MB)</label>
+            <input type="file" name="lectureFile" id="lectureFile" accept=".pdf"
+                   th:required="${!isEdit}" onchange="validateFile(this)">
+            <p class="hint" th:if="${isEdit}">파일을 선택하지 않으면 기존 파일이 유지됩니다.</p>
+        </div>
 
-    <!-- 5. 버튼 텍스트 분기 -->
-    <div style="display: flex; gap: 10px; margin-top: 30px;">
-      <button type="submit" style="flex: 2;"
-              th:text="${isEdit} ? '수정 완료' : '등록하기'">등록하기</button>
-    </div>
-
-  </form>
+        <button type="submit" class="btn-submit" th:text="${isEdit} ? '수정 완료' : '등록하기'">등록하기</button>
+    </form>
 </div>
 
 <script th:inline="javascript">
-  function validateFile(input) {
-    const file = input.files[0];
-    if (!file) return;
-
-    const fileExtension = file.name.split('.').pop().toLowerCase();
-    if (fileExtension !== 'pdf') {
-      alert("❌ 맞지 않는 형식의 파일입니다. PDF만 업로드 해주세요.");
-      resetFile(input);
-      return;
+    function validateFile(input) {
+        const file = input.files[0];
+        if (!file) return;
+        if (file.name.split('.').pop().toLowerCase() !== 'pdf') {
+            alert('PDF 파일만 업로드 가능합니다.');
+            input.value = ''; return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            alert('5MB를 초과합니다. 5MB 이하의 PDF를 업로드해 주세요.');
+            input.value = '';
+        }
     }
-
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      alert("❌ 5MB를 초과합니다. 5MB 이하의 PDF를 업로드 해주세요.");
-      resetFile(input);
-      return;
-    }
-  }
-
-  function resetFile(input) {
-    input.value = "";
-    if (input.value) {
-      input.type = "text";
-      input.type = "file";
-    }
-  }
-
-  /*<![CDATA[*/
-  const errorMsg = /*[[${errorMessage}]]*/ null;
-  if (errorMsg) alert("❌ " + errorMsg);
-
-  const successMsg = /*[[${message}]]*/ null;
-  if (successMsg) alert(successMsg);
-  /*]]>*/
+    /*<![CDATA[*/
+    const errorMsg = /*[[${errorMessage}]]*/ null;
+    if (errorMsg) alert(errorMsg);
+    const successMsg = /*[[${message}]]*/ null;
+    if (successMsg) alert(successMsg);
+    /*]]>*/
 </script>
 </body>
 </html>

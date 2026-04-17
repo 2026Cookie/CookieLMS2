@@ -11,11 +11,8 @@ import java.time.LocalDateTime;
 @ToString
 public class ApiPerformanceLogDto {
     private Long logId;
-    private Long userId;
     private String endpoint;
     private HttpMethod httpMethod;
-    private Integer statusCode;
     private Integer executionTimeMs;
-    private String clientIp;
     private LocalDateTime createdAt;
 }

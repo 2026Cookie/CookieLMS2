@@ -1,21 +1,90 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>강의 목록</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 강의 목록 - Cookiego</title>
+    <style>
+        :root {
+            --parchment: #edede9; --dust-grey: #d6ccc2; --linen: #f5ebe0;
+            --powder-petal: #e3d5ca; --almond-silk: #d5bdaf;
+            --text-primary: #2c2010; --text-secondary: #5c4a3a;
+            --text-muted: #8b7355; --text-on-dark: #f5ebe0;
+            --btn-dark: #4a3728; --btn-dark-hover: #2c2010;
+            --shadow: rgba(44,32,16,0.10);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--parchment); color: var(--text-primary); min-height: 100vh; }
+        header {
+            background: var(--linen); border-bottom: 1px solid var(--dust-grey);
+            padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .logo { font-size: 18px; font-weight: 700; }
+        .back-link { font-size: 14px; color: var(--text-secondary); text-decoration: none; }
+        .back-link:hover { color: var(--text-primary); }
+        .main { max-width: 800px; margin: 0 auto; padding: 40px 24px; }
+        .top-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+        .page-title { font-size: 22px; font-weight: 700; }
+        .btn-new {
+            padding: 10px 20px; background: var(--btn-dark); color: var(--text-on-dark);
+            border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
+            cursor: pointer; text-decoration: none; transition: background 0.2s;
+        }
+        .btn-new:hover { background: var(--btn-dark-hover); }
+        .subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; }
+        .lecture-list { display: flex; flex-direction: column; gap: 12px; }
+        .lecture-item {
+            background: var(--linen); border: 1px solid var(--dust-grey);
+            border-radius: 12px; padding: 18px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 8px var(--shadow); transition: all 0.2s;
+        }
+        .lecture-item:hover { border-color: var(--almond-silk); background: var(--powder-petal); }
+        .lecture-info { display: flex; align-items: center; gap: 14px; }
+        .lecture-num {
+            width: 36px; height: 36px; background: var(--powder-petal);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700; color: var(--text-muted); flex-shrink: 0;
+        }
+        .lecture-title { font-size: 15px; font-weight: 600; }
+        .btn-edit {
+            padding: 8px 16px; background: transparent; border: 1.5px solid var(--almond-silk);
+            border-radius: 7px; font-size: 13px; font-weight: 600; color: var(--text-secondary);
+            cursor: pointer; transition: all 0.2s; white-space: nowrap;
+        }
+        .btn-edit:hover { background: var(--almond-silk); color: var(--text-primary); }
+        .empty { text-align: center; padding: 60px 0; color: var(--text-muted); font-size: 15px; }
+    </style>
 </head>
 <body>
-<h2>강사 나의 강의 목록 페이지</h2>
-<p>현재 로그인한 강사님이 등록한 강의 목록입니다.</p>
+<header>
+    <div class="logo">Cookiego</div>
+    <a th:href="@{/instructor/main}" class="back-link">← 메인으로</a>
+</header>
 
-<div th:each="lecture : ${lectures.content}" style="margin-bottom: 15px;">
-    <p>
-        <span th:text="${lecture.lectureId}">강의번호</span>
-        <span th:text="${lecture.title}" style="font-weight: bold;">강의 제목</span>
-        <button th:onclick="|location.href='@{/instructor/lecture/edit/{id}(id=${lecture.lectureId})}'|">수정하기</button>
-    </p>
+<div class="main">
+    <div class="top-row">
+        <div class="page-title">내 강의 목록</div>
+        <a th:href="@{/instructor/lecture/regist}" class="btn-new">+ 새 강의 등록</a>
+    </div>
+    <p class="subtitle">등록한 강의 목록입니다.</p>
+
+    <div class="lecture-list" th:if="${not #lists.isEmpty(lectures.content)}">
+        <div class="lecture-item" th:each="lecture : ${lectures.content}">
+            <div class="lecture-info">
+                <div class="lecture-num" th:text="${lecture.lectureId}"></div>
+                <div class="lecture-title" th:text="${lecture.title}"></div>
+            </div>
+            <button class="btn-edit"
+                    th:onclick="|location.href='@{/instructor/lecture/edit/{id}(id=${lecture.lectureId})}'|">
+                수정하기
+            </button>
+        </div>
+    </div>
+
+    <div class="empty" th:if="${#lists.isEmpty(lectures.content)}">
+        등록된 강의가 없습니다. 첫 강의를 개설해보세요!
+    </div>
 </div>
-<button th:onclick="|location.href='@{/instructor/lecture/regist}'|">새 강의 등록하기</button>
-
 </body>
 </html>
