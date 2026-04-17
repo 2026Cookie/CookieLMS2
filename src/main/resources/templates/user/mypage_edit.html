@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>정보 수정</title>
+</head>
+<body>
+<h1>정보 수정</h1>
+<form th:action="@{/user/mypage/edit}" method="post" th:object="${modifyUserInfo}">
+    <input type="text" th:field="*{name}" placeholder="이름"><br>
+    <input type="text" th:field="*{nickname}" placeholder="닉네임"><br>
+    <input type="email" th:field="*{email}" placeholder="이메일"><br>
+    <input type="text" th:field="*{phone}" placeholder="전화번호"><br>
+    <input type="password" th:field="*{currentPassword}" placeholder="현재 비밀번호"><br>
+    <input type="password" th:field="*{newPassword}" placeholder="새 비밀번호 (변경시에만 입력)"><br>
+    <p th:if="${#fields.hasErrors('newPassword')}" th:errors="*{newPassword}" style="color:red"></p>
+    <input type="password" th:field="*{newPasswordConfirm}" placeholder="새 비밀번호 확인"><br>
+    <p th:if="${error}" th:text="${error}" style="color:red"></p>
+    <button type="submit">저장</button>
+</form>
+<a th:href="@{/user/mypage/info}">돌아가기</a>
+</body>
+</html>
