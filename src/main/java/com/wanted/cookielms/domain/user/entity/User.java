@@ -62,4 +62,9 @@ public class User {
         this.role = role;
         this.status = status;
     }
+
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+        this.updatedAt = LocalDateTime.now();
+    }
 }

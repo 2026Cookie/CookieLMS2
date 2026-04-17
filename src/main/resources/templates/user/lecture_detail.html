@@ -61,15 +61,20 @@
               }
 
               const buttonArea = document.getElementById('buttonArea');
-              const isEnrolled = data.enrolled === true || data.isEnrolled === true;
 
-              if (isEnrolled) {
+              // 🌟 ModelMapper 충돌 방지를 위해 수정한 백엔드 DTO 변수명 적용!
+              const isEnrolled = data.userEnrolled === true;
+              const isInstructor = data.userInstructor === true;
+
+              // 수강생이거나 강사 본인이면 기능 버튼 노출
+              if (isEnrolled || isInstructor) {
                 buttonArea.innerHTML = `
                         <button onclick="playVideo(${lectureId})">강의 영상 재생</button>
                         <button onclick="downloadMaterial(${lectureId})">학습 자료 다운로드</button>
-                        <button onclick="goToAssignment(${lectureId})">과제 제출하기</button>
+                        <button onclick="goToAssignment(${lectureId})">과제 제출/확인하기</button>
                     `;
               } else {
+                // 권한이 없으면 자물쇠 표시
                 buttonArea.innerHTML = `
                         <div>
                             🔒 강의를 시청하시려면 먼저 수강신청을 완료해주세요.<br>
@@ -87,7 +92,7 @@
   function playVideo(lectureId) {
     fetch(`/lectures/${lectureId}/video`)
             .then(response => {
-              if (response.status === 403) { throw new Error("수강생만 시청할 수 있습니다."); }
+              if (response.status === 403) { throw new Error("수강생 또는 담당 강사만 시청할 수 있습니다."); }
               if (!response.ok) { throw new Error("영상을 불러오는데 실패했습니다."); }
               return response.text();
             })
@@ -97,7 +102,7 @@
                 finalUrl = "https://www.youtube.com/embed/jNQXAC9IVRw";
               }
               document.getElementById('videoPlayer').src = finalUrl;
-              document.getElementById('videoModal').style.display = 'block'; // flex 대신 블록으로 표시
+              document.getElementById('videoModal').style.display = 'block';
             })
             .catch(error => { alert(error.message); });
   }
