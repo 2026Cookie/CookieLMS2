@@ -3,8 +3,8 @@ package com.wanted.cookielms.domain.user.controller;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.ui.Model;
 import com.wanted.cookielms.domain.user.dto.JoinUserDTO;
-import com.wanted.cookielms.domain.user.dto.LoginUserDTO;
 import com.wanted.cookielms.domain.user.dto.ModifyUserInfo;
+import com.wanted.cookielms.domain.user.dto.MypageDTO;
 import com.wanted.cookielms.domain.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -139,8 +139,8 @@ public class UserController {
     @GetMapping("/mypage")
     public String mypage(Model model) {
         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
-        LoginUserDTO userInfo = userService.findByUsername(loginId);
-        model.addAttribute("userInfo", userInfo);
+        MypageDTO mypage = userService.getMypage(loginId);
+        model.addAttribute("userInfo", mypage);
         return "user/mypage";
     }
 
@@ -169,8 +169,8 @@ public class UserController {
             return "redirect:/user/verify-password";
         }
         String loginId = (String) session.getAttribute("verifiedLoginId");
-        LoginUserDTO userInfo = userService.findByUsername(loginId);
-        model.addAttribute("userInfo", userInfo);
+        MypageDTO mypage = userService.getMypage(loginId);
+        model.addAttribute("userInfo", mypage);
         return "user/mypage_info";
     }
 
@@ -180,14 +180,13 @@ public class UserController {
             return "redirect:/user/verify-password";
         }
         String loginId = (String) session.getAttribute("verifiedLoginId");
-        LoginUserDTO userInfo = userService.findByUsername(loginId);
-        model.addAttribute("userInfo", userInfo);
+        MypageDTO mypage = userService.getMypage(loginId);
 
         ModifyUserInfo modifyUserInfo = new ModifyUserInfo();
-        modifyUserInfo.setName(userInfo.getName());
-        modifyUserInfo.setNickname(userInfo.getNickname());
-        modifyUserInfo.setEmail(userInfo.getEmail());
-        modifyUserInfo.setPhone(userInfo.getPhone());
+        modifyUserInfo.setName(mypage.getName());
+        modifyUserInfo.setNickname(mypage.getNickname());
+        modifyUserInfo.setEmail(mypage.getEmail());
+        modifyUserInfo.setPhone(mypage.getPhone());
         model.addAttribute("modifyUserInfo", modifyUserInfo);
         return "user/mypage_edit";
     }
