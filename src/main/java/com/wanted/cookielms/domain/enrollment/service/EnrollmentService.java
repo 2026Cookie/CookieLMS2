@@ -1,6 +1,8 @@
 package com.wanted.cookielms.domain.enrollment.service;
 
 import com.wanted.cookielms.domain.enrollment.entity.Enrollment;
+import com.wanted.cookielms.domain.enrollment.exception.EnrollmentErrorCode;
+import com.wanted.cookielms.domain.enrollment.exception.EnrollmentException;
 import com.wanted.cookielms.domain.enrollment.repository.EnrollmentRepository;
 import com.wanted.cookielms.domain.lecture.entity.LectureStuEntity;
 import com.wanted.cookielms.domain.lecture.repository.LectureStuRepository;
@@ -25,16 +27,16 @@ public class EnrollmentService {
 
         // 1. 중복 수강 신청 체크
         if (enrollmentRepository.existsByUserIdAndLectureIdAndStatus(userId, lectureId, "ENROLLED")) {
-            throw new IllegalStateException("이미 수강 신청한 강의입니다.");
+            throw new EnrollmentException(EnrollmentErrorCode.ALREADY_ENROLLED);
         }
 
         // 2. 강의 조회
         LectureStuEntity lecture = lectureStuRepository.findById(lectureId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다. ID: " + lectureId));
+                .orElseThrow(() -> new EnrollmentException(EnrollmentErrorCode.LECTURE_NOT_FOUND));
 
         // 3. 정원 초과 체크
         if (lecture.getCurrentEnrollment() >= lecture.getMaxCapacity()) {
-            throw new IllegalStateException("수강 정원이 초과되었습니다.");
+            throw new EnrollmentException(EnrollmentErrorCode.ENROLLMENT_CAPACITY_EXCEEDED);
         }
 
         // 4. 수강 신청 저장
@@ -54,14 +56,14 @@ public class EnrollmentService {
 
         // 1. 수강 신청 내역 조회
         Enrollment enrollment = enrollmentRepository.findByUserIdAndLectureIdAndStatus(userId, lectureId, "ENROLLED")
-                .orElseThrow(() -> new IllegalArgumentException("수강 신청 내역을 찾을 수 없습니다."));
+                .orElseThrow(() -> new EnrollmentException(EnrollmentErrorCode.ENROLLMENT_NOT_FOUND));
 
         // 2. 수강 취소 처리
         enrollment.changeStatus("CANCELLED");
 
         // 3. 강의 수강 인원 감소
         LectureStuEntity lecture = lectureStuRepository.findById(lectureId)
-                .orElseThrow(() -> new IllegalArgumentException("강의를 찾을 수 없습니다."));
+                .orElseThrow(() -> new EnrollmentException(EnrollmentErrorCode.LECTURE_NOT_FOUND));
         lecture.decreaseEnrollment();
 
         // 4. 대기열 1번 자동 수강 신청
