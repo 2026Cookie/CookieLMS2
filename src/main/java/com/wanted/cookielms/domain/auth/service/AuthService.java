@@ -2,6 +2,7 @@ package com.wanted.cookielms.domain.auth.service;
 
 import com.wanted.cookielms.domain.auth.dto.AuthDetails;
 import com.wanted.cookielms.domain.user.dto.LoginUserDTO;
+import com.wanted.cookielms.domain.user.enums.Status;
 import com.wanted.cookielms.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,6 +34,10 @@ public class AuthService implements UserDetailsService {
 
         if (Boolean.TRUE.equals(login.getIsDeleted())) {
             throw new UsernameNotFoundException("탈퇴한 회원입니다.");
+        }
+
+        if (Status.BANNED.equals(login.getStatus())) {
+            throw new UsernameNotFoundException("정지된 회원입니다.");
         }
 
         return new AuthDetails(login);
