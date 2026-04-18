@@ -49,6 +49,9 @@ public class LectureStuEntity {
     @Column(name = "material_id", length = 500)
     private String materialId; // 화면에서 썸네일 경로로 쓸 컬럼
 
+    @Column(name = "thumbnail", length = 500)
+    private String thumbnail;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

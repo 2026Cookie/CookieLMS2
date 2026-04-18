@@ -18,9 +18,14 @@ public class LectureStuDTO {
     private String thumbnail;
     private String materialId;
 
-    // 🌟 ModelMapper가 헷갈리지 않게 전혀 다른 이름으로 변경!
     private boolean userEnrolled;
     private boolean userInstructor;
+
+    private String instructorName; // 강사 이름 추가
+
+    public void setInstructorName(String instructorName) {
+        this.instructorName = instructorName;
+    }
 
     public void setUserEnrolled(boolean userEnrolled) {
         this.userEnrolled = userEnrolled;
