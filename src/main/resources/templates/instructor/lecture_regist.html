@@ -63,7 +63,7 @@
     <h2 th:text="${isEdit} ? '강의 수정' : '새 강의 등록'">강의 등록</h2>
 
     <form th:action="${isEdit} ? '/instructor/lecture/edit/' + ${lecture.lectureId} : '/instructor/lecture/regist'"
-        method="post" enctype="multipart/form-data">
+          method="post" enctype="multipart/form-data">
 
         <div class="section-label">기본 정보</div>
         <div class="form-group">
@@ -115,7 +115,18 @@
             <label>수업 자료 (PDF, 최대 20MB)</label>
             <input type="file" name="lectureFile" id="lectureFile" accept=".pdf"
                    th:required="${!isEdit}" onchange="validateFile(this)">
-            <p class="hint" th:if="${isEdit}">파일을 선택하지 않으면 기존 파일이 유지됩니다.</p>
+        </div>
+
+        <div class="form-group">
+            <label>강의 썸네일 이미지 (.jpg, .png)</label>
+            <div th:if="${lecture?.thumbnailPath != null}" style="margin-bottom: 12px;">
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">현재 등록된 썸네일:</p>
+                <img th:src="@{'/uploads/' + ${lecture.thumbnailPath}}"
+                     style="width: 100%; max-width: 200px; border-radius: 8px; border: 1px solid var(--dust-grey);">
+            </div>
+            <input type="file" name="thumbnail" id="thumbnail" accept="image/*">
+            <p class="hint" th:if="${isEdit}">파일을 선택하지 않으면 기존 썸네일이 유지됩니다.</p>
+            <p class="hint" th:unless="${isEdit}">목록에 보여질 썸네일 이미지를 등록해주세요.</p>
         </div>
 
         <button type="submit" class="btn-submit" th:text="${isEdit} ? '수정 완료' : '등록하기'">등록하기</button>
@@ -124,12 +135,17 @@
 
 <script th:inline="javascript">
     function validateFile(input) {
-        const file = input.files[0];
+        const file = input.files; // 🌟 추가해서 파일 객체 가져옴
         if (!file) return;
-        if (file.name.split('.').pop().toLowerCase() !== 'pdf') {
+
+        // 확장자 체크
+        const fileName = file.name;
+        if (fileName.split('.').pop().toLowerCase() !== 'pdf') {
             alert('PDF 파일만 업로드 가능합니다.');
             input.value = ''; return;
         }
+
+        // 용량 체크 (20MB)
         if (file.size > 20 * 1024 * 1024) {
             alert('20MB를 초과합니다. 20MB 이하의 PDF를 업로드해 주세요.');
             input.value = '';

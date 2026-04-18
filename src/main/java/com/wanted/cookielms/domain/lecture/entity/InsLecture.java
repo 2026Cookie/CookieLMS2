@@ -57,16 +57,20 @@ public class InsLecture {
     @Column(name = "user_id")
     private Long instructorId;
 
+    @Column(name = "thumbnail") // DB에 저장될 컬럼명
+    private String thumbnail;
+
 
 
     @Builder
-    private InsLecture(String title, String description, String videoUrl, String fileSavedName, String fileOriginName,
+    private InsLecture(String title, String description, String videoUrl, String fileSavedName, String fileOriginName,String thumbnail,
                        Integer maxCapacity, LectureDay lectureDay, LocalTime startTime, LocalTime endTime, Long instructorId) {
         this.title = title;
         this.description = description;
         this.videoUrl = videoUrl;
         this.fileSavedName = fileSavedName;
-
+        this.fileOriginName = fileOriginName;
+        this.thumbnail = thumbnail;
         this.maxCapacity = maxCapacity;
         this.lectureDay = lectureDay;
         this.startTime = startTime;
@@ -93,5 +97,8 @@ public class InsLecture {
     public void updateFileName(String fileOriginName, String fileSavedName) {
         this.fileOriginName = fileOriginName;
         this.fileSavedName = fileSavedName;
+    }
+    public void updateThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
     }
 }
