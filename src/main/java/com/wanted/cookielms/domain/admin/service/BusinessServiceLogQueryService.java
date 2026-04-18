@@ -10,6 +10,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import com.wanted.cookielms.global.logging.businessService.dto.BusinessServiceLogResponseDto;
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +20,14 @@ public class BusinessServiceLogQueryService {
 
     private final BusinessServiceLogRepository businessServiceLogRepository;
     private final ErrorLogRepository errorLogRepository;
+
+    public List<BusinessServiceLogResponseDto> getFailuresByUserId(Long userId) {
+        return businessServiceLogRepository
+                .findByUserIdAndIsSuccessFalseOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(BusinessServiceLogResponseDto::from)
+                .toList();
+    }
 
     /**
      * 📊 오류 발생이 많은 기능 top N

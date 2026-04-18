@@ -6,6 +6,10 @@ spring:
     username: cookie
     password: cookie
 
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
   # JPA 및 하이버네이트 설정
   jpa:
     hibernate:

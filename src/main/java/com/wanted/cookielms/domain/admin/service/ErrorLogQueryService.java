@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -87,6 +88,10 @@ public class ErrorLogQueryService {
         return errorLogs.stream()
                 .map(ErrorLogResponseDTO::fromList)
                 .toList();
+    }
+
+    public List<Map<String, Object>> getCriticalErrorSummaryByUser() {
+        return errorLogRepository.findCriticalErrorCountGroupByUserId();
     }
 
     /**

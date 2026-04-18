@@ -68,6 +68,7 @@ public class SecurityConfig {
                                     "/user/find_password",
                                     "/user/reset_password"
                             ).permitAll()
+                            .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
                             .requestMatchers("/instructor/**").hasRole("INSTRUCTOR")
                             .requestMatchers("/user/mypage/**", "/user/mypage", "/user/verify-password").hasAnyRole("USER", "INSTRUCTOR")
                             .requestMatchers("/user/**").hasRole("USER")

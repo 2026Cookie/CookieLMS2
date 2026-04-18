@@ -10,6 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
+import com.wanted.cookielms.domain.auth.dto.AuthDetails;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
 
@@ -46,11 +49,18 @@ public class ApiTrackingInterceptor implements HandlerInterceptor {
             httpMethod = HttpMethod.GET;
         }
 
+        Long userId = null;
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof AuthDetails authDetails) {
+            userId = authDetails.getLoginUserDTO().getUserId();
+        }
+
         ApiPerformanceLogDto dto = new ApiPerformanceLogDto();
         dto.setEndpoint(request.getRequestURI());
         dto.setHttpMethod(httpMethod);
         dto.setExecutionTimeMs(latencyMs);
         dto.setCreatedAt(LocalDateTime.now());
+        dto.setUserId(userId);
 
         apiPerformanceLogService.saveAsync(dto);
     }
