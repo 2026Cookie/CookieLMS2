@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>전체 강의 목록 - Cookiego</title>
+    <title> 강의 목록 - Cookiego</title>
     <style>
         :root {
             --parchment: #edede9; --dust-grey: #d6ccc2; --linen: #f5ebe0;
@@ -73,7 +73,7 @@
 </header>
 
 <div class="main">
-    <div class="page-title">전체 강의 목록</div>
+    <div class="page-title">강의 목록</div>
     <div class="search-bar">
         <input type="text" id="searchInput" class="search-input" placeholder="강의 제목을 검색해보세요" onkeyup="if(event.keyCode===13) searchLectures()">
         <button class="search-btn" onclick="searchLectures()">검색</button>
@@ -88,12 +88,20 @@
     function searchLectures() { loadLectures(document.getElementById('searchInput').value, 0); }
 
     function loadLectures(keyword, page) {
-        let url = `/lectures?page=${page}&size=6`;
+        // '내 강의' API를 호출
+        let url = `/lectures/my?page=${page}&size=6`;
         if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+
         fetch(url).then(r => r.json()).then(data => {
             const grid = document.getElementById('lectureList');
             grid.innerHTML = '';
-            if (!data.content.length) { grid.innerHTML = '<div class="empty">강의가 없습니다.</div>'; document.getElementById('pagination').innerHTML = ''; return; }
+
+            if (!data.content.length) {
+                grid.innerHTML = '<div class="empty">등록된 수강 강의가 없습니다. 검색을 통해 새로운 강의를 찾아보세요!</div>';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
             data.content.forEach(l => {
                 const thumb = l.thumbnail
                     ? `<img src="/images/${l.thumbnail}" alt="썸네일">`
@@ -104,14 +112,14 @@
                         <div class="card-body">
                             <div class="card-title">${l.title}</div>
                             <div class="card-info">
-                                강사 ID: ${l.instructorId}<br>
-                                수강 인원: ${l.currentEnrollment} / ${l.maxCapacity} 명
+                                👨‍🏫 강사명: ${l.instructorName}<br>
+                                👥 수강 인원: ${l.currentEnrollment} / ${l.maxCapacity} 명
                             </div>
                         </div>
                     </div>`;
             });
             renderPagination(data.totalPages, data.number, keyword);
-        }).catch(e => console.error(e));
+        }).catch(e => console.error("내 강의 목록 로딩 실패:", e));
     }
 
     function renderPagination(total, cur, keyword) {
