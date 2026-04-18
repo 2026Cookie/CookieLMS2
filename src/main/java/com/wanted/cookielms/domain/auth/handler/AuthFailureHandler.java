@@ -18,8 +18,6 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationFa
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @Slf4j
@@ -59,8 +57,6 @@ public class AuthFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 // 세션에 에러 메시지 저장
         HttpSession session = request.getSession();
         session.setAttribute("loginError", errorMessage);
-
-        String encodedMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
         setDefaultFailureUrl("/user/login");
 
         super.onAuthenticationFailure(request, response, exception);

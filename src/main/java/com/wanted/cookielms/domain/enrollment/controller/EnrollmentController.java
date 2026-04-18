@@ -5,12 +5,13 @@ import com.wanted.cookielms.domain.enrollment.service.EnrollmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 
-@RestController
+@Controller
 @RequestMapping("/api/enrollments")
 @RequiredArgsConstructor
 public class EnrollmentController {
@@ -18,6 +19,7 @@ public class EnrollmentController {
     private final EnrollmentService enrollmentService;
 
     @GetMapping("/my")
+    @ResponseBody
     public ResponseEntity<List<Long>> getMyEnrollments(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()
                 || authentication.getPrincipal().equals("anonymousUser")) {
@@ -29,35 +31,30 @@ public class EnrollmentController {
     }
 
     @DeleteMapping("/{lectureId}")
-    public String cancel(@PathVariable Long lectureId, Authentication authentication) {
+    @ResponseBody
+    public ResponseEntity<String> cancel(@PathVariable Long lectureId, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()
                 || authentication.getPrincipal().equals("anonymousUser")) {
-            return "로그인이 필요합니다.";
+            return ResponseEntity.ok("로그인이 필요합니다.");
         }
-        try {
-            AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
-            Long userId = authDetails.getLoginUserDTO().getUserId();
-            enrollmentService.cancel(lectureId, userId);
-            return "수강 취소가 완료되었습니다.";
-        } catch (IllegalStateException | IllegalArgumentException e) {
-            return e.getMessage();
-        }
+
+        AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
+        Long userId = authDetails.getLoginUserDTO().getUserId();
+        enrollmentService.cancel(lectureId, userId);
+        return ResponseEntity.ok("수강 취소가 완료되었습니다.");
     }
 
     @PostMapping("/{lectureId}")
-    public String enroll(@PathVariable Long lectureId, Authentication authentication) {
+    @ResponseBody
+    public ResponseEntity<String> enroll(@PathVariable Long lectureId, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()
                 || authentication.getPrincipal().equals("anonymousUser")) {
-            return "로그인이 필요합니다.";
+            return ResponseEntity.ok("로그인이 필요합니다.");
         }
 
-        try {
-            AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
-            Long userId = authDetails.getLoginUserDTO().getUserId();
-            enrollmentService.enroll(lectureId, userId);
-            return "수강 신청이 완료되었습니다!";
-        } catch (IllegalStateException | IllegalArgumentException e) {
-            return e.getMessage();
-        }
+        AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
+        Long userId = authDetails.getLoginUserDTO().getUserId();
+        enrollmentService.enroll(lectureId, userId);
+        return ResponseEntity.ok("수강 신청이 완료되었습니다!");
     }
 }

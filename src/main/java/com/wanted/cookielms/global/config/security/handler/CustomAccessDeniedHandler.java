@@ -1,8 +1,7 @@
 package com.wanted.cookielms.global.config.security.handler;
 
-import com.wanted.cookielms.global.error.handler.ErrorCode;
+import com.wanted.cookielms.global.error.handler.GlobalErrorCode;
 import com.wanted.cookielms.global.logging.error.entity.ErrorLogEntity;
-import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
 import com.wanted.cookielms.global.logging.error.service.ErrorLogService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,11 +33,11 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
             traceId = UUID.randomUUID().toString();
         }
 
-        ErrorCode errorCode = ErrorCode.FORBIDDEN; // ← 추가
+        GlobalErrorCode globalErrorCode = GlobalErrorCode.FORBIDDEN; // ← 추가
 
         ErrorLogEntity errorLog = ErrorLogEntity.builder()
-                .errorCode(errorCode.getCode()) // ← ErrorCode 사용
-                .errorMessage(errorCode.getMessage() + ": " + accessDeniedException.getMessage())
+                .errorCode(globalErrorCode.getCode()) // ← ErrorCode 사용
+                .errorMessage(globalErrorCode.getMessage() + ": " + accessDeniedException.getMessage())
                 .exceptionName(accessDeniedException.getClass().getSimpleName())
                 .requestUri(request.getRequestURI())
                 .httpMethod(request.getMethod())
@@ -46,13 +45,13 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                 .userId("ANONYMOUS")
                 .stackTrace("Security Filter Level: Access Denied")
                 .traceId(traceId)
-                .severity(errorCode.getSeverity()) // ← ErrorCode 사용
+                .severity(globalErrorCode.getSeverity()) // ← ErrorCode 사용
                 .build();
 
         errorLogService.saveErrorLogAsync(errorLog);
 
-        request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, errorCode.getStatus().value()); // ← 변경
-        request.setAttribute(RequestDispatcher.ERROR_MESSAGE, errorCode.getMessage()); // ← 변경
+        request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, globalErrorCode.getStatus().value()); // ← 변경
+        request.setAttribute(RequestDispatcher.ERROR_MESSAGE, globalErrorCode.getMessage()); // ← 변경
         request.setAttribute(RequestDispatcher.ERROR_REQUEST_URI, request.getRequestURI());
 
         RequestDispatcher dispatcher = request.getRequestDispatcher("/error");

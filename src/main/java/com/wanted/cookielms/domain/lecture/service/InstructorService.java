@@ -4,6 +4,8 @@ import com.wanted.cookielms.domain.lecture.dto.LectureInsDTO;
 import com.wanted.cookielms.domain.lecture.dto.LectureStuDTO;
 import com.wanted.cookielms.domain.lecture.entity.InsLecture;
 import com.wanted.cookielms.domain.lecture.enums.LectureDay;
+import com.wanted.cookielms.domain.lecture.exception.LectureErrorCode;
+import com.wanted.cookielms.domain.lecture.exception.LectureException;
 import com.wanted.cookielms.domain.lecture.repository.LectureInsRepository;
 import com.wanted.cookielms.domain.lecture.repository.LectureStuRepository;
 import lombok.RequiredArgsConstructor;
@@ -64,12 +66,11 @@ public class InstructorService {
 
     @Transactional
     public void updateLecture(Long id, LectureInsDTO dto, Long instructorId) throws IOException {
-        // 수정 로직은 이름이 updateLecture여야 합니다.
         InsLecture lecture = lectureInsRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다. ID: " + id));
+                .orElseThrow(() -> new LectureException(LectureErrorCode.LECTURE_NOT_FOUND));
 
         if (!lecture.getInstructorId().equals(instructorId)) {
-            throw new IllegalArgumentException("본인의 강의만 수정할 수 있습니다.");
+            throw new LectureException(LectureErrorCode.LECTURE_UNAUTHORIZED);
         }
 
         if (dto.getLectureFile() != null && !dto.getLectureFile().isEmpty()) {
@@ -90,10 +91,10 @@ public class InstructorService {
 
     public LectureInsDTO getLectureForEdit(Long id, Long instructorId) {
         InsLecture lecture = lectureInsRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다. ID: " + id));
+                .orElseThrow(() -> new LectureException(LectureErrorCode.LECTURE_NOT_FOUND));
 
         if (!lecture.getInstructorId().equals(instructorId)) {
-            throw new IllegalArgumentException("본인의 강의만 조회할 수 있습니다.");
+            throw new LectureException(LectureErrorCode.LECTURE_UNAUTHORIZED);
         }
 
         LectureInsDTO dto = modelMapper.map(lecture, LectureInsDTO.class);
@@ -103,6 +104,7 @@ public class InstructorService {
 
         return dto;
     }
+
     private String storeFile(MultipartFile file, String allowedExtension) throws IOException {
         if (file == null || file.isEmpty()) {
             return null;
@@ -112,13 +114,13 @@ public class InstructorService {
 
         // 1. 확장자 검증
         if (originalName == null || !originalName.toLowerCase().endsWith(allowedExtension)) {
-            throw new IllegalArgumentException(allowedExtension.toUpperCase() + " 형식의 파일만 업로드 가능합니다.");
+            throw new LectureException(LectureErrorCode.INVALID_FILE_EXTENSION);
         }
 
         // 2. 용량 검증 (5MB)
         long maxSize = 5 * 1024 * 1024;
         if (file.getSize() > maxSize) {
-            throw new IllegalArgumentException("파일 용량은 5MB를 초과할 수 없습니다.");
+            throw new LectureException(LectureErrorCode.FILE_SIZE_EXCEEDED);
         }
 
         // 3. 고유 파일명 생성
@@ -132,7 +134,7 @@ public class InstructorService {
         }
 
         File targetFile = new File(targetDir, savedName);
-        file.transferTo(targetFile); // 이제 임시 폴더가 아닌 프로젝트 폴더 내 uploads에 저장됩니다.
+        file.transferTo(targetFile);
 
         return savedName;
     }

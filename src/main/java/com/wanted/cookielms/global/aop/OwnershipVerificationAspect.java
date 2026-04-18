@@ -3,7 +3,7 @@ package com.wanted.cookielms.global.aop;
 import com.wanted.cookielms.domain.assignment.service.AssignmentStuService;
 import com.wanted.cookielms.domain.auth.dto.AuthDetails;
 import com.wanted.cookielms.global.error.handler.ApplicationException;
-import com.wanted.cookielms.global.error.handler.ErrorCode;
+import com.wanted.cookielms.global.error.handler.GlobalErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
@@ -37,7 +37,7 @@ public class OwnershipVerificationAspect {
         if (auth != null && auth.getPrincipal() instanceof AuthDetails authDetails) {
             return authDetails.getLoginUserDTO().getUserId();
         }
-        throw new ApplicationException(ErrorCode.UNAUTHORIZED);
+        throw new ApplicationException(GlobalErrorCode.UNAUTHORIZED);
     }
 
     private Long getResourceIdFromArgs(JoinPoint joinPoint) {
@@ -52,7 +52,7 @@ public class OwnershipVerificationAspect {
                 }
             }
         }
-        throw new ApplicationException(ErrorCode.BAD_REQUEST);
+        throw new ApplicationException(GlobalErrorCode.BAD_REQUEST);
     }
 
     private void validateOwnership(String resourceType, Long resourceId, Long userId) {
@@ -61,7 +61,7 @@ public class OwnershipVerificationAspect {
                 assignmentStuService.validateAssignmentAccess(resourceId, userId);
                 break;
             default:
-                throw new ApplicationException(ErrorCode.BAD_REQUEST);
+                throw new ApplicationException(GlobalErrorCode.BAD_REQUEST);
         }
     }
 }

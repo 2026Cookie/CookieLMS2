@@ -7,6 +7,8 @@ import com.wanted.cookielms.domain.user.dto.ResetPasswordDTO;
 import com.wanted.cookielms.domain.user.entity.User;
 import com.wanted.cookielms.domain.user.enums.Role;
 import com.wanted.cookielms.domain.user.enums.Status;
+import com.wanted.cookielms.domain.user.exception.UserErrorCode;
+import com.wanted.cookielms.domain.user.exception.UserException;
 import com.wanted.cookielms.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -29,13 +31,12 @@ public class UserService {
     public String join(JoinUserDTO joinUserDTO){
 
         if (userRepository.existsByLoginIdAndIsDeletedFalse(joinUserDTO.getLoginId())) {
-            return null; // 중복된 아이디가 존재함을 null로 표시
+            throw new UserException(UserErrorCode.DUPLICATE_LOGIN_ID);
         }
 
         if (userRepository.existsByEmailAndIsDeletedFalse(joinUserDTO.getEmail())) {
-            return null;
+            throw new UserException(UserErrorCode.DUPLICATE_EMAIL);
         }
-
 
         User user = new User(
                 joinUserDTO.getEmail(),
@@ -49,10 +50,8 @@ public class UserService {
                 joinUserDTO.getRole(),
                 Status.ACTIVE
         );
-        userRepository.save(user); // 맨 마지막에!
+        userRepository.save(user);
         return "success";
-
-
     }
 
     public LoginUserDTO findByUsername(String username) {
@@ -62,7 +61,7 @@ public class UserService {
 
     public String findLoginIdByNameAndPhone(String name, String phone) {
         Optional<User> lostIdUser = userRepository.findByNameAndPhoneAndIsDeletedFalse(name, phone);
-        return lostIdUser.map(User -> User.getLoginId()).orElse(null);
+        return lostIdUser.map(User::getLoginId).orElse(null);
     }
 
     public Boolean findByLoginIdAndNameAndPhone(String loginId, String name, String phone) {
@@ -72,10 +71,9 @@ public class UserService {
 
     @Transactional
     public void updatePassword(String loginId, String newPassword ) {
-        userRepository.findByLoginIdAndIsDeletedFalse(loginId)
-                .ifPresent(user -> {user.updatePassword(passwordEncoder.encode(newPassword));
-                });
-
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        user.updatePassword(passwordEncoder.encode(newPassword));
     }
 
     // 정보 조회 비번 확인용
@@ -85,21 +83,20 @@ public class UserService {
                 .orElse(false);
     }
 
-
     @Transactional
     public boolean updateUserInfo(String loginId, ModifyUserInfo dto) {
-        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElse(null);
-        if (user == null) return false;
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
-            return false;
+            throw new UserException(UserErrorCode.INVALID_PASSWORD);
         }
 
         user.updateInfo(dto.getName(), dto.getNickname(), dto.getEmail(), dto.getPhone());
 
         if (dto.getNewPassword() != null && !dto.getNewPassword().isBlank()) {
             if (!dto.getNewPassword().equals(dto.getNewPasswordConfirm())) {
-                return false;
+                throw new UserException(UserErrorCode.PASSWORD_MISMATCH);
             }
             user.updatePassword(passwordEncoder.encode(dto.getNewPassword()));
         }
@@ -109,11 +106,11 @@ public class UserService {
 
     @Transactional
     public boolean withdrawUser(String loginId, String password) {
-        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElse(null);
-        if (user == null) return false;
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            return false;
+            throw new UserException(UserErrorCode.INVALID_PASSWORD);
         }
 
         user.withdraw();

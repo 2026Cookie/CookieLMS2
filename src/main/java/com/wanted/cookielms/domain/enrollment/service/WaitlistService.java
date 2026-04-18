@@ -2,6 +2,8 @@ package com.wanted.cookielms.domain.enrollment.service;
 
 import com.wanted.cookielms.domain.enrollment.entity.Enrollment;
 import com.wanted.cookielms.domain.enrollment.entity.Waitlist;
+import com.wanted.cookielms.domain.enrollment.exception.EnrollmentErrorCode;
+import com.wanted.cookielms.domain.enrollment.exception.EnrollmentException;
 import com.wanted.cookielms.domain.enrollment.repository.EnrollmentRepository;
 import com.wanted.cookielms.domain.enrollment.repository.WaitlistRepository;
 import com.wanted.cookielms.domain.lecture.entity.LectureStuEntity;
@@ -28,7 +30,7 @@ public class WaitlistService {
 
         // 이미 대기 중인지 체크
         if (waitlistRepository.existsByUserIdAndLectureIdAndStatus(userId, lectureId, "WAITING")) {
-            throw new IllegalStateException("이미 대기열에 등록되어 있습니다.");
+            throw new EnrollmentException(EnrollmentErrorCode.ALREADY_WAITLISTED);
         }
 
         // 지금까지 등록된 최대 번호 + 1 = 새 대기 번호 (취소 후 재등록 시 중복 방지)
@@ -54,7 +56,7 @@ public class WaitlistService {
 
     public int getWaitNumber(Long lectureId, Long userId) {
         Waitlist waitlist = waitlistRepository.findByUserIdAndLectureIdAndStatus(userId, lectureId, "WAITING")
-                .orElseThrow(() -> new IllegalArgumentException("대기열 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new EnrollmentException(EnrollmentErrorCode.WAITLIST_NOT_FOUND));
 
         // 나보다 waitNumber가 낮은 WAITING 인원 수 + 1 = 실제 현재 순위
         int ahead = waitlistRepository.countByLectureIdAndStatusAndWaitNumberLessThan(
@@ -65,7 +67,7 @@ public class WaitlistService {
     @Transactional
     public void cancelWaitlist(Long lectureId, Long userId) {
         Waitlist waitlist = waitlistRepository.findByUserIdAndLectureIdAndStatus(userId, lectureId, "WAITING")
-                .orElseThrow(() -> new IllegalArgumentException("대기열 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new EnrollmentException(EnrollmentErrorCode.WAITLIST_NOT_FOUND));
         waitlist.changeStatus("CANCELLED");
     }
 
@@ -89,7 +91,7 @@ public class WaitlistService {
 
         // 강의 수강 인원 증가
         LectureStuEntity lecture = lectureStuRepository.findById(lectureId)
-                .orElseThrow(() -> new IllegalArgumentException("강의를 찾을 수 없습니다."));
+                .orElseThrow(() -> new EnrollmentException(EnrollmentErrorCode.LECTURE_NOT_FOUND));
         lecture.increaseEnrollment();
 
         // 대기열 상태 변경
