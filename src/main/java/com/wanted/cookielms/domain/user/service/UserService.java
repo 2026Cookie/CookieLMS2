@@ -3,6 +3,7 @@ package com.wanted.cookielms.domain.user.service;
 import com.wanted.cookielms.domain.user.dto.JoinUserDTO;
 import com.wanted.cookielms.domain.user.dto.LoginUserDTO;
 import com.wanted.cookielms.domain.user.dto.ModifyUserInfo;
+import com.wanted.cookielms.domain.user.dto.MypageDTO;
 import com.wanted.cookielms.domain.user.dto.ResetPasswordDTO;
 import com.wanted.cookielms.domain.user.entity.User;
 import com.wanted.cookielms.domain.user.enums.Role;
@@ -57,6 +58,12 @@ public class UserService {
     public LoginUserDTO findByUsername(String username) {
         Optional<User> userOptional = userRepository.findByLoginIdAndIsDeletedFalse(username);
         return userOptional.map(user -> modelMapper.map(user, LoginUserDTO.class)).orElse(null);
+    }
+
+    public MypageDTO getMypage(String loginId) {
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        return modelMapper.map(user, MypageDTO.class);
     }
 
     public String findLoginIdByNameAndPhone(String name, String phone) {
