@@ -3,10 +3,10 @@ package com.wanted.cookielms.domain.assignment.service;
 import com.wanted.cookielms.domain.assignment.dto.AssignmentStuDTO;
 import com.wanted.cookielms.domain.assignment.entity.AssignmentStuEntity;
 import com.wanted.cookielms.domain.assignment.entity.AssignmentSubmissionStuEntity;
+import com.wanted.cookielms.domain.assignment.exception.AssignmentErrorCode;
+import com.wanted.cookielms.domain.assignment.exception.AssignmentException;
 import com.wanted.cookielms.domain.assignment.repository.AssignmentStuRepository;
 import com.wanted.cookielms.domain.assignment.repository.AssignmentSubmissionStuRepository;
-import com.wanted.cookielms.global.error.handler.ApplicationException;
-import com.wanted.cookielms.global.error.handler.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,16 +28,13 @@ public class AssignmentStuService {
      * 과제 접근 권한 검증 (AOP에서 호출)
      */
     public void validateAssignmentAccess(Long assignmentId, Long userId) {
-        // 1. 과제 존재 여부 확인 (IDOR 방지 기초)
         assignmentStuRepository.findById(assignmentId)
-                .orElseThrow(() -> new ApplicationException(ErrorCode.NOT_FOUND));
-
-        // 2. [확장 포인트] 해당 학생이 이 과제가 속한 강의를 수강 중인지 검증하는 로직이 여기에 들어갑니다.
+                .orElseThrow(() -> new AssignmentException(AssignmentErrorCode.ASSIGNMENT_NOT_FOUND));
     }
 
     public AssignmentStuDTO getAssignment(Long assignmentId) {
         AssignmentStuEntity entity = assignmentStuRepository.findById(assignmentId)
-                .orElseThrow(() -> new ApplicationException(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new AssignmentException(AssignmentErrorCode.ASSIGNMENT_NOT_FOUND));
 
         return AssignmentStuDTO.builder()
                 .assignmentId(entity.getId())
@@ -51,10 +48,10 @@ public class AssignmentStuService {
     @Transactional
     public void submitAssignment(Long assignmentId, Long studentId, MultipartFile file) {
         AssignmentStuEntity assignment = assignmentStuRepository.findById(assignmentId)
-                .orElseThrow(() -> new ApplicationException(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new AssignmentException(AssignmentErrorCode.ASSIGNMENT_NOT_FOUND));
 
         if (LocalDateTime.now().isAfter(assignment.getDueDate())) {
-            throw new ApplicationException(ErrorCode.BAD_REQUEST); // 예외 타입 일관화
+            throw new AssignmentException(AssignmentErrorCode.SUBMISSION_DEADLINE_PASSED);
         }
 
         String originalFilename = file.getOriginalFilename();
@@ -66,10 +63,10 @@ public class AssignmentStuService {
         if (originalFilename != null) {
             String ext = originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase();
             if (!allowedExtensions.contains(ext) || contentType == null || !allowedMimeTypes.contains(contentType)) {
-                throw new ApplicationException(ErrorCode.BAD_REQUEST);
+                throw new AssignmentException(AssignmentErrorCode.INVALID_FILE_FORMAT);
             }
         } else {
-            throw new ApplicationException(ErrorCode.BAD_REQUEST);
+            throw new AssignmentException(AssignmentErrorCode.FILE_REQUIRED);
         }
 
         Long dummyFileId = (long) (file.getOriginalFilename().length() * 100);

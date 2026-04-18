@@ -29,10 +29,10 @@ public class ApplicationException extends RuntimeException {
     /**
      * ErrorCode 열거형을 이용한 생성자
      */
-    public ApplicationException(ErrorCode errorCode) {
-        super(errorCode.getMessage());
-        this.status = errorCode.getStatus();
-        this.code = errorCode.getCode();
-        this.severity = errorCode.getSeverity();
+    public ApplicationException(GlobalErrorCode globalErrorCode) {
+        super(globalErrorCode.getMessage());
+        this.status = globalErrorCode.getStatus();
+        this.code = globalErrorCode.getCode();
+        this.severity = globalErrorCode.getSeverity();
     }
 }

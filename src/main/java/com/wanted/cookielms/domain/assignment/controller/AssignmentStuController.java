@@ -46,9 +46,4 @@ public class AssignmentStuController {
         return "user/assignment_success";
     }
 
-    @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public String handleMaxSizeException(HttpServletRequest request, RedirectAttributes redirectAttributes) {
-        redirectAttributes.addFlashAttribute("errorMessage", "최대 5MB 파일까지만 업로드 가능합니다.");
-        return "redirect:" + request.getRequestURI().replace("/submit", "");
-    }
 }
