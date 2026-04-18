@@ -115,10 +115,10 @@ public class InstructorService {
             throw new IllegalArgumentException(allowedExtension.toUpperCase() + " 형식의 파일만 업로드 가능합니다.");
         }
 
-        // 2. 용량 검증 (5MB)
-        long maxSize = 5 * 1024 * 1024;
+        // 2. 용량 검증 (20MB)
+        long maxSize = 20 * 1024 * 1024;
         if (file.getSize() > maxSize) {
-            throw new IllegalArgumentException("파일 용량은 5MB를 초과할 수 없습니다.");
+            throw new IllegalArgumentException("파일 용량은 20MB를 초과할 수 없습니다.");
         }
 
         // 3. 고유 파일명 생성

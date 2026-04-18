@@ -61,7 +61,7 @@ public class InstructorController {
 
         // HTML(lecture_detail.html)에서 사용할 수 있도록 모델에 담습니다.
         model.addAttribute("lecture", lecture);
-        return "student/lecture_detail";
+        return "user/lecture_detail";
     }
     /**
      * 강의 등록 페이지 이동
@@ -144,7 +144,7 @@ public class InstructorController {
             instructorService.updateLecture(id, lectureInsDTO, instructorId);
 
             redirectAttributes.addFlashAttribute("message", "강의 수정이 완료되었습니다!");
-            return "redirect:/instructor/lecture/detail/" + id;
+            return "redirect:/instructor/lectures";
 
         } catch (IllegalArgumentException e) {
             log.error("수정 중 보안/검증 오류 발생: ", e);
