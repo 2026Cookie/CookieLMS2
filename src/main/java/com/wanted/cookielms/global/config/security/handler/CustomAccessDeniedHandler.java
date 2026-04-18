@@ -1,5 +1,6 @@
 package com.wanted.cookielms.global.config.security.handler;
 
+import com.wanted.cookielms.domain.auth.dto.AuthDetails;
 import com.wanted.cookielms.global.error.handler.GlobalErrorCode;
 import com.wanted.cookielms.global.logging.error.entity.ErrorLogEntity;
 import com.wanted.cookielms.global.logging.error.service.ErrorLogService;
@@ -9,6 +10,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 import org.slf4j.MDC;
@@ -33,29 +36,48 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
             traceId = UUID.randomUUID().toString();
         }
 
-        GlobalErrorCode globalErrorCode = GlobalErrorCode.FORBIDDEN; // ← 추가
+        // ✅ SecurityContextHolder에서 userId 추출
+        Long userId = getCurrentUserId();
+
+        GlobalErrorCode globalErrorCode = GlobalErrorCode.FORBIDDEN;
 
         ErrorLogEntity errorLog = ErrorLogEntity.builder()
-                .errorCode(globalErrorCode.getCode()) // ← ErrorCode 사용
+                .errorCode(globalErrorCode.getCode())
                 .errorMessage(globalErrorCode.getMessage() + ": " + accessDeniedException.getMessage())
                 .exceptionName(accessDeniedException.getClass().getSimpleName())
                 .requestUri(request.getRequestURI())
                 .httpMethod(request.getMethod())
                 .clientIp(getClientIp(request))
-                .userId("ANONYMOUS")
+                .userId(userId)  // ✅ userId 추가
                 .stackTrace("Security Filter Level: Access Denied")
                 .traceId(traceId)
-                .severity(globalErrorCode.getSeverity()) // ← ErrorCode 사용
+                .severity(globalErrorCode.getSeverity())
                 .build();
 
         errorLogService.saveErrorLogAsync(errorLog);
 
-        request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, globalErrorCode.getStatus().value()); // ← 변경
-        request.setAttribute(RequestDispatcher.ERROR_MESSAGE, globalErrorCode.getMessage()); // ← 변경
+        request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, globalErrorCode.getStatus().value());
+        request.setAttribute(RequestDispatcher.ERROR_MESSAGE, globalErrorCode.getMessage());
         request.setAttribute(RequestDispatcher.ERROR_REQUEST_URI, request.getRequestURI());
 
         RequestDispatcher dispatcher = request.getRequestDispatcher("/error");
         dispatcher.forward(request, response);
+    }
+
+    // ✅ SecurityContextHolder에서 userId 추출
+    private Long getCurrentUserId() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() &&
+                    !"anonymousUser".equals(auth.getPrincipal())) {
+
+                AuthDetails authDetails = (AuthDetails) auth.getPrincipal();
+                return authDetails.getLoginUserDTO().getUserId();
+            }
+        } catch (Exception e) {
+            log.debug("Failed to get current user ID", e);
+        }
+        return null;
     }
 
     private String getClientIp(HttpServletRequest request) {

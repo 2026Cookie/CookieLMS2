@@ -6,6 +6,7 @@ import com.wanted.cookielms.domain.lecture.entity.LectureStuEntity;
 import com.wanted.cookielms.domain.lecture.exception.LectureErrorCode;
 import com.wanted.cookielms.domain.lecture.exception.LectureException;
 import com.wanted.cookielms.domain.lecture.repository.LectureStuRepository;
+import com.wanted.cookielms.global.aop.BussinessServiceLogging;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -22,6 +23,7 @@ public class LectureStuService {
     private final EnrollmentRepository enrollmentRepository;
     private final ModelMapper modelMapper;
 
+    @BussinessServiceLogging
     public Page<LectureStuDTO> getAllLectures(String keyword, Pageable pageable) {
         Page<LectureStuEntity> lectures;
         if (keyword == null || keyword.trim().isEmpty()) {

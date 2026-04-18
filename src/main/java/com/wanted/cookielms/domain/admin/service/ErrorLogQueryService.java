@@ -82,7 +82,7 @@ public class ErrorLogQueryService {
     /**
      * [조회 8] 특정 사용자의 에러 로그
      */
-    public List<ErrorLogResponseDTO> getErrorsByUserId(String userId) {
+    public List<ErrorLogResponseDTO> getErrorsByUserId(Long userId) {
         List<ErrorLogEntity> errorLogs = errorLogRepository.findByUserIdOrderByCreatedAtDesc(userId);
         return errorLogs.stream()
                 .map(ErrorLogResponseDTO::fromList)

@@ -13,7 +13,7 @@ public interface ErrorLogRepository extends JpaRepository<ErrorLogEntity, Long> 
 
     List<ErrorLogEntity> findByErrorCodeOrderByCreatedAtDesc(String errorCode);
 
-    List<ErrorLogEntity> findByUserIdOrderByCreatedAtDesc(String userId);
+    List<ErrorLogEntity> findByUserIdOrderByCreatedAtDesc(Long userId);
 
     Page<ErrorLogEntity> findAllByOrderByCreatedAtDesc(Pageable pageable);
 

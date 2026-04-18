@@ -40,7 +40,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
                 .requestUri(request.getRequestURI())
                 .httpMethod(request.getMethod())
                 .clientIp(request.getRemoteAddr())
-                .userId("ANONYMOUS")
+                .userId(null)
                 .stackTrace("Security Filter Level: Unauthorized")
                 .traceId(traceId)
                 .severity(ErrorSeverity.WARNING) // 💡 Service 로직에 따라 파일 로그([FILE LOG])에만 남음

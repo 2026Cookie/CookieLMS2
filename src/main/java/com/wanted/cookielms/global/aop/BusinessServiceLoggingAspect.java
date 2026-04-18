@@ -21,7 +21,7 @@ public class BusinessServiceLoggingAspect {
 
     private final BusinessServiceLogService businessServiceLogService;
 
-    @Around("@annotation(com.wanted.cookielms.global.aop.ServiceLogging)")
+    @Around("@annotation(com.wanted.cookielms.global.aop.BussinessServiceLogging)")
     public Object logServiceExecution(ProceedingJoinPoint joinPoint) throws Throwable {
         String className = joinPoint.getTarget().getClass().getSimpleName();
         String methodName = joinPoint.getSignature().getName();
@@ -42,7 +42,7 @@ public class BusinessServiceLoggingAspect {
             log.setUserId(getCurrentUserId());
             log.setTraceId(getTraceId());
 
-            businessServiceLogService.saveAsync(log);
+            businessServiceLogService.saveBusinessServiceLog(log);
 
             return result;
 
@@ -57,7 +57,7 @@ public class BusinessServiceLoggingAspect {
             log.setUserId(getCurrentUserId());
             log.setTraceId(getTraceId());
 
-            businessServiceLogService.saveAsync(log);
+            businessServiceLogService.saveBusinessServiceLog(log);
 
             throw e;
         }
@@ -68,10 +68,8 @@ public class BusinessServiceLoggingAspect {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication != null && authentication.isAuthenticated()) {
                 Object principal = authentication.getPrincipal();
-                if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
-                    // UserDetails에서 userId를 가져오는 로직
-                    // 실제 구현은 프로젝트의 CustomUserDetailsService 구조에 맞게 수정 필요
-                    return null;
+                if (principal instanceof com.wanted.cookielms.domain.auth.dto.AuthDetails authDetails) {
+                    return authDetails.getLoginUserDTO().getUserId();  // ✅ 실제 userId 반환
                 }
             }
         } catch (Exception e) {
@@ -82,11 +80,8 @@ public class BusinessServiceLoggingAspect {
 
     private String getTraceId() {
         try {
-            ServletRequestAttributes attributes =
-                    (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-            if (attributes != null) {
-                return (String) attributes.getRequest().getAttribute("traceId");
-            }
+            // ✅ MDC에서 직접 가져오기 (TraceIdFilter에서 저장한 곳)
+            return org.slf4j.MDC.get("traceId");
         } catch (Exception e) {
             log.debug("Failed to get trace ID", e);
         }
