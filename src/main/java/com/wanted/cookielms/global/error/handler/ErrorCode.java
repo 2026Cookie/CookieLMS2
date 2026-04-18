@@ -1,6 +1,6 @@
 package com.wanted.cookielms.global.error.handler;
 
-import com.wanted.cookielms.global.error.model.entity.enums.ErrorSeverity;
+import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

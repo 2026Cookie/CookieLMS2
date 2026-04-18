@@ -52,6 +52,13 @@
     </style>
 </head>
 <body>
+<script th:inline="javascript">
+    const loginError = /*[[${session.loginError}]]*/ null;
+    if (loginError) {
+        alert(loginError);
+    }
+</script>
+
 <div class="card">
     <a href="/" class="back-link">← 홈으로</a>
     <h1>로그인</h1>

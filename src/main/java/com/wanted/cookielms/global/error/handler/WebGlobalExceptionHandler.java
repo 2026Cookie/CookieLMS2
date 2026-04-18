@@ -1,11 +1,12 @@
 package com.wanted.cookielms.global.error.handler;
 
-import com.wanted.cookielms.global.error.model.service.ErrorLogService;
-import com.wanted.cookielms.global.error.model.entity.ErrorLogEntity;
-import com.wanted.cookielms.global.error.model.entity.enums.ErrorSeverity;
+import com.wanted.cookielms.global.logging.error.service.ErrorLogService;
+import com.wanted.cookielms.global.logging.error.entity.ErrorLogEntity;
+import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -92,10 +93,6 @@ public class WebGlobalExceptionHandler {
 
     /**
      * [4] 존재하지 않는 API 호출 (404)
-     * 주의: application.yml에서 spring.mvc.throw-exception-if-no-handler-found=true 설정 필요
-     * CustomErrorController와 역할 분리:
-     * - WebGlobalExceptionHandler: Spring이 진입한 후 URL이 없을 때
-     * - CustomErrorController: 필터 레벨이나 미등록 URL (Spring 진입 전)
      */
     @ExceptionHandler(NoHandlerFoundException.class)
     public ModelAndView handleNoHandlerFoundException(NoHandlerFoundException e, HttpServletRequest request) {
@@ -181,7 +178,12 @@ public class WebGlobalExceptionHandler {
     }
 
     private String generateTraceId() {
-        return UUID.randomUUID().toString();
+        // MDC에서 기존 traceId 가져오기 (TraceIdFilter에서 생성한 것)
+        String traceId = MDC.get("traceId");
+        if (traceId == null) {
+            traceId = UUID.randomUUID().toString();  // fallback (없을 경우만 생성)
+        }
+        return traceId;
     }
 
     private String getCurrentUserId() {

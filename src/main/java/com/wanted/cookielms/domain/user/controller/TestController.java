@@ -1,7 +1,7 @@
 package com.wanted.cookielms.domain.user.controller;
 
 import com.wanted.cookielms.global.error.handler.ApplicationException;
-import com.wanted.cookielms.global.error.model.entity.enums.ErrorSeverity;
+import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
