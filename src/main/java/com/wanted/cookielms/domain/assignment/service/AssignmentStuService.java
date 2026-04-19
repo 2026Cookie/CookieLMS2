@@ -80,10 +80,10 @@ public class AssignmentStuService {
             throw new AssignmentException(AssignmentErrorCode.FILE_REQUIRED);
         }
 
-        // 🌟 2. 고유한 파일 이름 생성
+        // 고유한 파일 이름 생성
         String savedFilename = UUID.randomUUID().toString() + "_" + originalFilename;
 
-        // 🌟 3. 물리적 파일 저장 로직 추가 (uploads/assignments/ 폴더에 저장)
+        // 물리적 파일 저장 로직 추가 (uploads/assignments/ 폴더에 저장)
         try {
             Path uploadDir = Paths.get(baseUploadPath, "assignments").toAbsolutePath().normalize();
             if (!Files.exists(uploadDir)) {
@@ -92,7 +92,7 @@ public class AssignmentStuService {
             Path target = uploadDir.resolve(savedFilename);
             Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            throw new RuntimeException("과제 파일 저장 중 오류가 발생했습니다.", e);
+            throw new AssignmentException(AssignmentErrorCode.FILE_UPLOAD_ERROR);
         }
 
         Long dummyFileId = (long) (file.getOriginalFilename().length() * 100);

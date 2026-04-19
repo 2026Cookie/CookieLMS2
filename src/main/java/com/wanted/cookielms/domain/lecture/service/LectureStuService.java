@@ -24,7 +24,7 @@ public class LectureStuService {
     private final EnrollmentRepository enrollmentRepository;
     private final ModelMapper modelMapper;
 
-    // 🌟 전체 강의 목록 조회 (수강신청 페이지용 복구)
+    // 전체 강의 목록 조회
     @BussinessServiceLogging
     public Page<LectureStuDTO> getAllLectures(String keyword, Pageable pageable) {
         Page<LectureStuEntity> lectures;
@@ -33,16 +33,22 @@ public class LectureStuService {
         } else {
             lectures = lectureStuRepository.findByTitleContaining(keyword, pageable);
         }
-        return lectures.map(entity -> modelMapper.map(entity, LectureStuDTO.class));
+
+        return lectures.map(entity -> {
+            LectureStuDTO dto = modelMapper.map(entity, LectureStuDTO.class);
+            String instructorName = lectureStuRepository.findInstructorNameById(entity.getInstructorId());
+            dto.setInstructorName(instructorName);
+            return dto;
+        });
     }
 
-    // 🌟 내 강의만 가져오는 최적화된 로직
+    // 내 강의만 가져오기
     public Page<MyLectureListDTO> getMyLectures(Long userId, String keyword, Pageable pageable) {
         String safeKeyword = (keyword == null || keyword.trim().isEmpty()) ? null : keyword;
         return lectureStuRepository.findMyLecturesWithProjection(userId, safeKeyword, pageable);
     }
 
-    // 🌟 강의 상세 조회 (여기에 강사 이름 가져오기가 쏙 들어갔어요!)
+    // 강의 상세 조회
     public LectureStuDTO getLectureDetail(Long lectureId, Long userId) {
         LectureStuEntity entity = lectureStuRepository.findById(lectureId)
                 .orElseThrow(() -> new LectureException(LectureErrorCode.LECTURE_NOT_FOUND));
@@ -52,7 +58,7 @@ public class LectureStuService {
         boolean isEnrolled = enrollmentRepository.existsByUserIdAndLectureIdAndStatus(userId, lectureId, "ENROLLED");
         boolean isInstructor = entity.getInstructorId().equals(userId);
 
-        // 🌟 강사 이름 가져와서 DTO에 꽂아주기! (하연님이 물어보신 부분!)
+        // 강사 이름 가져와서 DTO에 꽂아주기
         String instructorName = lectureStuRepository.findInstructorNameById(entity.getInstructorId());
         dto.setInstructorName(instructorName);
 
@@ -78,7 +84,7 @@ public class LectureStuService {
             throw new LectureException(LectureErrorCode.VIDEO_ACCESS_DENIED);
         }
 
-        // 🌟 DB에서 꺼낸 원래 주소를 퍼가기용(Embed) 주소로 변환해서 반환!
+        // DB에서 꺼낸 원래 주소를 퍼가기용(Embed) 주소로 변환해서 반환!
         return convertToEmbedUrl(entity.getVideoUrl());
     }
 

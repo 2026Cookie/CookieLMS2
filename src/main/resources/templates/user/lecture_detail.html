@@ -105,7 +105,7 @@
                 document.getElementById('lectureTitle').innerText = d.title;
                 document.getElementById('modalTitle').innerText = d.title;
                 document.getElementById('lectureDesc').innerText = d.description;
-                document.getElementById('instructorInfo').innerText = `강사 ID: ${d.instructorId}`;
+                document.getElementById('instructorInfo').innerText = `강사명: ${d.instructorName}`;
                 document.getElementById('capacityInfo').innerText = `인원: ${d.currentEnrollment} / ${d.maxCapacity} 명`;
                 if (d.thumbnail) {
                     document.getElementById('thumbnailArea').innerHTML = `<img src="/lectures/thumbnail/${d.thumbnail}" alt="${d.title}" onerror="this.style.display='none';this.parentNode.innerText='이미지 없음';">`;

@@ -3,6 +3,8 @@ package com.wanted.cookielms.domain.lecture.controller;
 import com.wanted.cookielms.domain.auth.dto.AuthDetails;
 import com.wanted.cookielms.domain.lecture.dto.LectureStuDTO;
 import com.wanted.cookielms.domain.lecture.dto.MyLectureListDTO; // 🌟 내 강의 DTO 추가됨
+import com.wanted.cookielms.domain.lecture.exception.LectureErrorCode;
+import com.wanted.cookielms.domain.lecture.exception.LectureException;
 import com.wanted.cookielms.domain.lecture.service.LectureStuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriUtils;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,7 +35,7 @@ public class LectureStuController {
 
     private final LectureStuService lectureStuService;
 
-    // 🌟 1. 강사와 동일한 경로 설정
+    // 강사와 동일한 경로 설정
     @Value("${file.upload.path:uploads/}")
     private String uploadPath;
 
@@ -52,7 +55,7 @@ public class LectureStuController {
         return ResponseEntity.ok(lectureStuService.getAllLectures(keyword, pageable));
     }
 
-    // 🌟 [추가됨] 예전 코드에서 빠졌던 '내 강의 목록' 조회 API 복구
+    // 내 강의 목록 조회 API
     @GetMapping("/my")
     @ResponseBody
     public ResponseEntity<Page<MyLectureListDTO>> getMyLectures(
@@ -80,51 +83,65 @@ public class LectureStuController {
         return ResponseEntity.ok(lectureStuService.getVideoUrl(lectureId, userId));
     }
 
-    // 🌟 2. 진짜 강의 자료 다운로드 로직으로 교체
-    @GetMapping("/{lectureId}/material")
-    @ResponseBody
-    public ResponseEntity<Resource> downloadLectureMaterial(@PathVariable Long lectureId, Authentication authentication) {
-        Long userId = getLoginUserId(authentication);
-        try {
-            String materialFileName = lectureStuService.getMaterialId(lectureId, userId);
-
-            Path root = Paths.get(uploadPath).toAbsolutePath().normalize();
-            Path filePath = root.resolve(materialFileName);
-            Resource resource = new UrlResource(filePath.toUri());
-
-            if (!resource.exists() || !resource.isReadable()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-
-            String encodedUploadFileName = UriUtils.encode(materialFileName, StandardCharsets.UTF_8);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedUploadFileName + "\"")
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(resource);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-    }
-
-    // 🌟 3. [추가됨] 썸네일 이미지를 화면에 띄워주는 API
+    // 썸네일 이미지 API
     @GetMapping("/thumbnail/{filename}")
     @ResponseBody
     public ResponseEntity<Resource> getThumbnail(@PathVariable String filename) {
+        Path root = Paths.get(uploadPath).toAbsolutePath().normalize();
+        Path filePath = root.resolve(filename);
+        Resource resource;
+
         try {
-            Path root = Paths.get(uploadPath).toAbsolutePath().normalize();
-            Path filePath = root.resolve(filename);
-            Resource resource = new UrlResource(filePath.toUri());
+            resource = new UrlResource(filePath.toUri());
+        } catch (Exception e) {
+            // 경로가 이상해서 UrlResource 객체 생성이 안 될 때 AOP로 에러 던짐
+            throw new LectureException(LectureErrorCode.FILE_NOT_FOUND);
+        }
 
-            if (!resource.exists() || !resource.isReadable()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
+        if (!resource.exists() || !resource.isReadable()) {
+            // 파일이 물리적으로 폴더에 없을 때 AOP로 에러 던짐
+            throw new LectureException(LectureErrorCode.FILE_NOT_FOUND);
+        }
 
+        try {
             String contentType = Files.probeContentType(filePath);
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType != null ? contentType : "image/jpeg"))
                     .body(resource);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (IOException e) {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG)
+                    .body(resource);
         }
+    }
+
+    // 강의 자료 다운로드 API
+    @GetMapping("/{lectureId}/material")
+    @ResponseBody
+    public ResponseEntity<Resource> downloadLectureMaterial(@PathVariable Long lectureId, Authentication authentication) {
+        Long userId = getLoginUserId(authentication);
+
+        // 권한 체크 등은 이미 Service 단에서 LectureException을 던지고 있으니 통과!
+        String materialFileName = lectureStuService.getMaterialId(lectureId, userId);
+
+        Path root = Paths.get(uploadPath).toAbsolutePath().normalize();
+        Path filePath = root.resolve(materialFileName);
+        Resource resource;
+
+        try {
+            resource = new UrlResource(filePath.toUri());
+        } catch (Exception e) {
+            throw new LectureException(LectureErrorCode.FILE_NOT_FOUND);
+        }
+
+        if (!resource.exists() || !resource.isReadable()) {
+            throw new LectureException(LectureErrorCode.FILE_NOT_FOUND);
+        }
+
+        String encodedUploadFileName = UriUtils.encode(materialFileName, StandardCharsets.UTF_8);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedUploadFileName + "\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
 }
