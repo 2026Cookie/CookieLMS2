@@ -127,7 +127,7 @@
                     btnHtml = `<button class="btn-enroll enroll" onclick="enroll(${l.lectureId})">수강 신청</button>`;
                 grid.innerHTML += `
                     <div class="lecture-card">
-                        <div class="thumbnail">${l.thumbnail ? `<img src="/images/${l.thumbnail}" style="width:100%;height:100%;object-fit:cover;">` : '썸네일 없음'}</div>
+                        <div class="thumbnail">${l.thumbnail ? `<img src="/lectures/thumbnail/${l.thumbnail}" style="width:100%;height:100%;object-fit:cover;">` : '썸네일 없음'}</div>
                         <div class="card-body">
                             <div class="card-title">${l.title}</div>
                             <div class="card-info">

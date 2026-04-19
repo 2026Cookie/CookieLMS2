@@ -2,7 +2,7 @@ package com.wanted.cookielms.domain.lecture.controller;
 
 import com.wanted.cookielms.domain.auth.dto.AuthDetails;
 import com.wanted.cookielms.domain.lecture.dto.LectureStuDTO;
-import com.wanted.cookielms.domain.lecture.dto.MyLectureListDTO;
+import com.wanted.cookielms.domain.lecture.dto.MyLectureListDTO; // 🌟 내 강의 DTO 추가됨
 import com.wanted.cookielms.domain.lecture.service.LectureStuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -31,8 +32,8 @@ public class LectureStuController {
 
     private final LectureStuService lectureStuService;
 
-    // 🌟 강사님이 올린 자료가 저장되는 기본 경로
-    @Value("${file.upload.path:C:/cookielms/uploads/}")
+    // 🌟 1. 강사와 동일한 경로 설정
+    @Value("${file.upload.path:uploads/}")
     private String uploadPath;
 
     private Long getLoginUserId(Authentication authentication) {
@@ -43,7 +44,6 @@ public class LectureStuController {
         return authDetails.getLoginUserDTO().getUserId();
     }
 
-    // 🌟 전체 강의 조회 (수강신청 페이지용)
     @GetMapping
     @ResponseBody
     public ResponseEntity<Page<LectureStuDTO>> getLectures(
@@ -52,19 +52,17 @@ public class LectureStuController {
         return ResponseEntity.ok(lectureStuService.getAllLectures(keyword, pageable));
     }
 
-    // 🌟 내 강의 조회 (내 강의 목록 페이지용)
+    // 🌟 [추가됨] 예전 코드에서 빠졌던 '내 강의 목록' 조회 API 복구
     @GetMapping("/my")
     @ResponseBody
     public ResponseEntity<Page<MyLectureListDTO>> getMyLectures(
             @RequestParam(required = false) String keyword,
             @PageableDefault(size = 6) Pageable pageable,
             Authentication authentication) {
-
         Long userId = getLoginUserId(authentication);
         if (userId == -1L) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-
         return ResponseEntity.ok(lectureStuService.getMyLectures(userId, keyword, pageable));
     }
 
@@ -79,41 +77,54 @@ public class LectureStuController {
     @ResponseBody
     public ResponseEntity<String> getLectureVideoUrl(@PathVariable Long lectureId, Authentication authentication) {
         Long userId = getLoginUserId(authentication);
-        try {
-            return ResponseEntity.ok(lectureStuService.getVideoUrl(lectureId, userId));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
-        }
+        return ResponseEntity.ok(lectureStuService.getVideoUrl(lectureId, userId));
     }
 
-    // 🌟 껍데기 파일 대신 로컬 저장소에서 진짜 파일 꺼내오기!
+    // 🌟 2. 진짜 강의 자료 다운로드 로직으로 교체
     @GetMapping("/{lectureId}/material")
     @ResponseBody
     public ResponseEntity<Resource> downloadLectureMaterial(@PathVariable Long lectureId, Authentication authentication) {
         Long userId = getLoginUserId(authentication);
         try {
-            // DB에서 저장된 진짜 파일 이름(materialId) 가져오기
-            String savedFileName = lectureStuService.getMaterialId(lectureId, userId);
+            String materialFileName = lectureStuService.getMaterialId(lectureId, userId);
 
-            // 물리적인 파일 위치 탐색
-            Path filePath = Paths.get(uploadPath, savedFileName);
+            Path root = Paths.get(uploadPath).toAbsolutePath().normalize();
+            Path filePath = root.resolve(materialFileName);
             Resource resource = new UrlResource(filePath.toUri());
 
             if (!resource.exists() || !resource.isReadable()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
 
-            // 한글 파일명 깨짐 방지 인코딩 처리
-            String encodedUploadFileName = UriUtils.encode(savedFileName, StandardCharsets.UTF_8);
-            String contentDisposition = "attachment; filename=\"" + encodedUploadFileName + "\"";
-
+            String encodedUploadFileName = UriUtils.encode(materialFileName, StandardCharsets.UTF_8);
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedUploadFileName + "\"")
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(resource);
-
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+
+    // 🌟 3. [추가됨] 썸네일 이미지를 화면에 띄워주는 API
+    @GetMapping("/thumbnail/{filename}")
+    @ResponseBody
+    public ResponseEntity<Resource> getThumbnail(@PathVariable String filename) {
+        try {
+            Path root = Paths.get(uploadPath).toAbsolutePath().normalize();
+            Path filePath = root.resolve(filename);
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+
+            String contentType = Files.probeContentType(filePath);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType != null ? contentType : "image/jpeg"))
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

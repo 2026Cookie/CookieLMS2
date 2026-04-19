@@ -121,7 +121,7 @@
             <label>강의 썸네일 이미지 (.jpg, .png)</label>
             <div th:if="${lecture?.thumbnailPath != null}" style="margin-bottom: 12px;">
                 <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">현재 등록된 썸네일:</p>
-                <img th:src="@{'/uploads/' + ${lecture.thumbnailPath}}"
+                <img th:src="@{/lectures/thumbnail/{filename}(filename=${lecture.thumbnailPath})}"
                      style="width: 100%; max-width: 200px; border-radius: 8px; border: 1px solid var(--dust-grey);">
             </div>
             <input type="file" name="thumbnail" id="thumbnail" accept="image/*">

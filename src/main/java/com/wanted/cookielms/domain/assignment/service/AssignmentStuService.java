@@ -13,8 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -28,9 +31,9 @@ public class AssignmentStuService {
     private final AssignmentStuRepository assignmentStuRepository;
     private final AssignmentSubmissionStuRepository assignmentSubmissionStuRepository;
 
-    // 로컬 파일 저장소 경로 설정 (자동으로 폴더 생성)
-    @Value("${file.upload.path:C:/cookielms/uploads/assignments/}")
-    private String uploadPath;
+    // 🌟 1. 과제가 저장될 인텔리제이 내부 공통 경로 설정
+    @Value("${file.upload.path:uploads/}")
+    private String baseUploadPath;
 
     /**
      * 과제 접근 권한 검증 (AOP에서 호출)
@@ -62,10 +65,6 @@ public class AssignmentStuService {
             throw new AssignmentException(AssignmentErrorCode.SUBMISSION_DEADLINE_PASSED);
         }
 
-        if (file == null || file.isEmpty()) {
-            throw new AssignmentException(AssignmentErrorCode.FILE_REQUIRED);
-        }
-
         String originalFilename = file.getOriginalFilename();
         String contentType = file.getContentType();
 
@@ -81,24 +80,21 @@ public class AssignmentStuService {
             throw new AssignmentException(AssignmentErrorCode.FILE_REQUIRED);
         }
 
-        // 물리적 파일 저장 로직 시작
+        // 🌟 2. 고유한 파일 이름 생성
         String savedFilename = UUID.randomUUID().toString() + "_" + originalFilename;
 
+        // 🌟 3. 물리적 파일 저장 로직 추가 (uploads/assignments/ 폴더에 저장)
         try {
-            File folder = new File(uploadPath);
-            if (!folder.exists()) {
-                folder.mkdirs();
+            Path uploadDir = Paths.get(baseUploadPath, "assignments").toAbsolutePath().normalize();
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
             }
-
-            File dest = new File(uploadPath, savedFilename);
-            file.transferTo(dest);
+            Path target = uploadDir.resolve(savedFilename);
+            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            // 일반 에러 대신 커스텀 에러(CRITICAL)를 던ㄷ짐
-            throw new AssignmentException(AssignmentErrorCode.FILE_UPLOAD_ERROR);
+            throw new RuntimeException("과제 파일 저장 중 오류가 발생했습니다.", e);
         }
-        // 물리적 파일 저장 로직 끝
 
-        // 임시 파일 ID 생성 (차후 공통 File 테이블 도입 시 교체 필요)
         Long dummyFileId = (long) (file.getOriginalFilename().length() * 100);
 
         assignmentSubmissionStuRepository.findByAssignmentIdAndStudentId(assignmentId, studentId)
