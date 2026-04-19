@@ -31,6 +31,7 @@ public class InstructorService {
     private final LectureInsRepository lectureInsRepository;
     private final LectureStuRepository lectureStuRepository;
     private final ModelMapper modelMapper;
+    private final InsFileService insFileService;
 
 
 
@@ -45,13 +46,15 @@ public class InstructorService {
 
     @Transactional
     public void registLecture(LectureInsDTO dto, Long instructorId) throws IOException {
-        String savedName = storeFile(dto.getLectureFile(), ".pdf");
+        String savedPdfName = insFileService.storeFile(dto.getLectureFile(), ".pdf");
+        String savedThumbnailName = insFileService.storeFile(dto.getThumbnail(), ".jpg", ".png", ".jpeg", ".gif");
 
         InsLecture lecture = InsLecture.builder()
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .videoUrl(dto.getVideoUrl())
-                .fileSavedName(savedName)
+                .fileSavedName(savedPdfName)
+                .thumbnail(savedThumbnailName)
                 .fileOriginName(dto.getLectureFile() != null ? dto.getLectureFile().getOriginalFilename() : null)
                 .maxCapacity(dto.getMaxCapacity())
                 .lectureDay(LectureDay.valueOf(dto.getLectureDay()))
@@ -66,16 +69,22 @@ public class InstructorService {
 
     @Transactional
     public void updateLecture(Long id, LectureInsDTO dto, Long instructorId) throws IOException {
+        // 수정 로직은 이름이 updateLecture여야 합니다.
         InsLecture lecture = lectureInsRepository.findById(id)
-                .orElseThrow(() -> new LectureException(LectureErrorCode.LECTURE_NOT_FOUND));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다. ID: " + id));
 
         if (!lecture.getInstructorId().equals(instructorId)) {
-            throw new LectureException(LectureErrorCode.LECTURE_UNAUTHORIZED);
+            throw new IllegalArgumentException("본인의 강의만 수정할 수 있습니다.");
         }
 
         if (dto.getLectureFile() != null && !dto.getLectureFile().isEmpty()) {
-            String savedName = storeFile(dto.getLectureFile(), ".pdf");
-            lecture.updateFileName(dto.getLectureFile().getOriginalFilename(), savedName);
+            String savedPdfName = insFileService.storeFile(dto.getLectureFile(), ".pdf");
+            lecture.updateFileName(dto.getLectureFile().getOriginalFilename(), savedPdfName);
+        }
+
+        if (dto.getThumbnail() != null && !dto.getThumbnail().isEmpty()) {
+            String savedThumbnailName = insFileService.storeFile(dto.getThumbnail(), ".jpg", ".png", ".jpeg", ".gif");
+            lecture.updateThumbnail(savedThumbnailName);
         }
 
         lecture.updateInfo(
@@ -91,16 +100,17 @@ public class InstructorService {
 
     public LectureInsDTO getLectureForEdit(Long id, Long instructorId) {
         InsLecture lecture = lectureInsRepository.findById(id)
-                .orElseThrow(() -> new LectureException(LectureErrorCode.LECTURE_NOT_FOUND));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다. ID: " + id));
 
         if (!lecture.getInstructorId().equals(instructorId)) {
-            throw new LectureException(LectureErrorCode.LECTURE_UNAUTHORIZED);
+            throw new IllegalArgumentException("본인의 강의만 조회할 수 있습니다.");
         }
 
         LectureInsDTO dto = modelMapper.map(lecture, LectureInsDTO.class);
         dto.setStartTime(lecture.getStartTime().toString());
         dto.setEndTime(lecture.getEndTime().toString());
         dto.setLectureDay(lecture.getLectureDay().name());
+        dto.setThumbnailPath(lecture.getThumbnail());
 
         return dto;
     }
@@ -117,8 +127,8 @@ public class InstructorService {
             throw new LectureException(LectureErrorCode.INVALID_FILE_EXTENSION);
         }
 
-        // 2. 용량 검증 (5MB)
-        long maxSize = 5 * 1024 * 1024;
+        // 2. 용량 검증 (20MB)
+        long maxSize = 20 * 1024 * 1024;
         if (file.getSize() > maxSize) {
             throw new LectureException(LectureErrorCode.FILE_SIZE_EXCEEDED);
         }

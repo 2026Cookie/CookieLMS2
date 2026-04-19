@@ -61,7 +61,7 @@ public class InstructorController {
 
         // HTML(lecture_detail.html)에서 사용할 수 있도록 모델에 담습니다.
         model.addAttribute("lecture", lecture);
-        return "student/lecture_detail";
+        return "user/lecture_detail";
     }
     /**
      * 강의 등록 페이지 이동
@@ -82,13 +82,28 @@ public class InstructorController {
             LectureInsDTO lectureInsDTO,
 
             @AuthenticationPrincipal AuthDetails authDetails,
-            RedirectAttributes redirectAttributes) throws IOException {
-        Long instructorId = authDetails.getLoginUserDTO().getUserId();
-        instructorService.registLecture(lectureInsDTO,instructorId);
-        log.info("✅ 강의 등록 성공: {}", lectureInsDTO.getTitle());
-        // 성공 시 FlashAttribute 사용
-        redirectAttributes.addFlashAttribute("message", "✅ 강의 등록이 완료되었습니다!");
-        return "redirect:/instructor/lectures";
+            RedirectAttributes redirectAttributes) {
+        try {
+            Long instructorId = authDetails.getLoginUserDTO().getUserId();
+            instructorService.registLecture(lectureInsDTO,instructorId);
+            log.info("✅ 강의 등록 성공: {}", lectureInsDTO.getTitle());
+            // 성공 시 FlashAttribute 사용
+            redirectAttributes.addFlashAttribute("message", "✅ 강의 등록이 완료되었습니다!");
+            return "redirect:/instructor/lectures";
+
+        } catch (IllegalArgumentException e) {
+
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/instructor/lecture/regist";
+
+        } catch (IOException e) {
+            log.error("❌ 파일 저장 에러", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "파일 저장 중 오류가 발생했습니다.");
+            return "redirect:/instructor/lecture/regist";
+            //return "redirect:/instructor/lectures";
+        }
+
+
     }
 
 
@@ -120,15 +135,27 @@ public class InstructorController {
             @PathVariable("id") Long id,
             @ModelAttribute LectureInsDTO lectureInsDTO,
             @AuthenticationPrincipal AuthDetails authDetails, // 시큐리티 세션 추가
-            RedirectAttributes redirectAttributes) throws IOException {
-        // 세션에서 로그인한 강사 ID 추출
-        Long instructorId = authDetails.getLoginUserDTO().getUserId();
+            RedirectAttributes redirectAttributes) {
+        try {
+            // 세션에서 로그인한 강사 ID 추출
+            Long instructorId = authDetails.getLoginUserDTO().getUserId();
 
-        // 서비스 호출 시 instructorId 추가 전달
-        instructorService.updateLecture(id, lectureInsDTO, instructorId);
+            // 서비스 호출 시 instructorId 추가 전달
+            instructorService.updateLecture(id, lectureInsDTO, instructorId);
 
-        redirectAttributes.addFlashAttribute("message", "강의 수정이 완료되었습니다!");
-        return "redirect:/instructor/lecture/detail/" + id;
+            redirectAttributes.addFlashAttribute("message", "강의 수정이 완료되었습니다!");
+            return "redirect:/instructor/lectures";
+
+        } catch (IllegalArgumentException e) {
+            log.error("수정 중 보안/검증 오류 발생: ", e);
+            // 서비스에서 던진 에러 메시지("본인의 강의만 수정할 수 있습니다.")를 화면에 전달
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/instructor/lecture/edit/" + id;
+        } catch (Exception e) {
+            log.error("수정 중 시스템 오류 발생: ", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "수정 중 오류가 발생했습니다.");
+            return "redirect:/instructor/lecture/edit/" + id;
+        }
     }
 
 }

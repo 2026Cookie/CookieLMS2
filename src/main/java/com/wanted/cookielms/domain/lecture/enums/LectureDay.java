@@ -12,5 +12,5 @@ public enum LectureDay {
     THU("목요일"),
     FRI("금요일");
 
-    private final String description; // "월요일" 같은 한글 이름을 저장
+    private final String description;
 }

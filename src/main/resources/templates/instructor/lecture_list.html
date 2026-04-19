@@ -54,12 +54,27 @@
         }
         .btn-edit:hover { background: var(--almond-silk); color: var(--text-primary); }
         .empty { text-align: center; padding: 60px 0; color: var(--text-muted); font-size: 15px; }
+        .lecture-thumb {
+            width: 60px; height: 40px;
+            background: var(--powder-petal);
+            border-radius: 6px;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid var(--dust-grey);
+        }
+        .lecture-thumb img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .no-thumb {
+            font-size: 9px; color: var(--text-muted); font-weight: 600;
+        }
     </style>
 </head>
 <body>
 <header>
-    <div class="logo">Cookiego</div>
     <a th:href="@{/instructor/main}" class="back-link">← 메인으로</a>
+    <div class="logo">Cookiego</div>
 </header>
 
 <div class="main">
@@ -73,6 +88,13 @@
         <div class="lecture-item" th:each="lecture, iterStat : ${lectures.content}">
             <div class="lecture-info">
                 <div class="lecture-num" th:text="${lectures.totalElements - (lectures.number * lectures.size) - iterStat.index}"></div>
+
+                <div class="lecture-thumb">
+                    <img th:if="${lecture.thumbnail != null}"
+                         th:src="@{'/uploads/' + ${lecture.thumbnail}}" alt="강의 썸네일">
+                    <span th:unless="${lecture.thumbnail != null}" class="no-thumb">No Image</span>
+                </div>
+
                 <div class="lecture-title" th:text="${lecture.title}"></div>
             </div>
             <button class="btn-edit"
