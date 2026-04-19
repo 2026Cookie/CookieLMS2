@@ -55,3 +55,8 @@ server:
 app:
   error-log:
     stack-trace-max-length: 1000  # 스택 트레이스 최대 길이 (자)
+
+# 🌟 [추가] 파일 업로드 공통 경로 강제 지정 (인텔리제이 내부)
+file:
+  upload:
+    path: uploads/

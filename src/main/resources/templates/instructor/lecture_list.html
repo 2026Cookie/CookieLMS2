@@ -91,7 +91,7 @@
 
                 <div class="lecture-thumb">
                     <img th:if="${lecture.thumbnail != null}"
-                         th:src="@{'/uploads/' + ${lecture.thumbnail}}" alt="강의 썸네일">
+                         th:src="@{/lectures/thumbnail/{filename}(filename=${lecture.thumbnail})}" alt="강의 썸네일">
                     <span th:unless="${lecture.thumbnail != null}" class="no-thumb">No Image</span>
                 </div>
 
