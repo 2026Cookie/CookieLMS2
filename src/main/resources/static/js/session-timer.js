@@ -29,34 +29,12 @@
                 user-select: none;
                 white-space: nowrap;
             }
-            #session-timer-box.inline {
-                /* 헤더 안에 인라인 배치 - 추가 스타일 불필요 */
-            }
-            #session-timer-box.floating {
-                position: fixed;
-                top: 14px;
-                right: 20px;
-                z-index: 9999;
-                background: rgba(245,235,224,0.95);
-                border: 1.5px solid #d6ccc2;
-                border-radius: 8px;
-                padding: 6px 12px;
-                box-shadow: 0 2px 10px rgba(44,32,16,0.12);
-            }
             #session-timer-box.warn {
                 color: #7a4e10;
-            }
-            #session-timer-box.floating.warn {
-                border-color: #c8823a;
-                background: rgba(252,243,228,0.97);
             }
             #session-timer-box.danger {
                 color: #8a1a10;
                 animation: timerPulse 0.8s ease-in-out infinite alternate;
-            }
-            #session-timer-box.floating.danger {
-                border-color: #b03020;
-                background: rgba(252,235,228,0.97);
             }
             @keyframes timerPulse {
                 from { opacity: 1; }
@@ -88,6 +66,20 @@
             #session-timer-extend:hover {
                 background: rgba(0,0,0,0.07);
             }
+            #session-timer-bar {
+                position: fixed;
+                top: 0;
+                right: 0;
+                left: 0;
+                z-index: 9999;
+                background: rgba(245,235,224,0.95);
+                border-bottom: 1px solid #d6ccc2;
+                padding: 8px 20px;
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                box-shadow: 0 1px 4px rgba(44,32,16,0.08);
+            }
         `;
         document.head.appendChild(style);
     }
@@ -113,14 +105,26 @@
         box.appendChild(value);
         box.appendChild(btn);
 
-        // .header-right 가 있으면 그 안에 자연스럽게 삽입, 없으면 fixed 오버레이
         const headerRight = document.querySelector('.header-right');
+        const header = document.querySelector('header');
+
         if (headerRight) {
-            box.classList.add('inline');
+            // .header-right 가 있으면 그 안에 인라인 배치
             headerRight.insertBefore(box, headerRight.firstChild);
+        } else if (header) {
+            // header는 있지만 .header-right 없음: .header-right 동적 생성
+            const div = document.createElement('div');
+            div.className = 'header-right';
+            div.style.cssText = 'display:flex;align-items:center;gap:16px;';
+            div.appendChild(box);
+            header.appendChild(div);
         } else {
-            box.classList.add('floating');
-            document.body.appendChild(box);
+            // header 없는 카드 레이아웃: 상단 고정 바에 배치
+            const bar = document.createElement('div');
+            bar.id = 'session-timer-bar';
+            bar.appendChild(box);
+            document.body.insertBefore(bar, document.body.firstChild);
+            document.body.style.paddingTop = (parseFloat(getComputedStyle(document.body).paddingTop) + 44) + 'px';
         }
     }
 
