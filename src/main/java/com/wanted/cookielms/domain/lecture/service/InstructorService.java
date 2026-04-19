@@ -4,17 +4,24 @@ import com.wanted.cookielms.domain.lecture.dto.LectureInsDTO;
 import com.wanted.cookielms.domain.lecture.dto.LectureStuDTO;
 import com.wanted.cookielms.domain.lecture.entity.InsLecture;
 import com.wanted.cookielms.domain.lecture.enums.LectureDay;
+import com.wanted.cookielms.domain.lecture.exception.LectureErrorCode;
+import com.wanted.cookielms.domain.lecture.exception.LectureException;
 import com.wanted.cookielms.domain.lecture.repository.LectureInsRepository;
 import com.wanted.cookielms.domain.lecture.repository.LectureStuRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalTime;
+import java.util.UUID;
+
 
 @Service
 @RequiredArgsConstructor
@@ -24,12 +31,17 @@ public class InstructorService {
     private final LectureInsRepository lectureInsRepository;
     private final LectureStuRepository lectureStuRepository;
     private final ModelMapper modelMapper;
-    private final InsFileService insFileService;
+
+
+
+    @Value("${file.upload.path:uploads/}")
+    private String uploadPath;
 
     public Page<LectureStuDTO> getMyLectures(Long instructorId, Pageable pageable) {
         Page<InsLecture> myLectures = lectureInsRepository.findByInstructorId(instructorId, pageable);
         return myLectures.map(entity -> modelMapper.map(entity, LectureStuDTO.class));
     }
+
 
     @Transactional
     public void registLecture(LectureInsDTO dto, Long instructorId) throws IOException {
@@ -53,8 +65,10 @@ public class InstructorService {
         lectureInsRepository.save(lecture);
     }
 
+
     @Transactional
     public void updateLecture(Long id, LectureInsDTO dto, Long instructorId) throws IOException {
+        // 수정 로직은 이름이 updateLecture여야 합니다.
         InsLecture lecture = lectureInsRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다. ID: " + id));
 
@@ -98,5 +112,39 @@ public class InstructorService {
         dto.setThumbnailPath(lecture.getThumbnail());
 
         return dto;
+    }
+
+    private String storeFile(MultipartFile file, String allowedExtension) throws IOException {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+
+        String originalName = file.getOriginalFilename();
+
+        // 1. 확장자 검증
+        if (originalName == null || !originalName.toLowerCase().endsWith(allowedExtension)) {
+            throw new LectureException(LectureErrorCode.INVALID_FILE_EXTENSION);
+        }
+
+        // 2. 용량 검증 (5MB)
+        long maxSize = 5 * 1024 * 1024;
+        if (file.getSize() > maxSize) {
+            throw new LectureException(LectureErrorCode.FILE_SIZE_EXCEEDED);
+        }
+
+        // 3. 고유 파일명 생성
+        String ext = originalName.substring(originalName.lastIndexOf("."));
+        String savedName = UUID.randomUUID().toString() + ext;
+
+        // 4. 물리적 저장
+        File targetDir = new File(uploadPath).getAbsoluteFile();
+        if (!targetDir.exists()) {
+            targetDir.mkdirs();
+        }
+
+        File targetFile = new File(targetDir, savedName);
+        file.transferTo(targetFile);
+
+        return savedName;
     }
 }

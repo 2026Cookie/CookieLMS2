@@ -3,13 +3,11 @@ package com.wanted.cookielms.domain.user.controller;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.ui.Model;
 import com.wanted.cookielms.domain.user.dto.JoinUserDTO;
-import com.wanted.cookielms.domain.user.dto.LoginUserDTO;
 import com.wanted.cookielms.domain.user.dto.ModifyUserInfo;
+import com.wanted.cookielms.domain.user.dto.MypageDTO;
 import com.wanted.cookielms.domain.user.service.UserService;
 import jakarta.validation.Valid;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +15,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.wanted.cookielms.domain.user.dto.ResetPasswordDTO;
 
@@ -40,10 +37,7 @@ public class UserController {
         if (bindingResult.hasErrors()) {
             return "user/join";
         }
-        String result = userService.join(joinUserDTO);
-        if (result == null) {
-            return "redirect:/user/join";
-        }
+        userService.join(joinUserDTO);
         return "redirect:/user/joinsuccess";
     }
 
@@ -145,8 +139,8 @@ public class UserController {
     @GetMapping("/mypage")
     public String mypage(Model model) {
         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
-        LoginUserDTO userInfo = userService.findByUsername(loginId);
-        model.addAttribute("userInfo", userInfo);
+        MypageDTO mypage = userService.getMypage(loginId);
+        model.addAttribute("userInfo", mypage);
         return "user/mypage";
     }
 
@@ -175,8 +169,8 @@ public class UserController {
             return "redirect:/user/verify-password";
         }
         String loginId = (String) session.getAttribute("verifiedLoginId");
-        LoginUserDTO userInfo = userService.findByUsername(loginId);
-        model.addAttribute("userInfo", userInfo);
+        MypageDTO mypage = userService.getMypage(loginId);
+        model.addAttribute("userInfo", mypage);
         return "user/mypage_info";
     }
 
@@ -186,9 +180,14 @@ public class UserController {
             return "redirect:/user/verify-password";
         }
         String loginId = (String) session.getAttribute("verifiedLoginId");
-        LoginUserDTO userInfo = userService.findByUsername(loginId);
-        model.addAttribute("userInfo", userInfo);
-        model.addAttribute("modifyUserInfo", new ModifyUserInfo());
+        MypageDTO mypage = userService.getMypage(loginId);
+
+        ModifyUserInfo modifyUserInfo = new ModifyUserInfo();
+        modifyUserInfo.setName(mypage.getName());
+        modifyUserInfo.setNickname(mypage.getNickname());
+        modifyUserInfo.setEmail(mypage.getEmail());
+        modifyUserInfo.setPhone(mypage.getPhone());
+        model.addAttribute("modifyUserInfo", modifyUserInfo);
         return "user/mypage_edit";
     }
 
@@ -204,11 +203,7 @@ public class UserController {
             return "user/mypage_edit";
         }
         String loginId = (String) session.getAttribute("verifiedLoginId");
-        boolean result = userService.updateUserInfo(loginId, modifyUserInfo);
-        if (!result) {
-            model.addAttribute("error", "현재 비밀번호가 일치하지 않거나 새 비밀번호가 맞지 않습니다.");
-            return "user/mypage_edit";
-        }
+        userService.updateUserInfo(loginId, modifyUserInfo);
         return "redirect:/user/mypage/info";
     }
 
@@ -224,11 +219,7 @@ public class UserController {
                            HttpSession session,
                            Model model) {
         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
-        boolean result = userService.withdrawUser(loginId, password);
-        if (!result) {
-            model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
-            return "user/withdraw";
-        }
+        userService.withdrawUser(loginId, password);
         session.invalidate();
         return "redirect:/";
     }

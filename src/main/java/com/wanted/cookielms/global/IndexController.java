@@ -1,7 +1,9 @@
 package com.wanted.cookielms.global;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class IndexController {
@@ -27,6 +29,12 @@ public class IndexController {
     @GetMapping("/admin")
     public String adminMainPage(){
         return "admin/dashboard";
+    }
+
+    @ResponseBody
+    @GetMapping("/api/session/keep-alive")
+    public ResponseEntity<Void> keepAlive() {
+        return ResponseEntity.ok().build();
     }
 
     /*

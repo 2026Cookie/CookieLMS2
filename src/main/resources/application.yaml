@@ -36,6 +36,9 @@ logging:
 
 # 서버 에러 처리 설정
 server:
+  servlet:
+    session:
+      timeout: 15m
   error:
     whitelabel:
       enabled: false  # Spring Boot 기본 에러 페이지 비활성화

@@ -41,7 +41,10 @@
             border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
             cursor: pointer; margin-top: 8px; transition: background 0.2s;
         }
-        .btn-submit:hover { background: var(--btn-dark-hover); }
+        .btn-submit:hover:not(:disabled) { background: var(--btn-dark-hover); }
+        .btn-submit:disabled { background: var(--almond-silk); cursor: not-allowed; }
+        .field-error { font-size: 12px; color: #7a3020; margin-top: 5px; display: none; }
+        input.input-error { border-color: #c8a090; }
         .links { display: flex; justify-content: center; gap: 16px; margin-top: 20px; }
         .links a { font-size: 13px; color: var(--text-muted); text-decoration: none; }
         .links a:hover { color: var(--text-secondary); text-decoration: underline; }
@@ -49,21 +52,30 @@
     </style>
 </head>
 <body>
+<script th:inline="javascript">
+    const loginError = /*[[${session.loginError}]]*/ null;
+    if (loginError) {
+        alert(loginError);
+    }
+</script>
+
 <div class="card">
     <a href="/" class="back-link">← 홈으로</a>
     <h1>로그인</h1>
     <p class="subtitle">Cookiego에 오신 것을 환영합니다</p>
 
-    <form th:action="@{/user/login}" method="post">
+    <form th:action="@{/user/login}" method="post" id="loginForm">
         <div class="form-group">
             <label for="loginId">아이디</label>
             <input type="text" id="loginId" name="loginId" placeholder="아이디를 입력하세요">
+            <p class="field-error" id="loginId-error">아이디를 입력해주세요.</p>
         </div>
         <div class="form-group">
             <label for="password">비밀번호</label>
             <input type="password" id="password" name="password" placeholder="비밀번호를 입력하세요">
+            <p class="field-error" id="password-error">비밀번호를 입력해주세요.</p>
         </div>
-        <button type="submit" class="btn-submit">로그인</button>
+        <button type="submit" class="btn-submit" id="submitBtn" disabled>로그인</button>
     </form>
 
     <div class="links">
@@ -74,5 +86,56 @@
         <a th:href="@{/user/join}">회원가입</a>
     </div>
 </div>
+<script>
+    (function () {
+        // 서버 오류 alert
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('error') === 'true') {
+            const msg = params.get('message') || '로그인에 실패하였습니다.';
+            alert(msg);
+        }
+        if (params.get('expired') === 'true') {
+            alert('세션이 만료되었습니다. 다시 로그인해 주세요.');
+        }
+
+        const loginIdInput = document.getElementById('loginId');
+        const passwordInput = document.getElementById('password');
+        const submitBtn    = document.getElementById('submitBtn');
+        const loginIdError = document.getElementById('loginId-error');
+        const passwordError = document.getElementById('password-error');
+
+        function checkFields() {
+            const idFilled  = loginIdInput.value.trim() !== '';
+            const pwFilled  = passwordInput.value !== '';
+            submitBtn.disabled = !(idFilled && pwFilled);
+        }
+
+        function showError(input, errorEl) {
+            if (input.value.trim() === '') {
+                errorEl.style.display = 'block';
+                input.classList.add('input-error');
+            } else {
+                errorEl.style.display = 'none';
+                input.classList.remove('input-error');
+            }
+        }
+
+        loginIdInput.addEventListener('input', function () {
+            showError(loginIdInput, loginIdError);
+            checkFields();
+        });
+        loginIdInput.addEventListener('blur', function () {
+            showError(loginIdInput, loginIdError);
+        });
+
+        passwordInput.addEventListener('input', function () {
+            showError(passwordInput, passwordError);
+            checkFields();
+        });
+        passwordInput.addEventListener('blur', function () {
+            showError(passwordInput, passwordError);
+        });
+    })();
+</script>
 </body>
 </html>

@@ -1,8 +1,8 @@
 package com.wanted.cookielms.global.error.controller;
 
-import com.wanted.cookielms.global.error.model.entity.ErrorLogEntity;
-import com.wanted.cookielms.global.error.model.entity.enums.ErrorSeverity;
-import com.wanted.cookielms.global.error.model.service.ErrorLogService;
+import com.wanted.cookielms.global.logging.error.entity.ErrorLogEntity;
+import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
+import com.wanted.cookielms.global.logging.error.service.ErrorLogService;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-
+import org.slf4j.MDC;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
@@ -41,10 +41,12 @@ public class CustomErrorController implements ErrorController {
         Throwable throwable = (Throwable) request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
 
         // 2. 추적 ID 생성
-        String traceId = UUID.randomUUID().toString();
-
-        // 3. 에러 로깅 (필터 단에서 터진 에러도 우리 시스템에 기록!)
-        saveErrorLog(status, message, requestUri, request, traceId, throwable);
+// 쿼리 파라미터에서 먼저 확인, 없으면 MDC에서, 그것도 없으면 생성
+// 변경
+        String traceId = MDC.get("traceId");
+        if (traceId == null) {
+            traceId = UUID.randomUUID().toString();
+        }
 
         // 4. 사용자님이 만든 예쁜 HTML에 보낼 데이터 바인딩
         model.addAttribute("status", status);
@@ -60,67 +62,12 @@ public class CustomErrorController implements ErrorController {
         return "error/business-error";
     }
 
-    /**
-     * 필터 레벨 에러를 우리 에러 로그 시스템에 전송
-     */
-    private void saveErrorLog(Integer status, String message, String requestUri,
-                              HttpServletRequest request, String traceId, Throwable t) {
-        try {
-            // 500번대나 보안(401, 403) 에러는 CRITICAL로 격상
-            ErrorSeverity severity = (status >= 500 || status == 401 || status == 403)
-                    ? ErrorSeverity.CRITICAL : ErrorSeverity.WARNING;
-
-            // Security에서 현재 사용자 가져오기
-            String userId = getCurrentUserId();
-
-            ErrorLogEntity errorLog = ErrorLogEntity.builder()
-                    .errorCode(getErrorCodeForStatus(status))
-                    .errorMessage(message != null ? message : getDefaultMessage(status))
-                    .exceptionName(t != null ? t.getClass().getSimpleName() : "FilterOrNetworkError")
-                    .requestUri(requestUri != null ? requestUri : request.getRequestURI())
-                    .httpMethod(request.getMethod())
-                    .clientIp(getClientIp(request))
-                    .userId(userId)
-                    .stackTrace(t != null ? t.toString() : "No StackTrace (Out of MVC)")
-                    .traceId(traceId)
-                    .severity(severity)
-                    .build();
-
-            errorLogService.saveErrorLogAsync(errorLog);
-        } catch (Exception e) {
-            log.error("Critical: Error logging failed in ErrorController", e);
-        }
-    }
-
-    private String getCurrentUserId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
-            return auth.getName();
-        }
-        return "ANONYMOUS";
-    }
-
-    private String getErrorCodeForStatus(Integer status) {
-        return switch (status) {
-            case 400 -> "BAD_REQUEST";
-            case 401 -> "UNAUTHORIZED";
-            case 403 -> "FORBIDDEN";
-            case 404 -> "NOT_FOUND";
-            default -> "SERVER_ERROR";
-        };
-    }
-
     private String getDefaultMessage(Integer status) {
         return switch (status) {
             case 404 -> "페이지를 찾을 수 없습니다. 주소를 확인해주세요.";
-            case 401, 403 -> "접근 권한이 없습니다. 로그인이 필요할 수 있습니다.";
+            case 401, 403 -> "접근 권한이 없습니다. 로그인이 필요합니다.";
             default -> "서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
         };
     }
 
-    private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        return (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip))
-                ? request.getRemoteAddr() : ip.split(",")[0];
-    }
 }

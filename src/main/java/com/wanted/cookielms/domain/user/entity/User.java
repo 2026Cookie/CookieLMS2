@@ -46,6 +46,8 @@ public class User {
     // userDetails 는 앤티티에 있으면 안된다, 수정 반드시 필요!!
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     public User(String email, String loginId, String password,
@@ -62,6 +64,7 @@ public class User {
         this.updatedAt = updatedAt;
         this.role = role;
         this.status = status;
+        this.isDeleted = false;
     }
 
     public void updatePassword(String encodedPassword) {
@@ -82,5 +85,15 @@ public class User {
         this.isDeleted = true;
         this.deletedAt = LocalDateTime.now();
         this.status = Status.DORMANT;
+    }
+
+    public void ban() {
+        this.status = Status.BANNED;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void unban() {
+        this.status = Status.ACTIVE;
+        this.updatedAt = LocalDateTime.now();
     }
 }

@@ -1,8 +1,8 @@
 package com.wanted.cookielms.global.config.security.handler;
 
-import com.wanted.cookielms.global.error.model.entity.ErrorLogEntity;
-import com.wanted.cookielms.global.error.model.entity.enums.ErrorSeverity;
-import com.wanted.cookielms.global.error.model.service.ErrorLogService;
+import com.wanted.cookielms.global.error.handler.GlobalErrorCode;
+import com.wanted.cookielms.global.logging.error.entity.ErrorLogEntity;
+import com.wanted.cookielms.global.logging.error.service.ErrorLogService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
+import org.slf4j.MDC;
+import jakarta.servlet.RequestDispatcher;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -26,27 +28,34 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     public void handle(HttpServletRequest request, HttpServletResponse response,
                        AccessDeniedException accessDeniedException) throws IOException, ServletException {
 
-        String traceId = UUID.randomUUID().toString();
+        String traceId = MDC.get("traceId");
+        if (traceId == null) {
+            traceId = UUID.randomUUID().toString();
+        }
 
-        // 💡 사용자님이 주신 WebGlobalExceptionHandler의 saveErrorLog 로직과 동일하게 구성
+        GlobalErrorCode globalErrorCode = GlobalErrorCode.FORBIDDEN; // ← 추가
+
         ErrorLogEntity errorLog = ErrorLogEntity.builder()
-                .errorCode("FORBIDDEN") // 403
-                .errorMessage("접근 권한이 없습니다: " + accessDeniedException.getMessage())
+                .errorCode(globalErrorCode.getCode()) // ← ErrorCode 사용
+                .errorMessage(globalErrorCode.getMessage() + ": " + accessDeniedException.getMessage())
                 .exceptionName(accessDeniedException.getClass().getSimpleName())
                 .requestUri(request.getRequestURI())
                 .httpMethod(request.getMethod())
                 .clientIp(getClientIp(request))
-                .userId("ANONYMOUS") // 추후 Principal 연동 가능
+                .userId("ANONYMOUS")
                 .stackTrace("Security Filter Level: Access Denied")
                 .traceId(traceId)
-                .severity(ErrorSeverity.CRITICAL) // 💡 Service 로직에 따라 DB에 저장됨
+                .severity(globalErrorCode.getSeverity()) // ← ErrorCode 사용
                 .build();
 
-        // 비동기 서비스 호출
         errorLogService.saveErrorLogAsync(errorLog);
 
-        // 예쁜 HTML 화면(CustomErrorController)으로 리다이렉트
-        response.sendRedirect("/error?status=403&traceId=" + traceId);
+        request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, globalErrorCode.getStatus().value()); // ← 변경
+        request.setAttribute(RequestDispatcher.ERROR_MESSAGE, globalErrorCode.getMessage()); // ← 변경
+        request.setAttribute(RequestDispatcher.ERROR_REQUEST_URI, request.getRequestURI());
+
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/error");
+        dispatcher.forward(request, response);
     }
 
     private String getClientIp(HttpServletRequest request) {

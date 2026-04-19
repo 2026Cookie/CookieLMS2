@@ -2,7 +2,10 @@ package com.wanted.cookielms.domain.lecture.service;
 
 import com.wanted.cookielms.domain.enrollment.repository.EnrollmentRepository;
 import com.wanted.cookielms.domain.lecture.dto.LectureStuDTO;
+import com.wanted.cookielms.domain.lecture.dto.MyLectureListDTO;
 import com.wanted.cookielms.domain.lecture.entity.LectureStuEntity;
+import com.wanted.cookielms.domain.lecture.exception.LectureErrorCode;
+import com.wanted.cookielms.domain.lecture.exception.LectureException;
 import com.wanted.cookielms.domain.lecture.repository.LectureStuRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -20,6 +23,7 @@ public class LectureStuService {
     private final EnrollmentRepository enrollmentRepository;
     private final ModelMapper modelMapper;
 
+    // 🌟 전체 강의 목록 조회 (수강신청 페이지용 복구)
     public Page<LectureStuDTO> getAllLectures(String keyword, Pageable pageable) {
         Page<LectureStuEntity> lectures;
         if (keyword == null || keyword.trim().isEmpty()) {
@@ -30,17 +34,26 @@ public class LectureStuService {
         return lectures.map(entity -> modelMapper.map(entity, LectureStuDTO.class));
     }
 
-    // 학생용 상세 조회 (수강생/강사 여부 체크 포함)
+    // 🌟 내 강의만 가져오는 최적화된 로직
+    public Page<MyLectureListDTO> getMyLectures(Long userId, String keyword, Pageable pageable) {
+        String safeKeyword = (keyword == null || keyword.trim().isEmpty()) ? null : keyword;
+        return lectureStuRepository.findMyLecturesWithProjection(userId, safeKeyword, pageable);
+    }
+
+    // 🌟 강의 상세 조회 (여기에 강사 이름 가져오기가 쏙 들어갔어요!)
     public LectureStuDTO getLectureDetail(Long lectureId, Long userId) {
         LectureStuEntity entity = lectureStuRepository.findById(lectureId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 강의를 찾을 수 없습니다. ID: " + lectureId));
+                .orElseThrow(() -> new LectureException(LectureErrorCode.LECTURE_NOT_FOUND));
 
         LectureStuDTO dto = modelMapper.map(entity, LectureStuDTO.class);
 
         boolean isEnrolled = enrollmentRepository.existsByUserIdAndLectureIdAndStatus(userId, lectureId, "ENROLLED");
         boolean isInstructor = entity.getInstructorId().equals(userId);
 
-        // 🌟 바뀐 이름으로 Setter 호출!
+        // 🌟 강사 이름 가져와서 DTO에 꽂아주기! (하연님이 물어보신 부분!)
+        String instructorName = lectureStuRepository.findInstructorNameById(entity.getInstructorId());
+        dto.setInstructorName(instructorName);
+
         dto.setUserEnrolled(isEnrolled);
         dto.setUserInstructor(isInstructor);
 
@@ -54,26 +67,26 @@ public class LectureStuService {
 
     public String getVideoUrl(Long lectureId, Long userId) {
         LectureStuEntity entity = lectureStuRepository.findById(lectureId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 강의를 찾을 수 없습니다."));
+                .orElseThrow(() -> new LectureException(LectureErrorCode.LECTURE_NOT_FOUND));
 
         boolean isEnrolled = enrollmentRepository.existsByUserIdAndLectureIdAndStatus(userId, lectureId, "ENROLLED");
         boolean isInstructor = entity.getInstructorId().equals(userId);
 
         if (!isEnrolled && !isInstructor) {
-            throw new SecurityException("수강생 또는 담당 강사만 강의 영상을 재생할 수 있습니다.");
+            throw new LectureException(LectureErrorCode.VIDEO_ACCESS_DENIED);
         }
         return entity.getVideoUrl();
     }
 
     public String getMaterialId(Long lectureId, Long userId) {
         LectureStuEntity entity = lectureStuRepository.findById(lectureId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 강의를 찾을 수 없습니다."));
+                .orElseThrow(() -> new LectureException(LectureErrorCode.LECTURE_NOT_FOUND));
 
         boolean isEnrolled = enrollmentRepository.existsByUserIdAndLectureIdAndStatus(userId, lectureId, "ENROLLED");
         boolean isInstructor = entity.getInstructorId().equals(userId);
 
         if (!isEnrolled && !isInstructor) {
-            throw new SecurityException("수강생 또는 담당 강사만 학습 자료를 다운로드할 수 있습니다.");
+            throw new LectureException(LectureErrorCode.MATERIAL_ACCESS_DENIED);
         }
         return entity.getMaterialId();
     }

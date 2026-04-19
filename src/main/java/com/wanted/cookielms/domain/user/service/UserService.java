@@ -3,10 +3,13 @@ package com.wanted.cookielms.domain.user.service;
 import com.wanted.cookielms.domain.user.dto.JoinUserDTO;
 import com.wanted.cookielms.domain.user.dto.LoginUserDTO;
 import com.wanted.cookielms.domain.user.dto.ModifyUserInfo;
+import com.wanted.cookielms.domain.user.dto.MypageDTO;
 import com.wanted.cookielms.domain.user.dto.ResetPasswordDTO;
 import com.wanted.cookielms.domain.user.entity.User;
 import com.wanted.cookielms.domain.user.enums.Role;
 import com.wanted.cookielms.domain.user.enums.Status;
+import com.wanted.cookielms.domain.user.exception.UserErrorCode;
+import com.wanted.cookielms.domain.user.exception.UserException;
 import com.wanted.cookielms.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,14 +31,13 @@ public class UserService {
     @Transactional
     public String join(JoinUserDTO joinUserDTO){
 
-        if (userRepository.existsByLoginId(joinUserDTO.getLoginId())) {
-            return null; // 중복된 아이디가 존재함을 null로 표시
+        if (userRepository.existsByLoginIdAndIsDeletedFalse(joinUserDTO.getLoginId())) {
+            throw new UserException(UserErrorCode.DUPLICATE_LOGIN_ID);
         }
 
-        if (userRepository.existsByEmail(joinUserDTO.getEmail())) {
-            return null;
+        if (userRepository.existsByEmailAndIsDeletedFalse(joinUserDTO.getEmail())) {
+            throw new UserException(UserErrorCode.DUPLICATE_EMAIL);
         }
-
 
         User user = new User(
                 joinUserDTO.getEmail(),
@@ -49,57 +51,59 @@ public class UserService {
                 joinUserDTO.getRole(),
                 Status.ACTIVE
         );
-        userRepository.save(user); // 맨 마지막에!
+        userRepository.save(user);
         return "success";
-
-
     }
 
     public LoginUserDTO findByUsername(String username) {
-        Optional<User> userOptional = userRepository.findByLoginId(username);
+        Optional<User> userOptional = userRepository.findByLoginIdAndIsDeletedFalse(username);
         return userOptional.map(user -> modelMapper.map(user, LoginUserDTO.class)).orElse(null);
     }
 
+    public MypageDTO getMypage(String loginId) {
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        return modelMapper.map(user, MypageDTO.class);
+    }
+
     public String findLoginIdByNameAndPhone(String name, String phone) {
-        Optional<User> lostIdUser = userRepository.findByNameAndPhone(name, phone);
-        return lostIdUser.map(User -> User.getLoginId()).orElse(null);
+        Optional<User> lostIdUser = userRepository.findByNameAndPhoneAndIsDeletedFalse(name, phone);
+        return lostIdUser.map(User::getLoginId).orElse(null);
     }
 
     public Boolean findByLoginIdAndNameAndPhone(String loginId, String name, String phone) {
-        Optional<User> lostpwdUser = userRepository.findByLoginIdAndNameAndPhone(loginId, name, phone);
+        Optional<User> lostpwdUser = userRepository.findByLoginIdAndNameAndPhoneAndIsDeletedFalse(loginId, name, phone);
         return lostpwdUser.isPresent();
     }
 
     @Transactional
     public void updatePassword(String loginId, String newPassword ) {
-        userRepository.findByLoginId(loginId)
-                .ifPresent(user -> {user.updatePassword(passwordEncoder.encode(newPassword));
-                });
-
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        user.updatePassword(passwordEncoder.encode(newPassword));
     }
 
     // 정보 조회 비번 확인용
     public boolean verifyPassword(String loginId, String password) {
-        return userRepository.findByLoginId(loginId)
+        return userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .map(user -> passwordEncoder.matches(password, user.getPassword()))
                 .orElse(false);
     }
 
-
     @Transactional
     public boolean updateUserInfo(String loginId, ModifyUserInfo dto) {
-        User user = userRepository.findByLoginId(loginId).orElse(null);
-        if (user == null) return false;
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
-            return false;
+            throw new UserException(UserErrorCode.INVALID_PASSWORD);
         }
 
         user.updateInfo(dto.getName(), dto.getNickname(), dto.getEmail(), dto.getPhone());
 
         if (dto.getNewPassword() != null && !dto.getNewPassword().isBlank()) {
             if (!dto.getNewPassword().equals(dto.getNewPasswordConfirm())) {
-                return false;
+                throw new UserException(UserErrorCode.PASSWORD_MISMATCH);
             }
             user.updatePassword(passwordEncoder.encode(dto.getNewPassword()));
         }
@@ -109,11 +113,11 @@ public class UserService {
 
     @Transactional
     public boolean withdrawUser(String loginId, String password) {
-        User user = userRepository.findByLoginId(loginId).orElse(null);
-        if (user == null) return false;
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            return false;
+            throw new UserException(UserErrorCode.INVALID_PASSWORD);
         }
 
         user.withdraw();

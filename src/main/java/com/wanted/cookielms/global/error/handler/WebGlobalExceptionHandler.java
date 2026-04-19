@@ -1,21 +1,20 @@
 package com.wanted.cookielms.global.error.handler;
 
-import com.wanted.cookielms.global.error.model.service.ErrorLogService;
-import com.wanted.cookielms.global.error.model.entity.ErrorLogEntity;
-import com.wanted.cookielms.global.error.model.entity.enums.ErrorSeverity;
+import com.wanted.cookielms.global.logging.error.service.ErrorLogService;
+import com.wanted.cookielms.global.logging.error.entity.ErrorLogEntity;
+import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindException;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -50,7 +49,7 @@ public class WebGlobalExceptionHandler {
     @ExceptionHandler({MethodArgumentNotValidException.class, BindException.class})
     public ModelAndView handleValidationException(Exception e, HttpServletRequest request) {
         String traceId = generateTraceId();
-        ErrorCode errorCode = ErrorCode.BAD_REQUEST;
+        GlobalErrorCode globalErrorCode = GlobalErrorCode.BAD_REQUEST;
 
         String errorMessage = "입력값 검증에 실패했습니다.";
         if (e instanceof MethodArgumentNotValidException) {
@@ -61,10 +60,10 @@ public class WebGlobalExceptionHandler {
                     .getAllErrors().get(0).getDefaultMessage();
         }
 
-        saveErrorLog(e, errorCode.getCode(), errorMessage, request, traceId, errorCode.getSeverity());
+        saveErrorLog(e, globalErrorCode.getCode(), errorMessage, request, traceId, globalErrorCode.getSeverity());
 
         return createBusinessErrorView(
-                errorCode.getStatus().value(),
+                globalErrorCode.getStatus().value(),
                 errorMessage,
                 request.getRequestURI(),
                 traceId
@@ -72,60 +71,20 @@ public class WebGlobalExceptionHandler {
     }
 
     /**
-     * [3] 지원하지 않는 HTTP 메서드 호출 (405)
-     */
-    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ModelAndView handleMethodNotSupportedException(HttpRequestMethodNotSupportedException e, HttpServletRequest request) {
-        String traceId = generateTraceId();
-        ErrorCode errorCode = ErrorCode.BAD_REQUEST;
-        String errorMessage = "지원하지 않는 HTTP 메서드입니다: " + e.getMethod();
-
-        saveErrorLog(e, errorCode.getCode(), errorMessage, request, traceId, errorCode.getSeverity());
-
-        return createBusinessErrorView(
-                errorCode.getStatus().value(),
-                errorMessage,
-                request.getRequestURI(),
-                traceId
-        );
-    }
-
-    /**
-     * [4] 존재하지 않는 API 호출 (404)
-     * 주의: application.yml에서 spring.mvc.throw-exception-if-no-handler-found=true 설정 필요
-     * CustomErrorController와 역할 분리:
-     * - WebGlobalExceptionHandler: Spring이 진입한 후 URL이 없을 때
-     * - CustomErrorController: 필터 레벨이나 미등록 URL (Spring 진입 전)
-     */
-    @ExceptionHandler(NoHandlerFoundException.class)
-    public ModelAndView handleNoHandlerFoundException(NoHandlerFoundException e, HttpServletRequest request) {
-        String traceId = generateTraceId();
-        ErrorCode errorCode = ErrorCode.NOT_FOUND;
-
-        saveErrorLog(e, errorCode.getCode(), errorCode.getMessage(), request, traceId, errorCode.getSeverity());
-
-        return createBusinessErrorView(
-                errorCode.getStatus().value(),
-                errorCode.getMessage(),
-                request.getRequestURI(),
-                traceId
-        );
-    }
-
-    /**
-     * [5] 예상치 못한 서버 에러 (500)
+     * [3] 예상치 못한 서버 에러 (500)
+     * HttpRequestMethodNotSupportedException, NoHandlerFoundException은 CustomErrorController에서 처리
      */
     @ExceptionHandler(Exception.class)
     public ModelAndView handleUnhandledException(Exception e, HttpServletRequest request) {
         String traceId = generateTraceId();
-        ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
+        GlobalErrorCode globalErrorCode = GlobalErrorCode.INTERNAL_SERVER_ERROR;
 
         log.error("[UnHandled Exception] traceId: {}, message: {}", traceId, e.getMessage(), e);
-        saveErrorLog(e, errorCode.getCode(), errorCode.getMessage(), request, traceId, errorCode.getSeverity());
+        saveErrorLog(e, globalErrorCode.getCode(), globalErrorCode.getMessage(), request, traceId, globalErrorCode.getSeverity());
 
         return createBusinessErrorView(
-                errorCode.getStatus().value(),
-                errorCode.getMessage(),
+                globalErrorCode.getStatus().value(),
+                globalErrorCode.getMessage(),
                 request.getRequestURI(),
                 traceId
         );
@@ -181,7 +140,12 @@ public class WebGlobalExceptionHandler {
     }
 
     private String generateTraceId() {
-        return UUID.randomUUID().toString();
+        // MDC에서 기존 traceId 가져오기 (TraceIdFilter에서 생성한 것)
+        String traceId = MDC.get("traceId");
+        if (traceId == null) {
+            traceId = UUID.randomUUID().toString();  // fallback (없을 경우만 생성)
+        }
+        return traceId;
     }
 
     private String getCurrentUserId() {

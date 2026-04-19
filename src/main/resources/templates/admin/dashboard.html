@@ -144,9 +144,32 @@
 
     function displayDangerList(data, el) { el.innerHTML = '<div class="info-box">데이터가 없습니다.</div>'; }
     function displayLogs(data, el) { el.innerHTML = '<div class="info-box">데이터가 없습니다.</div>'; }
-    function displayUsers(data, el) { el.innerHTML = '<div class="info-box">데이터가 없습니다.</div>'; }
+    function displayUsers(data, el) {
+        if (!data || data.length === 0) { el.innerHTML = '<div class="info-box">회원이 없습니다.</div>'; return; }
+        let html = '<table class="data-table"><thead><tr><th>아이디</th><th>이름</th><th>이메일</th><th>상태</th><th>관리</th></tr></thead><tbody>';
+        data.forEach(u => {
+            const isBanned = u.status === 'BANNED';
+            const badge = isBanned
+                ? '<span class="badge badge-danger">정지</span>'
+                : '<span class="badge badge-success">정상</span>';
+            const btn = isBanned
+                ? `<button onclick="unbanUser(${u.userId})" style="padding:4px 10px;background:#3a6a50;color:#fff;border:none;border-radius:5px;font-size:12px;cursor:pointer;">밴 해제</button>`
+                : `<button onclick="banUser(${u.userId})" style="padding:4px 10px;background:#7a3020;color:#fff;border:none;border-radius:5px;font-size:12px;cursor:pointer;">밴하기</button>`;
+            html += `<tr><td>${u.loginId}</td><td>${u.name}</td><td>${u.email}</td><td>${badge}</td><td>${btn}</td></tr>`;
+        });
+        html += '</tbody></table>';
+        el.innerHTML = html;
+    }
     function displayInstructorApplications(data, el) { el.innerHTML = '<div class="info-box">데이터가 없습니다.</div>'; }
-    function displayRecentBans(data, el) { el.innerHTML = '<div class="info-box">데이터가 없습니다.</div>'; }
+    function displayRecentBans(data, el) {
+        if (!data || data.length === 0) { el.innerHTML = '<div class="info-box">밴 내역이 없습니다.</div>'; return; }
+        let html = '<table class="data-table"><thead><tr><th>아이디</th><th>이름</th><th>이메일</th><th>관리</th></tr></thead><tbody>';
+        data.forEach(u => {
+            html += `<tr><td>${u.loginId}</td><td>${u.name}</td><td>${u.email}</td><td><button onclick="unbanUser(${u.userId})" style="padding:4px 10px;background:#3a6a50;color:#fff;border:none;border-radius:5px;font-size:12px;cursor:pointer;">밴 해제</button></td></tr>`;
+        });
+        html += '</tbody></table>';
+        el.innerHTML = html;
+    }
 
     function displayMetrics(data, el) {
         let html = '';
@@ -170,10 +193,22 @@
         el.innerHTML = html || '<div class="info-box">데이터가 없습니다.</div>';
     }
 
+    function banUser(userId) {
+        fetch(`/admin/users/${userId}/ban`, { method: 'POST' })
+            .then(() => loadUsers())
+            .catch(() => alert('밴 처리에 실패했습니다.'));
+    }
+    function unbanUser(userId) {
+        fetch(`/admin/users/${userId}/unban`, { method: 'POST' })
+            .then(() => { loadUsers(); loadRecentBans(); })
+            .catch(() => alert('밴 해제에 실패했습니다.'));
+    }
+
     window.addEventListener('load', () => {
         loadDangerList(); loadLogs(); loadUsers();
         loadInstructorApplications(); loadRecentBans(); loadMetrics();
     });
 </script>
+<script src="/js/session-timer.js"></script>
 </body>
 </html>
