@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.wanted.cookielms.domain.user.dto.ResetPasswordDTO;
 
 
@@ -74,14 +75,14 @@ public class UserController {
     @PostMapping("/find_id")
     public String findId(@RequestParam String name,
                          @RequestParam String phone,
-                         Model model) {
+                         RedirectAttributes redirectAttributes) {
         String loginId = userService.findLoginIdByNameAndPhone(name, phone);
         if (loginId == null) {
-            model.addAttribute("error", "일치하는 정보가 없습니다.");
+            redirectAttributes.addFlashAttribute("error", "일치하는 정보가 없습니다.");
         } else {
-            model.addAttribute("loginId", loginId);
+            redirectAttributes.addFlashAttribute("loginId", loginId);
         }
-        return "user/find_id";
+        return "redirect:/user/find_id";
     }
 
 
@@ -95,11 +96,11 @@ public class UserController {
                                @RequestParam String name,
                                @RequestParam String phone,
                                HttpSession session,
-                               Model model) {
+                               RedirectAttributes redirectAttributes) {
         boolean verified = userService.findByLoginIdAndNameAndPhone(loginId, name, phone);
         if (!verified) {
-            model.addAttribute("error", "일치하는 회원 정보가 없습니다.");
-            return "user/find_password";
+            redirectAttributes.addFlashAttribute("error", "일치하는 회원 정보가 없습니다.");
+            return "redirect:/user/find_password";
         }
         session.setAttribute("resetLoginId", loginId);
         return "redirect:/user/reset_password";
@@ -152,12 +153,12 @@ public class UserController {
     @PostMapping("/verify-password")
     public String verifyPassword(@RequestParam String password,
                                  HttpSession session,
-                                 Model model) {
+                                 RedirectAttributes redirectAttributes) {
         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
         boolean verified = userService.verifyPassword(loginId, password);
         if (!verified) {
-            model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
-            return "user/verify_password";
+            redirectAttributes.addFlashAttribute("error", "비밀번호가 일치하지 않습니다.");
+            return "redirect:/user/verify-password";
         }
         session.setAttribute("verifiedLoginId", loginId);
         return "redirect:/user/mypage/info";
