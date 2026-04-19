@@ -25,14 +25,15 @@ public class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
         AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
         Role role = authDetails.getLoginUserDTO().getRole();
 
-        if (role == Role.INSTRUCTOR) {
+        if (role == Role.ADMIN) {
+            response.sendRedirect("/admin");
+        } else if (role == Role.INSTRUCTOR) {
             response.sendRedirect("/instructor/main");
         } else if (role == Role.USER) {
             response.sendRedirect("/user/main");
         } else {
             response.sendRedirect("/");
         }
-
     }
 
 }

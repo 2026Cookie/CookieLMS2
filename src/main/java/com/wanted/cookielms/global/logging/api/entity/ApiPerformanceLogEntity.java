@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "api_performance_logs", indexes = {
         @Index(name = "idx_api_log_created_at", columnList = "created_at"),
-        @Index(name = "idx_api_log_endpoint", columnList = "endpoint")
+        @Index(name = "idx_api_log_endpoint", columnList = "endpoint"),
+        @Index(name = "idx_api_log_user_id", columnList = "user_id")
 })
 @Getter
 @Setter
@@ -37,4 +38,7 @@ public class ApiPerformanceLogEntity {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "user_id")
+    private Long userId;
 }

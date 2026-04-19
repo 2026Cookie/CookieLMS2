@@ -13,7 +13,7 @@ public class BusinessServiceLogService {
     private final BusinessServiceLogRepository businessServiceLogRepository;
 
     @Async
-    public void saveAsync(BusinessServiceLogEntity log) {
+    public void saveBusinessServiceLog(BusinessServiceLogEntity log) {
         businessServiceLogRepository.save(log);
     }
 }

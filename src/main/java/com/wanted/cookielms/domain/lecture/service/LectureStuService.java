@@ -7,6 +7,7 @@ import com.wanted.cookielms.domain.lecture.entity.LectureStuEntity;
 import com.wanted.cookielms.domain.lecture.exception.LectureErrorCode;
 import com.wanted.cookielms.domain.lecture.exception.LectureException;
 import com.wanted.cookielms.domain.lecture.repository.LectureStuRepository;
+import com.wanted.cookielms.global.aop.BussinessServiceLogging;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -24,6 +25,7 @@ public class LectureStuService {
     private final ModelMapper modelMapper;
 
     // 🌟 전체 강의 목록 조회 (수강신청 페이지용 복구)
+    @BussinessServiceLogging
     public Page<LectureStuDTO> getAllLectures(String keyword, Pageable pageable) {
         Page<LectureStuEntity> lectures;
         if (keyword == null || keyword.trim().isEmpty()) {

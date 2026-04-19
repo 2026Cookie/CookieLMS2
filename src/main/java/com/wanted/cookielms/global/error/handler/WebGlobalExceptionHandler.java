@@ -1,5 +1,6 @@
 package com.wanted.cookielms.global.error.handler;
 
+import com.wanted.cookielms.domain.auth.dto.AuthDetails;
 import com.wanted.cookielms.global.logging.error.service.ErrorLogService;
 import com.wanted.cookielms.global.logging.error.entity.ErrorLogEntity;
 import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
@@ -148,11 +149,19 @@ public class WebGlobalExceptionHandler {
         return traceId;
     }
 
-    private String getCurrentUserId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
-            return auth.getName();
+    // After ✅
+    private Long getCurrentUserId() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() &&
+                    !"anonymousUser".equals(auth.getPrincipal())) {
+
+                AuthDetails authDetails = (AuthDetails) auth.getPrincipal();
+                return authDetails.getLoginUserDTO().getUserId();
+            }
+        } catch (Exception e) {
+            log.debug("Failed to get current user ID", e);
         }
-        return "ANONYMOUS";
+        return null;
     }
 }

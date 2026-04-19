@@ -15,4 +15,5 @@ public class ApiPerformanceLogDto {
     private HttpMethod httpMethod;
     private Integer executionTimeMs;
     private LocalDateTime createdAt;
+    private Long userId;
 }

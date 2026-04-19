@@ -22,7 +22,7 @@ public class ErrorLogResponseDTO {
     private String requestUri;
     private String httpMethod;
     private String clientIp;
-    private String userId;
+    private Long userId;
     private String stackTrace;
     private String traceId;
     private ErrorSeverity severity;

@@ -36,7 +36,6 @@ public class AuthFailureHandler extends SimpleUrlAuthenticationFailureHandler {
             traceId = UUID.randomUUID().toString();
         }
         String loginId = request.getParameter("loginId");
-
         String errorMessage = determineErrorMessage(exception);
 
         ErrorLogEntity errorLog = ErrorLogEntity.builder()
@@ -46,7 +45,7 @@ public class AuthFailureHandler extends SimpleUrlAuthenticationFailureHandler {
                 .requestUri(request.getRequestURI())
                 .httpMethod(request.getMethod())
                 .clientIp(getClientIp(request))
-                .userId(loginId != null ? loginId : "UNKNOWN")
+                .userId(null)  // ✅ 로그인 실패는 userId 없음
                 .stackTrace(exception.getMessage())
                 .traceId(traceId)
                 .severity(ErrorSeverity.WARNING)
@@ -54,10 +53,10 @@ public class AuthFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
         errorLogService.saveErrorLogAsync(errorLog);
 
-// 세션에 에러 메시지 저장
+        // 세션에 에러 메시지 저장
         HttpSession session = request.getSession();
         session.setAttribute("loginError", errorMessage);
-        setDefaultFailureUrl("/user/login");
+        setDefaultFailureUrl("/user/login?error");
 
         super.onAuthenticationFailure(request, response, exception);
     }
