@@ -12,10 +12,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface LectureStuRepository extends JpaRepository<LectureStuEntity, Long> {
 
-    // 🌟 수강신청 페이지용 전체 강의 검색 메서드 복구!
+    // 수강신청 페이지용 전체 강의 검색 메서드 복구!
     Page<LectureStuEntity> findByTitleContaining(String keyword, Pageable pageable);
 
-    // 🌟 내 강의 전용 성능 최적화(DTO Projection)
+    // 내 강의 전용 성능 최적화(DTO Projection)
     @Query("SELECT new com.wanted.cookielms.domain.lecture.dto.MyLectureListDTO(" +
             "l.lectureId, l.title, u.name, l.currentEnrollment, l.maxCapacity, l.thumbnail) " +
             "FROM LectureStuEntity l " +
@@ -28,7 +28,7 @@ public interface LectureStuRepository extends JpaRepository<LectureStuEntity, Lo
             @Param("keyword") String keyword,
             Pageable pageable);
 
-    // 🌟 강사 ID로 강사 이름(name)만 쏙 빼오는 쿼리 (여기에 추가!)
+    // 강사 ID로 강사 이름(name)만 쏙 빼오는 쿼리 (여기에 추가!)
     @Query("SELECT u.name FROM User u WHERE u.userId = :instructorId")
     String findInstructorNameById(@Param("instructorId") Long instructorId);
 
