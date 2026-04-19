@@ -31,6 +31,7 @@ public class InstructorService {
     private final LectureInsRepository lectureInsRepository;
     private final LectureStuRepository lectureStuRepository;
     private final ModelMapper modelMapper;
+    private final InsFileService insFileService;
 
 
 
@@ -126,8 +127,8 @@ public class InstructorService {
             throw new LectureException(LectureErrorCode.INVALID_FILE_EXTENSION);
         }
 
-        // 2. 용량 검증 (5MB)
-        long maxSize = 5 * 1024 * 1024;
+        // 2. 용량 검증 (20MB)
+        long maxSize = 20 * 1024 * 1024;
         if (file.getSize() > maxSize) {
             throw new LectureException(LectureErrorCode.FILE_SIZE_EXCEEDED);
         }
