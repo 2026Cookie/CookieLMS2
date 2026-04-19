@@ -19,9 +19,16 @@
             background: var(--linen); border-bottom: 1px solid var(--dust-grey);
             padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
         }
-        .logo { font-size: 18px; font-weight: 700; }
-        .back-link { font-size: 14px; color: var(--text-secondary); text-decoration: none; }
-        .back-link:hover { color: var(--text-primary); }
+        .logo { font-size: 18px; font-weight: 700; color: var(--text-primary); text-decoration: none; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .header-right a { font-size: 14px; color: var(--text-secondary); text-decoration: none; }
+        .header-right a:hover { color: var(--text-primary); }
+        .btn-logout {
+            padding: 7px 16px; background: transparent; border: 1.5px solid var(--almond-silk);
+            border-radius: 6px; font-size: 13px; color: var(--text-secondary);
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-logout:hover { background: var(--powder-petal); }
         .main { max-width: 1040px; margin: 0 auto; padding: 40px 24px; }
         .page-title { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
         .search-bar { display: flex; gap: 10px; margin-bottom: 32px; }
@@ -68,8 +75,13 @@
 </head>
 <body>
 <header>
-    <div class="logo">Cookiego</div>
-    <a href="/user/main" class="back-link">← 메인으로</a>
+    <a href="/user/main" class="logo">Cookiego</a>
+    <div class="header-right">
+        <a href="/user/mypage">마이페이지</a>
+        <form action="/logout" method="post" style="display:inline;">
+            <button type="submit" class="btn-logout">로그아웃</button>
+        </form>
+    </div>
 </header>
 
 <div class="main">

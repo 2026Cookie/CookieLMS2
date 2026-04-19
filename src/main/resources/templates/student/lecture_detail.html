@@ -19,9 +19,16 @@
             background: var(--linen); border-bottom: 1px solid var(--dust-grey);
             padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
         }
-        .logo { font-size: 18px; font-weight: 700; }
-        .back-link { font-size: 14px; color: var(--text-secondary); text-decoration: none; }
-        .back-link:hover { color: var(--text-primary); }
+        .logo { font-size: 18px; font-weight: 700; color: var(--text-primary); text-decoration: none; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .header-right a { font-size: 14px; color: var(--text-secondary); text-decoration: none; }
+        .header-right a:hover { color: var(--text-primary); }
+        .btn-logout {
+            padding: 7px 16px; background: transparent; border: 1.5px solid var(--almond-silk);
+            border-radius: 6px; font-size: 13px; color: var(--text-secondary);
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-logout:hover { background: var(--powder-petal); }
         .main { max-width: 780px; margin: 0 auto; padding: 40px 24px; }
         .card { background: var(--linen); border: 1px solid var(--dust-grey); border-radius: 14px; overflow: hidden; box-shadow: 0 2px 16px var(--shadow); }
         .thumbnail-area {
@@ -69,8 +76,13 @@
 </head>
 <body>
 <header>
-    <div class="logo">Cookiego</div>
-    <a th:href="@{/instructor/main}" class="back-link">← 강사 메인으로</a>
+    <a th:href="@{/user/main}" class="logo">Cookiego</a>
+    <div class="header-right">
+        <a th:href="@{/user/mypage}">마이페이지</a>
+        <form th:action="@{/logout}" method="post" style="display:inline;">
+            <button type="submit" class="btn-logout">로그아웃</button>
+        </form>
+    </div>
 </header>
 
 <div class="main">
@@ -86,7 +98,7 @@
             <div class="btn-group" id="buttonArea"></div>
         </div>
     </div>
-    <a th:href="@{/instructor/main}" class="btn-back-instructor">← 강사 메인페이지로 돌아가기</a>
+    <a th:href="@{/student/lectures}" class="btn-back-instructor">← 강의 목록으로 돌아가기</a>
 </div>
 
 <div id="videoModal" class="modal-overlay">
