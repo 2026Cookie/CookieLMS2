@@ -77,7 +77,9 @@ public class LectureStuService {
         if (!isEnrolled && !isInstructor) {
             throw new LectureException(LectureErrorCode.VIDEO_ACCESS_DENIED);
         }
-        return entity.getVideoUrl();
+
+        // 🌟 DB에서 꺼낸 원래 주소를 퍼가기용(Embed) 주소로 변환해서 반환!
+        return convertToEmbedUrl(entity.getVideoUrl());
     }
 
     public String getMaterialId(Long lectureId, Long userId) {
@@ -91,5 +93,37 @@ public class LectureStuService {
             throw new LectureException(LectureErrorCode.MATERIAL_ACCESS_DENIED);
         }
         return entity.getMaterialId();
+    }
+
+    // 유튜브 주소 변환기 메서드
+    private String convertToEmbedUrl(String url) {
+        if (url == null || url.trim().isEmpty()) {
+            return "";
+        }
+
+        String videoId = "";
+
+        // 케이스 1: https://youtu.be/영상ID 형태
+        if (url.contains("youtu.be/")) {
+            videoId = url.substring(url.indexOf("youtu.be/") + 9);
+        }
+        // 케이스 2: https://www.youtube.com/watch?v=영상ID 형태
+        else if (url.contains("watch?v=")) {
+            int vIndex = url.indexOf("v=") + 2;
+            int ampersandIndex = url.indexOf("&", vIndex); // &t=12s 같은 추가 파라미터 방지
+            videoId = ampersandIndex != -1 ? url.substring(vIndex, ampersandIndex) : url.substring(vIndex);
+        }
+        // 케이스 3: 이미 강사님이 똑똑하게 임베드 링크를 넣은 경우
+        else if (url.contains("/embed/")) {
+            return url;
+        }
+
+        // 비디오 ID를 성공적으로 뽑아냈다면 임베드 주소로 조립!
+        if (!videoId.isEmpty()) {
+            return "https://www.youtube.com/embed/" + videoId;
+        }
+
+        // 변환할 수 없는 이상한 주소라면 일단 그대로 반환
+        return url;
     }
 }

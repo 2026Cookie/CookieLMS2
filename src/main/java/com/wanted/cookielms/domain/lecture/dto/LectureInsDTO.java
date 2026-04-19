@@ -23,7 +23,8 @@ public class LectureInsDTO {
     private String lectureDay;
     private String startTime;
     private String endTime;
-
+    private MultipartFile thumbnail;
+    private String thumbnailPath;
 
 
 }
