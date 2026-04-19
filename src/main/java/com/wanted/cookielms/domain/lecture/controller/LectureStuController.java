@@ -5,8 +5,9 @@ import com.wanted.cookielms.domain.lecture.dto.LectureStuDTO;
 import com.wanted.cookielms.domain.lecture.dto.MyLectureListDTO;
 import com.wanted.cookielms.domain.lecture.service.LectureStuService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ByteArrayResource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -17,8 +18,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Controller
 @RequestMapping("/lectures")
@@ -26,6 +30,10 @@ import java.nio.charset.StandardCharsets;
 public class LectureStuController {
 
     private final LectureStuService lectureStuService;
+
+    // 🌟 강사님이 올린 자료가 저장되는 기본 경로
+    @Value("${file.upload.path:C:/cookielms/uploads/}")
+    private String uploadPath;
 
     private Long getLoginUserId(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
@@ -78,17 +86,32 @@ public class LectureStuController {
         }
     }
 
+    // 🌟 껍데기 파일 대신 로컬 저장소에서 진짜 파일 꺼내오기!
     @GetMapping("/{lectureId}/material")
     @ResponseBody
     public ResponseEntity<Resource> downloadLectureMaterial(@PathVariable Long lectureId, Authentication authentication) {
         Long userId = getLoginUserId(authentication);
         try {
-            String materialId = lectureStuService.getMaterialId(lectureId, userId);
-            byte[] fileData = "파일 내용 예시".getBytes(StandardCharsets.UTF_8);
+            // DB에서 저장된 진짜 파일 이름(materialId) 가져오기
+            String savedFileName = lectureStuService.getMaterialId(lectureId, userId);
+
+            // 물리적인 파일 위치 탐색
+            Path filePath = Paths.get(uploadPath, savedFileName);
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+
+            // 한글 파일명 깨짐 방지 인코딩 처리
+            String encodedUploadFileName = UriUtils.encode(savedFileName, StandardCharsets.UTF_8);
+            String contentDisposition = "attachment; filename=\"" + encodedUploadFileName + "\"";
+
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + materialId + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(new ByteArrayResource(fileData));
+                    .body(resource);
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
