@@ -19,9 +19,16 @@
             background: var(--linen); border-bottom: 1px solid var(--dust-grey);
             padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
         }
-        .logo { font-size: 18px; font-weight: 700; }
-        .back-link { font-size: 14px; color: var(--text-secondary); text-decoration: none; }
-        .back-link:hover { color: var(--text-primary); }
+        .logo { font-size: 18px; font-weight: 700; color: var(--text-primary); text-decoration: none; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .header-right a { font-size: 14px; color: var(--text-secondary); text-decoration: none; }
+        .header-right a:hover { color: var(--text-primary); }
+        .btn-logout {
+            padding: 7px 16px; background: transparent; border: 1.5px solid var(--almond-silk);
+            border-radius: 6px; font-size: 13px; color: var(--text-secondary);
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-logout:hover { background: var(--powder-petal); }
         .main { max-width: 780px; margin: 0 auto; padding: 40px 24px; }
         .msg-error { background: #f9ede9; border: 1px solid #e8c8c0; color: #7a3020; border-radius: 8px; padding: 12px 14px; font-size: 14px; margin-bottom: 20px; }
         .card { background: var(--linen); border: 1px solid var(--dust-grey); border-radius: 14px; overflow: hidden; box-shadow: 0 2px 16px var(--shadow); }
@@ -63,8 +70,13 @@
 </head>
 <body>
 <header>
-    <div class="logo">Cookiego</div>
-    <a href="/user/enrollments" class="back-link">← 강의 목록으로</a>
+    <a href="/user/main" class="logo">Cookiego</a>
+    <div class="header-right">
+        <a href="/user/mypage">마이페이지</a>
+        <form action="/logout" method="post" style="display:inline;">
+            <button type="submit" class="btn-logout">로그아웃</button>
+        </form>
+    </div>
 </header>
 
 <div class="main">
