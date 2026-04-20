@@ -114,7 +114,7 @@
         <div class="form-group">
             <label>수업 자료 (PDF, 최대 20MB)</label>
             <input type="file" name="lectureFile" id="lectureFile" accept=".pdf"
-                   th:required="${!isEdit}" onchange="validateFile(this)">
+                   th:required="${!isEdit}">
         </div>
 
         <div class="form-group">
@@ -136,17 +136,17 @@
 
             <div class="form-group">
                 <label>과제명</label>
-                <input type="text" name="assignmentTitle" placeholder="예: 자바 객체지향 연습">
+                <input type="text" name="assignmentTitle" th:value="${lecture?.assignmentTitle}" placeholder="예: 자바 객체지향 연습">
             </div>
 
             <div class="form-group">
                 <label>과제 내용</label>
-                <input type="text" name="assignmentContent" placeholder="인터페이스를 활용한 다형성 구현">
+                <input type="text" name="assignmentContent" th:value="${lecture?.assignmentContent}" placeholder="인터페이스를 활용한 다형성 구현">
             </div>
 
             <div class="form-group">
                 <label>마감 기한</label>
-                <input type="datetime-local" name="assignmentDueDate">
+                <input type="datetime-local" name="assignmentDueDate" th:value="${lecture?.assignmentDueDate}">
             </div>
         </div>
 
@@ -155,23 +155,6 @@
 </div>
 
 <script th:inline="javascript">
-    function validateFile(input) {
-        const file = input.files[0];
-        if (!file) return;
-
-        // 확장자 체크
-        const fileName = file.name;
-        if (fileName.split('.').pop().toLowerCase() !== 'pdf') {
-            alert('PDF 파일만 업로드 가능합니다.');
-            input.value = ''; return;
-        }
-
-        // 용량 체크 (20MB)
-        if (file.size > 20 * 1024 * 1024) {
-            alert('20MB를 초과합니다. 20MB 이하의 PDF를 업로드해 주세요.');
-            input.value = '';
-        }
-    }
     /*<![CDATA[*/
     const errorMsg = /*[[${errorMessage}]]*/ null;
     if (errorMsg) alert(errorMsg);
@@ -179,6 +162,7 @@
     if (successMsg) alert(successMsg);
     /*]]>*/
 </script>
+<script src="/js/session-timer.js"></script>
 <script src="/js/session-timer.js"></script>
 </body>
 </html>
