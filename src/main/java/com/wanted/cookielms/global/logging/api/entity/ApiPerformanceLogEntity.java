@@ -41,4 +41,7 @@ public class ApiPerformanceLogEntity {
 
     @Column(name = "user_id")
     private Long userId;
+
+    @Column(name = "status_code")
+    private Integer statusCode;
 }

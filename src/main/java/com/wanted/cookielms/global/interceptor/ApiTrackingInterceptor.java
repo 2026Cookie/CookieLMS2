@@ -61,6 +61,7 @@ public class ApiTrackingInterceptor implements HandlerInterceptor {
         dto.setExecutionTimeMs(latencyMs);
         dto.setCreatedAt(LocalDateTime.now());
         dto.setUserId(userId);
+        dto.setStatusCode(response.getStatus());
 
         apiPerformanceLogService.saveAsync(dto);
     }
