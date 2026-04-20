@@ -57,8 +57,8 @@ public interface ApiPerformanceLogRepository extends JpaRepository<ApiPerformanc
 
     // 엔드포인트별 평균 응답시간
     @Query("""
-    SELECT a.endpoint, AVG(a.executionTimeMs), MAX(a.id)
-    FROM ApiPerformanceLogEntity a 
+    SELECT a.endpoint, AVG(a.executionTimeMs)
+    FROM ApiPerformanceLogEntity a
     WHERE a.createdAt >= :since
     GROUP BY a.endpoint
     ORDER BY AVG(a.executionTimeMs) DESC

@@ -127,7 +127,6 @@
                 <button onclick="loadErrors(0)">새로고침</button>
             </div>
             <div class="widget-content" id="errorsContent"><div class="loading">데이터를 불러오는 중...</div></div>
-            <div class="pagination" id="errorsPagination"></div>
         </div>
 
         <!-- 섹션 4a: 회원 관리 -->
@@ -318,59 +317,35 @@
         el.innerHTML = html;
     }
 
-    // ── 섹션 3: CRITICAL 에러 (상세 리스트) ──────────────────
-    function loadErrors(page = 0) {
-        errorsCurrentPage = page;
-        const url = `/admin/logs/errors/critical?page=${page}&size=20`;
+    // ── 섹션 3: CRITICAL 에러 (사용자별 그룹) ──────────────────
+    function loadErrors() {
         const el = document.getElementById('errorsContent');
         el.innerHTML = '<div class="loading">데이터를 불러오는 중...</div>';
-        fetch(url)
+        fetch('/admin/logs/errors')
             .then(r => r.json())
             .then(data => displayErrorsList(data, el))
             .catch(() => { el.innerHTML = '<div class="msg-error">데이터를 불러올 수 없습니다.</div>'; });
     }
 
     function displayErrorsList(data, el) {
-        if (!data || !data.content || data.content.length === 0) {
+        if (!data || data.length === 0) {
             el.innerHTML = '<div class="info-box">CRITICAL 에러가 없습니다.</div>';
-            renderErrorsPagination();
             return;
         }
 
-        let html = '<table class="data-table"><thead><tr><th>에러코드</th><th>URI</th><th>메서드</th><th>시간(ms)</th><th>발생시각</th><th>상세</th></tr></thead><tbody>';
+        let html = '<table class="data-table"><thead><tr><th>사용자</th><th>에러 수</th><th>상세</th></tr></thead><tbody>';
 
-        data.content.forEach(err => {
-            const time = err.createdAt ? err.createdAt.replace('T', ' ').substring(0, 19) : '-';
-            const endpoint = err.endpoint || '-';
-            const method = err.httpMethod || '-';
-            const execTime = err.executionTimeMs || '-';
-            const detailBtn = `<button class="link-btn" onclick="openErrorDetailModal(${err.errorId})">보기</button>`;
-
+        data.forEach(err => {
+            const userBtn = `<button class="link-btn" onclick="openUserErrorsModal(${err.userId}, '${err.loginId}')">${err.loginId}</button>`;
             html += `<tr>
-            <td><span class="badge badge-danger">${err.errorCode}</span></td>
-            <td>${endpoint}</td>
-            <td>${method}</td>
-            <td>${execTime}</td>
-            <td>${time}</td>
-            <td>${detailBtn}</td>
+            <td>${userBtn}</td>
+            <td><span class="badge badge-danger">${err.errorCount}</span></td>
+            <td><button class="link-btn" onclick="openUserErrorsModal(${err.userId}, '${err.loginId}')">보기</button></td>
         </tr>`;
         });
 
         html += '</tbody></table>';
         el.innerHTML = html;
-
-        // 페이징 업데이트
-        errorsTotalPages = data.totalPages;
-        renderErrorsPagination();
-    }
-
-    function renderErrorsPagination() {
-        const el = document.getElementById('errorsPagination');
-        el.innerHTML = `
-        <button onclick="loadErrors(${Math.max(0, errorsCurrentPage - 1)})" ${errorsCurrentPage === 0 ? 'disabled' : ''}>◀ 이전</button>
-        <span>${errorsCurrentPage + 1} / ${errorsTotalPages || 1}</span>
-        <button onclick="loadErrors(${errorsCurrentPage + 1})" ${errorsCurrentPage >= (errorsTotalPages || 1) - 1 ? 'disabled' : ''}>다음 ▶</button>
-    `;
     }
 
     // ── traceId 드릴다운 모달 ──────────────────────────────
@@ -618,6 +593,50 @@
     `;
 
         el.innerHTML = html;
+    }
+
+    // ── 사용자별 CRITICAL 에러 상세 모달 ──────────────────────
+    function openUserErrorsModal(userId, loginId) {
+        document.getElementById('userModalTitle').textContent = `${loginId} - CRITICAL 에러`;
+        document.getElementById('userModal').classList.add('active');
+        const body = document.getElementById('userModalBody');
+        body.innerHTML = '<div class="loading">불러오는 중...</div>';
+
+        fetch(`/admin/users/${userId}/errors`)
+            .then(r => r.json())
+            .then(errors => {
+                const criticalErrors = errors.filter(e => e.severity === 'CRITICAL');
+                displayUserErrorsList(criticalErrors, body);
+            })
+            .catch(() => { body.innerHTML = '<div class="msg-error">데이터를 불러올 수 없습니다.</div>'; });
+    }
+
+    function displayUserErrorsList(errors, el) {
+        if (!errors || errors.length === 0) {
+            el.innerHTML = '<div class="info-box">CRITICAL 에러가 없습니다.</div>';
+            return;
+        }
+
+        let html = '<table class="data-table"><thead><tr><th>에러코드</th><th>메시지</th><th>발생시각</th><th>상세</th></tr></thead><tbody>';
+
+        errors.forEach(e => {
+            const time = e.createdAt ? e.createdAt.replace('T', ' ').substring(0, 19) : '-';
+            const msg = e.errorMessage ? e.errorMessage.substring(0, 50) : '-';
+            html += `<tr>
+                <td><span class="badge badge-danger">${e.errorCode}</span></td>
+                <td>${msg}</td>
+                <td>${time}</td>
+                <td><button class="link-btn" onclick="openErrorDetailFromUserModal('${e.id}')">보기</button></td>
+            </tr>`;
+        });
+
+        html += '</tbody></table>';
+        el.innerHTML = html;
+    }
+
+    function openErrorDetailFromUserModal(errorId) {
+        document.getElementById('userModal').classList.remove('active');
+        openErrorDetailModal(errorId);
     }
 
     // ── 섹션 6: 관리자 인사이트 ──────────────────────────────

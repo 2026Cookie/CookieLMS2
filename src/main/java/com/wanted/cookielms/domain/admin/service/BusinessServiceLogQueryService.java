@@ -49,11 +49,11 @@ public class BusinessServiceLogQueryService {
                 .stream()
                 .map(row -> new BusinessMetricsDto.SlowMethodMetric(
                         (String) row.get("classMethod"),
-                        (Long) row.get("callCount"),
+                        ((Number) row.get("callCount")).longValue(),
                         ((Number) row.get("avgTime")).doubleValue(),
-                        (Long) row.get("maxTime"),
-                        (Long) row.get("minTime"),
-                        null  // Phase 2에서 traceId 조회 추가 예정
+                        ((Number) row.get("maxTime")).longValue(),
+                        ((Number) row.get("minTime")).longValue(),
+                        null
                 ))
                 .toList();
     }
@@ -63,10 +63,10 @@ public class BusinessServiceLogQueryService {
                 .stream()
                 .map(row -> new BusinessMetricsDto.FailureMethodMetric(
                         (String) row.get("classMethod"),
-                        (Long) row.get("failureCount"),
-                        (Long) row.get("successCount"),
-                        (Long) row.get("totalCalls"),
-                        null  // Phase 2에서 traceId 조회 추가 예정
+                        ((Number) row.get("failureCount")).longValue(),
+                        ((Number) row.get("successCount")).longValue(),
+                        ((Number) row.get("totalCalls")).longValue(),
+                        null
                 ))
                 .toList();
     }
