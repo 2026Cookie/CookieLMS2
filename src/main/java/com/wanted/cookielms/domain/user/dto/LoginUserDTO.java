@@ -16,6 +16,7 @@ public class LoginUserDTO {
     private Long userId;
     private String loginId;
     private String password;
+    private String nickname;
     private Role role;
     private Status status;
     private Boolean isDeleted;
