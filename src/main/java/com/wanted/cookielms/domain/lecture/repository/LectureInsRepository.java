@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface LectureInsRepository extends JpaRepository<InsLecture, Long> {
 
-    Page<InsLecture> findByInstructorId(Long instructorId, Pageable pageable);
+    @Query("SELECT l FROM InsLecture l WHERE l.instructorId = :instructorId ORDER BY l.id DESC")
+    Page<InsLecture> findByInstructorId(@Param("instructorId") Long instructorId, Pageable pageable);
 
 }

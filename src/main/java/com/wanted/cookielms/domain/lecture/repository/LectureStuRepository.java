@@ -20,7 +20,9 @@ public interface LectureStuRepository extends JpaRepository<LectureStuEntity, Lo
             "l.lectureId, l.title, u.name, l.currentEnrollment, l.maxCapacity, l.thumbnail) " +
             "FROM LectureStuEntity l " +
             "JOIN User u ON l.instructorId = u.userId " +
-            "WHERE (:keyword IS NULL OR l.title LIKE CONCAT('%', :keyword, '%'))")
+            "WHERE (:keyword IS NULL OR l.title LIKE CONCAT('%', :keyword, '%')) " +
+            "ORDER BY l.lectureId DESC")
+
     Page<MyLectureListDTO> findLecturesWithInstructorName(@Param("keyword") String keyword, Pageable pageable);
 
     // 2. [최적화] 내 강의 목록 조회 (내가 신청한 강의만 필터링)
@@ -31,7 +33,9 @@ public interface LectureStuRepository extends JpaRepository<LectureStuEntity, Lo
             "JOIN User u ON l.instructorId = u.userId " +      // 2. 강사 정보 조인
             "WHERE e.userId = :userId " +                      // 🔥 핵심: 현재 로그인한 학생의 ID만 조회
             "AND e.status IN ('ENROLLED', 'COMPLETED') " +    // 🔥 수강 중이거나 완료된 강의 모두 포함
-            "AND (:keyword IS NULL OR l.title LIKE CONCAT('%', :keyword, '%'))")
+            "AND (:keyword IS NULL OR l.title LIKE CONCAT('%', :keyword, '%'))" +
+            "ORDER BY l.lectureId DESC")
+
     Page<MyLectureListDTO> findMyLecturesWithProjection(
             @Param("userId") Long userId,
             @Param("keyword") String keyword,
