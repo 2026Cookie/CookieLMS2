@@ -11,7 +11,8 @@
             --text-primary: #2c2010; --text-secondary: #5c4a3a;
             --text-muted: #8b7355; --text-on-dark: #f5ebe0;
             --btn-dark: #4a3728; --btn-dark-hover: #2c2010;
-            --shadow: rgba(44,32,16,0.10);
+            --btn-disabled: #b0a090; --shadow: rgba(44,32,16,0.10);
+            --error: #c0392b; --success: #27ae60;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -49,12 +50,42 @@
             font-size: 15px; outline: none; transition: border-color 0.2s;
         }
         input:focus { border-color: var(--almond-silk); background: #fff; }
+        input.input-error { border-color: var(--error); }
+        input.input-ok { border-color: var(--success); }
+
+        .field-error {
+            font-size: 12px; color: var(--error); margin-top: 5px;
+            display: none;
+        }
+        .field-error.visible { display: block; }
+
+        /* 비밀번호 조건 안내 */
+        .pw-rules {
+            background: var(--powder-petal); border-radius: 8px;
+            padding: 10px 14px; margin-top: 8px; font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .pw-rules p { margin-bottom: 4px; font-weight: 600; }
+        .pw-rule {
+            display: flex; align-items: center; gap: 6px;
+            margin-top: 3px; transition: color 0.2s;
+        }
+        .pw-rule .dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--dust-grey); flex-shrink: 0; transition: background 0.2s;
+        }
+        .pw-rule.met { color: var(--success); }
+        .pw-rule.met .dot { background: var(--success); }
+
         .btn-submit {
             width: 100%; padding: 13px; background: var(--btn-dark); color: var(--text-on-dark);
             border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
             cursor: pointer; margin-top: 8px; transition: background 0.2s;
         }
-        .btn-submit:hover { background: var(--btn-dark-hover); }
+        .btn-submit:hover:not(:disabled) { background: var(--btn-dark-hover); }
+        .btn-submit:disabled {
+            background: var(--btn-disabled); cursor: not-allowed; opacity: 0.7;
+        }
         .login-link { text-align: center; margin-top: 20px; font-size: 13px; color: var(--text-muted); }
         .login-link a { color: var(--text-secondary); text-decoration: none; font-weight: 600; }
         .login-link a:hover { text-decoration: underline; }
@@ -83,38 +114,58 @@
     </div>
 
     <!-- 가입 폼 -->
-    <form th:action="@{/user/join}" method="post" id="joinForm" style="display:none">
+    <form th:action="@{/user/join}" method="post" id="joinForm" style="display:none" novalidate>
         <input type="hidden" name="role" id="roleInput">
         <div id="roleTag"></div>
+
         <div class="form-group">
             <label>이름</label>
-            <input type="text" name="name" placeholder="이름을 입력하세요">
+            <input type="text" name="name" id="name" placeholder="이름을 입력하세요">
+            <div class="field-error" id="name-error">이름을 입력해주세요!</div>
         </div>
+
         <div class="form-group">
             <label>닉네임</label>
-            <input type="text" name="nickname" placeholder="닉네임을 입력하세요">
+            <input type="text" name="nickname" id="nickname" placeholder="닉네임을 입력하세요">
+            <div class="field-error" id="nickname-error">닉네임을 입력해주세요!</div>
         </div>
+
         <div class="form-group">
             <label>이메일</label>
-            <input type="email" name="email" placeholder="이메일을 입력하세요">
+            <input type="email" name="email" id="email" placeholder="이메일을 입력하세요">
+            <div class="field-error" id="email-error">이메일을 입력해주세요!</div>
         </div>
+
         <div class="form-group">
             <label>아이디</label>
-            <input type="text" name="loginId" placeholder="아이디를 입력하세요">
+            <input type="text" name="loginId" id="loginId" placeholder="아이디를 입력하세요">
+            <div class="field-error" id="loginId-error">아이디를 입력해주세요!</div>
         </div>
+
         <div class="form-group">
             <label>비밀번호</label>
-            <input type="password" name="password" placeholder="비밀번호를 입력하세요">
+            <input type="password" name="password" id="password" placeholder="비밀번호를 입력하세요">
+            <div class="pw-rules">
+                <p>비밀번호 조건</p>
+                <div class="pw-rule" id="rule-length"><span class="dot"></span>8자 이상</div>
+                <div class="pw-rule" id="rule-special"><span class="dot"></span>특수문자 포함 (!@#$%^&*)</div>
+            </div>
+            <div class="field-error" id="password-error">비밀번호를 입력해주세요!</div>
         </div>
+
         <div class="form-group">
             <label>비밀번호 확인</label>
-            <input type="password" name="passwordConfirm" placeholder="비밀번호를 다시 입력하세요">
+            <input type="password" name="passwordConfirm" id="passwordConfirm" placeholder="비밀번호를 다시 입력하세요">
+            <div class="field-error" id="passwordConfirm-error">비밀번호 확인을 입력해주세요!</div>
         </div>
+
         <div class="form-group">
             <label>전화번호</label>
-            <input type="text" name="phone" placeholder="전화번호를 입력하세요">
+            <input type="text" name="phone" id="phone" placeholder="전화번호를 입력하세요">
+            <div class="field-error" id="phone-error">전화번호를 입력해주세요!</div>
         </div>
-        <button type="submit" class="btn-submit">가입하기</button>
+
+        <button type="submit" class="btn-submit" id="submitBtn" disabled>가입하기</button>
     </form>
 
     <div class="login-link">이미 계정이 있으신가요? <a th:href="@{/user/login}">로그인</a></div>
@@ -127,6 +178,97 @@
         document.getElementById('roleTag').innerHTML =
             `<span class="role-label">${role === 'USER' ? '🎓 학생' : '👨‍🏫 강사'}</span>`;
     }
+
+    const fields = ['name', 'nickname', 'email', 'loginId', 'password', 'passwordConfirm', 'phone'];
+
+    function isPasswordValid(pw) {
+        return pw.length >= 8 && /[!@#$%^&*]/.test(pw);
+    }
+
+    function updatePasswordRules(pw) {
+        const ruleLength = document.getElementById('rule-length');
+        const ruleSpecial = document.getElementById('rule-special');
+        ruleLength.classList.toggle('met', pw.length >= 8);
+        ruleSpecial.classList.toggle('met', /[!@#$%^&*]/.test(pw));
+    }
+
+    function validateField(id) {
+        const input = document.getElementById(id);
+        const error = document.getElementById(id + '-error');
+        const value = input.value.trim();
+
+        if (!value) {
+            input.classList.add('input-error');
+            input.classList.remove('input-ok');
+            error.classList.add('visible');
+            return false;
+        }
+
+        if (id === 'password') {
+            if (!isPasswordValid(value)) {
+                input.classList.add('input-error');
+                input.classList.remove('input-ok');
+                error.textContent = '비밀번호 조건을 충족해주세요!';
+                error.classList.add('visible');
+                return false;
+            }
+        }
+
+        if (id === 'passwordConfirm') {
+            const pw = document.getElementById('password').value;
+            if (value !== pw) {
+                input.classList.add('input-error');
+                input.classList.remove('input-ok');
+                error.textContent = '비밀번호가 일치하지 않아요!';
+                error.classList.add('visible');
+                return false;
+            }
+        }
+
+        input.classList.remove('input-error');
+        input.classList.add('input-ok');
+        error.classList.remove('visible');
+        return true;
+    }
+
+    function checkAllFilled() {
+        const allValid = fields.every(id => {
+            const val = document.getElementById(id).value.trim();
+            if (!val) return false;
+            if (id === 'password') return isPasswordValid(val);
+            if (id === 'passwordConfirm') return val === document.getElementById('password').value;
+            return true;
+        });
+        document.getElementById('submitBtn').disabled = !allValid;
+    }
+
+    fields.forEach(id => {
+        const input = document.getElementById(id);
+        input.addEventListener('blur', () => validateField(id));
+        input.addEventListener('input', () => {
+            if (id === 'password') {
+                updatePasswordRules(input.value);
+                const pwError = document.getElementById('password-error');
+                if (input.value && !isPasswordValid(input.value)) {
+                    input.classList.add('input-error');
+                    input.classList.remove('input-ok');
+                    pwError.textContent = '비밀번호 조건을 충족해주세요!';
+                    pwError.classList.add('visible');
+                } else if (input.value && isPasswordValid(input.value)) {
+                    input.classList.remove('input-error');
+                    input.classList.add('input-ok');
+                    pwError.classList.remove('visible');
+                }
+            }
+            checkAllFilled();
+        });
+    });
+
+    document.getElementById('joinForm').addEventListener('submit', function(e) {
+        let valid = true;
+        fields.forEach(id => { if (!validateField(id)) valid = false; });
+        if (!valid) e.preventDefault();
+    });
 </script>
 </body>
 </html>
