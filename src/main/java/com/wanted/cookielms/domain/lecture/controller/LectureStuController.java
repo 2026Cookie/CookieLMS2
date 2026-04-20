@@ -1,6 +1,6 @@
 package com.wanted.cookielms.domain.lecture.controller;
 
-import com.wanted.cookielms.domain.auth.dto.AuthDetails;
+import com.wanted.cookielms.domain.auth.annotation.CurrentUserId;
 import com.wanted.cookielms.domain.lecture.dto.LectureStuDTO;
 import com.wanted.cookielms.domain.lecture.dto.MyLectureListDTO; // 🌟 내 강의 DTO 추가됨
 import com.wanted.cookielms.domain.lecture.exception.LectureErrorCode;
@@ -17,7 +17,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriUtils;
@@ -39,12 +38,9 @@ public class LectureStuController {
     @Value("${file.upload.path:uploads/}")
     private String uploadPath;
 
-    private Long getLoginUserId(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
-            return -1L;
-        }
-        AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
-        return authDetails.getLoginUserDTO().getUserId();
+    // 비로그인 시 -1L 사용 (서비스 계약)
+    private static long resolveUserId(Long userId) {
+        return userId != null ? userId : -1L;
     }
 
     @GetMapping
@@ -61,9 +57,8 @@ public class LectureStuController {
     public ResponseEntity<Page<MyLectureListDTO>> getMyLectures(
             @RequestParam(required = false) String keyword,
             @PageableDefault(size = 6) Pageable pageable,
-            Authentication authentication) {
-        Long userId = getLoginUserId(authentication);
-        if (userId == -1L) {
+            @CurrentUserId Long userId) {
+        if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         return ResponseEntity.ok(lectureStuService.getMyLectures(userId, keyword, pageable));
@@ -71,16 +66,14 @@ public class LectureStuController {
 
     @GetMapping("/{lectureId}")
     @ResponseBody
-    public ResponseEntity<LectureStuDTO> getLectureDetail(@PathVariable Long lectureId, Authentication authentication) {
-        Long userId = getLoginUserId(authentication);
-        return ResponseEntity.ok(lectureStuService.getLectureDetail(lectureId, userId));
+    public ResponseEntity<LectureStuDTO> getLectureDetail(@PathVariable Long lectureId, @CurrentUserId Long userId) {
+        return ResponseEntity.ok(lectureStuService.getLectureDetail(lectureId, resolveUserId(userId)));
     }
 
     @GetMapping("/{lectureId}/video")
     @ResponseBody
-    public ResponseEntity<String> getLectureVideoUrl(@PathVariable Long lectureId, Authentication authentication) {
-        Long userId = getLoginUserId(authentication);
-        return ResponseEntity.ok(lectureStuService.getVideoUrl(lectureId, userId));
+    public ResponseEntity<String> getLectureVideoUrl(@PathVariable Long lectureId, @CurrentUserId Long userId) {
+        return ResponseEntity.ok(lectureStuService.getVideoUrl(lectureId, resolveUserId(userId)));
     }
 
     // 썸네일 이미지 API
@@ -118,11 +111,9 @@ public class LectureStuController {
     // 강의 자료 다운로드 API
     @GetMapping("/{lectureId}/material")
     @ResponseBody
-    public ResponseEntity<Resource> downloadLectureMaterial(@PathVariable Long lectureId, Authentication authentication) {
-        Long userId = getLoginUserId(authentication);
-
+    public ResponseEntity<Resource> downloadLectureMaterial(@PathVariable Long lectureId, @CurrentUserId Long userId) {
         // 권한 체크 등은 이미 Service 단에서 LectureException을 던지고 있으니 통과!
-        String materialFileName = lectureStuService.getMaterialId(lectureId, userId);
+        String materialFileName = lectureStuService.getMaterialId(lectureId, resolveUserId(userId));
 
         Path root = Paths.get(uploadPath).toAbsolutePath().normalize();
         Path filePath = root.resolve(materialFileName);

@@ -1,6 +1,6 @@
 package com.wanted.cookielms.domain.user.controller;
 
-import org.springframework.security.core.context.SecurityContextHolder;
+import com.wanted.cookielms.domain.auth.annotation.CurrentLoginId;
 import org.springframework.ui.Model;
 import com.wanted.cookielms.domain.user.dto.JoinUserDTO;
 import com.wanted.cookielms.domain.user.dto.ModifyUserInfo;
@@ -142,8 +142,7 @@ public class UserController {
 
     //마이페이지 정보 조회용
     @GetMapping("/mypage")
-    public String mypage(Model model) {
-        String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
+    public String mypage(@CurrentLoginId String loginId, Model model) {
         MypageDTO mypage = userService.getMypage(loginId);
         model.addAttribute("userInfo", mypage);
         return "user/mypage";
@@ -156,9 +155,9 @@ public class UserController {
 
     @PostMapping("/verify-password")
     public String verifyPassword(@RequestParam String password,
+                                 @CurrentLoginId String loginId,
                                  HttpSession session,
                                  Model model) {
-        String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
         boolean verified = userService.verifyPassword(loginId, password);
         if (!verified) {
             model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
@@ -169,8 +168,7 @@ public class UserController {
     }
 
     @GetMapping("/mypage/info")
-    public String mypageInfo(Model model) {
-        String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
+    public String mypageInfo(@CurrentLoginId String loginId, Model model) {
         MypageDTO mypage = userService.getMypage(loginId);
         model.addAttribute("userInfo", mypage);
         return "user/mypage_info";
@@ -218,9 +216,9 @@ public class UserController {
 
     @PostMapping("/withdraw")
     public String withdraw(@RequestParam String password,
+                           @CurrentLoginId String loginId,
                            HttpSession session,
                            Model model) {
-        String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
         userService.withdrawUser(loginId, password);
         session.invalidate();
         return "redirect:/";

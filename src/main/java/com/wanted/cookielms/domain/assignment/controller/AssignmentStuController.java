@@ -1,9 +1,8 @@
 package com.wanted.cookielms.domain.assignment.controller;
 
 import com.wanted.cookielms.domain.assignment.service.AssignmentStuService;
-import com.wanted.cookielms.domain.auth.dto.AuthDetails;
+import com.wanted.cookielms.domain.auth.annotation.CurrentUserId;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -26,12 +25,9 @@ public class AssignmentStuController {
     @PostMapping("/{assignmentId}/submit")
     public String submitAssignment(@PathVariable Long assignmentId,
                                    @RequestParam("uploadFile") MultipartFile file,
-                                   Authentication authentication,
+                                   @CurrentUserId Long studentId,
                                    RedirectAttributes redirectAttributes) {
-        AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
-        Long realStudentId = authDetails.getLoginUserDTO().getUserId();
-
-        assignmentStuService.submitAssignment(assignmentId, realStudentId, file);
+        assignmentStuService.submitAssignment(assignmentId, studentId, file);
         redirectAttributes.addFlashAttribute("message", "과제가 성공적으로 제출되었습니다!");
         return "redirect:/student/assignments/" + assignmentId + "/success";
     }
