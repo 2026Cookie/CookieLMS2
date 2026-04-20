@@ -3,7 +3,6 @@ package com.wanted.cookielms.domain.lecture.controller;
 import com.wanted.cookielms.domain.auth.dto.AuthDetails;
 import com.wanted.cookielms.domain.lecture.dto.LectureInsDTO;
 import com.wanted.cookielms.domain.lecture.dto.LectureStuDTO;
-import com.wanted.cookielms.domain.lecture.exception.LectureException; // 🌟 20MB 에러 처리를 위해 추가
 import com.wanted.cookielms.domain.lecture.service.InstructorService;
 import com.wanted.cookielms.domain.lecture.service.LectureStuService;
 import lombok.RequiredArgsConstructor;
@@ -76,39 +75,17 @@ public class InstructorController {
 
     /**
      * 강의 등록 실행
-     * [이미지 예시 스타일] 파라미터에서 DTO를 직접 선언하여 수신
      */
     @PostMapping("/lecture/regist")
     public String registLecture(
-            @ModelAttribute("lecture") LectureInsDTO lectureInsDTO, // 🌟 수정: 입력 데이터 유지를 위해 ModelAttribute 명시
+            @ModelAttribute("lecture") LectureInsDTO lectureInsDTO,
             @AuthenticationPrincipal AuthDetails authDetails,
-            Model model, // 🌟 수정: 에러 시 화면에 데이터를 돌려주기 위해 Model 추가
-            RedirectAttributes redirectAttributes) {
-        try {
-            Long instructorId = authDetails.getLoginUserDTO().getUserId();
-            instructorService.registLecture(lectureInsDTO,instructorId);
-            log.info("✅ 강의 등록 성공: {}", lectureInsDTO.getTitle());
-            // 성공 시 FlashAttribute 사용
-            redirectAttributes.addFlashAttribute("message", "✅ 강의 등록이 완료되었습니다!");
-            return "redirect:/instructor/lectures";
-
-        } catch (LectureException | IllegalArgumentException e) { // 🌟 수정: 20MB 에러(LectureException) 감지
-
-            // 🌟 수정: redirect 대신 Model에 값 담아서 바로 HTML 렌더링 (데이터 유지)
-            model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("lecture", lectureInsDTO);
-            model.addAttribute("isEdit", false);
-            return "instructor/lecture_regist";
-
-        } catch (IOException e) {
-            log.error("❌ 파일 저장 에러", e);
-            model.addAttribute("errorMessage", "파일 저장 중 오류가 발생했습니다.");
-            model.addAttribute("lecture", lectureInsDTO);
-            model.addAttribute("isEdit", false);
-            return "instructor/lecture_regist";
-        }
-
-
+            RedirectAttributes redirectAttributes) throws IOException {
+        Long instructorId = authDetails.getLoginUserDTO().getUserId();
+        instructorService.registLecture(lectureInsDTO, instructorId);
+        log.info("✅ 강의 등록 성공: {}", lectureInsDTO.getTitle());
+        redirectAttributes.addFlashAttribute("message", "✅ 강의 등록이 완료되었습니다!");
+        return "redirect:/instructor/lectures";
     }
 
 
@@ -138,36 +115,13 @@ public class InstructorController {
     @PostMapping("/lecture/edit/{id}")
     public String updateLecture(
             @PathVariable("id") Long id,
-            @ModelAttribute("lecture") LectureInsDTO lectureInsDTO, // 🌟 수정: ModelAttribute 명시
-            @AuthenticationPrincipal AuthDetails authDetails, // 시큐리티 세션 추가
-            Model model, // 🌟 수정: Model 추가
-            RedirectAttributes redirectAttributes) {
-        try {
-            // 세션에서 로그인한 강사 ID 추출
-            Long instructorId = authDetails.getLoginUserDTO().getUserId();
-
-            // 서비스 호출 시 instructorId 추가 전달
-            instructorService.updateLecture(id, lectureInsDTO, instructorId);
-
-            redirectAttributes.addFlashAttribute("message", "강의 수정이 완료되었습니다!");
-            return "redirect:/instructor/lectures";
-
-        } catch (LectureException | IllegalArgumentException e) { // 🌟 수정
-            log.error("수정 중 보안/검증 오류 발생: ", e);
-
-            // 🌟 수정: redirect 대신 Model에 값 담아서 바로 HTML 렌더링 (데이터 유지)
-            model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("lecture", lectureInsDTO);
-            model.addAttribute("isEdit", true);
-            return "instructor/lecture_regist";
-
-        } catch (Exception e) {
-            log.error("수정 중 시스템 오류 발생: ", e);
-            model.addAttribute("errorMessage", "수정 중 오류가 발생했습니다.");
-            model.addAttribute("lecture", lectureInsDTO);
-            model.addAttribute("isEdit", true);
-            return "instructor/lecture_regist";
-        }
+            @ModelAttribute("lecture") LectureInsDTO lectureInsDTO,
+            @AuthenticationPrincipal AuthDetails authDetails,
+            RedirectAttributes redirectAttributes) throws IOException {
+        Long instructorId = authDetails.getLoginUserDTO().getUserId();
+        instructorService.updateLecture(id, lectureInsDTO, instructorId);
+        redirectAttributes.addFlashAttribute("message", "강의 수정이 완료되었습니다!");
+        return "redirect:/instructor/lectures";
     }
 
 }
