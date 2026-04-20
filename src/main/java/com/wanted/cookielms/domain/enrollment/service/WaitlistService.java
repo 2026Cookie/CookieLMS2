@@ -8,6 +8,7 @@ import com.wanted.cookielms.domain.enrollment.repository.EnrollmentRepository;
 import com.wanted.cookielms.domain.enrollment.repository.WaitlistRepository;
 import com.wanted.cookielms.domain.lecture.entity.LectureStuEntity;
 import com.wanted.cookielms.domain.lecture.repository.LectureStuRepository;
+import com.wanted.cookielms.global.aop.BussinessServiceLogging;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,12 +65,14 @@ public class WaitlistService {
         return ahead + 1;
     }
 
+    @BussinessServiceLogging
     @Transactional
     public void cancelWaitlist(Long lectureId, Long userId) {
         Waitlist waitlist = waitlistRepository.findByUserIdAndLectureIdAndStatus(userId, lectureId, "WAITING")
                 .orElseThrow(() -> new EnrollmentException(EnrollmentErrorCode.WAITLIST_NOT_FOUND));
         waitlist.changeStatus("CANCELLED");
     }
+
 
     @Transactional
     public void autoEnroll(Long lectureId) {
