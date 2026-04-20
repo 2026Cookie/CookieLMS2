@@ -172,12 +172,10 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO users (email, id, password, name, nickname, phone, role, status, isDeleted, is_deleted, created_at, updated_at, deleted_at)
 VALUES
--- ADMIN 2명
+-- ADMIN
 ('admin@cookielms.com', 'admin', '$2a$10$hashedpassword1234567890abcdef', '운영자', '관리자', '010-0000-0001', 'ADMIN', 'ACTIVE', 0, 0, '2024-01-01 09:00:00', '2024-01-01 09:00:00', NULL),
 ('user54@cookielms.com', 'admin1', '$2a$10$wfGTAjR94RnWzUYmUTjovurHITcpSrl4KgqGfL2jEKTaRIrYjowoq', '운영자', '관리자', '010-0000-0002', 'ADMIN', 'ACTIVE', 0, 0, '2024-01-01 09:00:00', '2024-01-01 09:00:00', NULL),
-
-
--- INSTRUCTOR 11명
+-- INSTRUCTOR
 ('inst01@cookielms.com', 'inst01', '$2a$10$hashedpassword1234567890abcdef', '김자바',   '자바킹',      '010-1001-0001', 'INSTRUCTOR', 'ACTIVE',  0, 0, '2024-01-05 10:00:00', '2024-01-05 10:00:00', NULL),
 ('inst02@cookielms.com', 'inst02', '$2a$10$hashedpassword1234567890abcdef', '이스프링', '스프링마스터', '010-1001-0002', 'INSTRUCTOR', 'ACTIVE',  0, 0, '2024-01-06 10:00:00', '2024-01-06 10:00:00', NULL),
 ('inst03@cookielms.com', 'inst03', '$2a$10$hashedpassword1234567890abcdef', '박리액트', '프론트고수',   '010-1001-0003', 'INSTRUCTOR', 'ACTIVE',  0, 0, '2024-01-07 10:00:00', '2024-01-07 10:00:00', NULL),
@@ -189,9 +187,7 @@ VALUES
 ('inst09@cookielms.com', 'inst09', '$2a$10$hashedpassword1234567890abcdef', '윤보안',   '보안전문가',  '010-1001-0009', 'INSTRUCTOR', 'ACTIVE',  0, 0, '2024-01-13 10:00:00', '2024-01-13 10:00:00', NULL),
 ('inst10@cookielms.com', 'inst10', '$2a$10$hashedpassword1234567890abcdef', '임도커',   '도커쿠버왕',  '010-1001-0010', 'INSTRUCTOR', 'ACTIVE',  0, 0, '2024-01-14 10:00:00', '2024-01-14 10:00:00', NULL),
 ('inst11@cookielms.com', 'inst1', '$2a$10$5LnyRwCc3f9TrgXdB8aQEeYX.2Eg2nWxq4HrKgoRU5/Z8hpEKV2ti', '오데이터',   '자바마스터',  '010-1001-0012', 'INSTRUCTOR', 'ACTIVE',  0, 0, '2024-01-14 10:00:00', '2024-01-14 10:00:00', NULL),
-
-
--- USER (학생) 50명
+-- USER (학생)
 ('user01@cookielms.com', 'user01', '$2a$10$hashedpassword1234567890abcdef', '강민준', '코딩초보',       '010-2001-0001', 'USER', 'ACTIVE',  0, 0, '2024-02-01 11:00:00', '2024-02-01 11:00:00', NULL),
 ('user02@cookielms.com', 'user02', '$2a$10$hashedpassword1234567890abcdef', '고서연', '열공러',         '010-2001-0002', 'USER', 'ACTIVE',  0, 0, '2024-02-01 11:05:00', '2024-02-01 11:05:00', NULL),
 ('user03@cookielms.com', 'user03', '$2a$10$hashedpassword1234567890abcdef', '권도윤', '개발지망생',     '010-2001-0003', 'USER', 'ACTIVE',  0, 0, '2024-02-02 11:00:00', '2024-02-02 11:00:00', NULL),
@@ -245,10 +241,6 @@ VALUES
 ('user51@cookielms.com', 'user1', '$2a$10$gLacJKgCmIdEFGsWhLKkpOpuSxe.l8zT9HTQD2vc3hSEoGEZvKGie', '하승주', '백엔드고수',     '010-2001-0051', 'USER', 'ACTIVE',  0, 0, '2024-02-25 13:05:00', '2024-02-25 13:05:00', NULL),
 ('user52@cookielms.com', 'user2', '$2a$10$z4BHQYZK5W2egSonVECBX.q6X3dSruZdIMIT4JrCBXir.xie4R7z6', '홍다희', '자바초보',     '010-2002-0051', 'USER', 'ACTIVE',  0, 0, '2024-02-25 13:05:00', '2024-02-25 13:05:00', NULL),
 ('user53@cookielms.com', 'user3', '$2a$10$eH5TnPmyJGRLVW0wvel1Vejj31JFa9bPeRgpcRoTIe2wF1ioxABwK', '최민원', '트랜잭션초보',     '010-2402-0051', 'USER', 'ACTIVE',  0, 0, '2024-02-25 13:05:00', '2024-02-25 13:05:00', NULL);
-
-
-
-
 -- =====================================================
 -- INSERT: lecture (users 삽입 후)
 -- =====================================================
@@ -344,14 +336,12 @@ VALUES
 ('XSS와 CSRF 방어',        '웹 보안 취약점 대응',               25, 10, 'ACTIVE', 'WED', '14:00:00', '16:00:00', 'http://video.url/87',  'thumb_87.png',  'pdf_security2_01.pdf',     5),
 ('SQL 인젝션 방어',        '안전한 쿼리 작성법',                30, 15, 'ACTIVE', 'THU', '19:00:00', '21:00:00', 'http://video.url/88',  'thumb_88.png',  'pdf_sqlinject_01.pdf',     5),
 ('H2 인메모리 DB',         '개발 환경 빠른 구성법',             35, 28, 'ACTIVE', 'FRI', '10:00:00', '12:00:00', 'http://video.url/89',  'thumb_89.png',  'pdf_h2_01.pdf',            6),
-('테스트 컨테이너',        'Testcontainers DB 통합 테스트',     20,  4, 'ACTIVE', 'SAT', '14:00:00', '17:00:00', 'https://www.youtube.com/watch?v=sly2u8BIi9E',  'thumb_90.png',  'pdf_testcontainer_01.pdf', 6),
-('깃허브 기초',            '깃 관리 방법의 이해',            25,  9, 'ACTIVE', 'SUN', '10:00:00', '12:00:00', 'https://www.youtube.com/watch?v=sly2u8BIi9E',  'thumb_91.png',  'pdf_acceptance_01.pdf',    7),
-('아키텍처 테스트',        'ArchUnit 의존성 검증',              15,  2, 'ACTIVE', 'MON', '20:00:00', '22:00:00', 'http://video.url/92',  'thumb_92.png',  'pdf_archunit_01.pdf',      7),
-('Flyway 마이그레이션',    'DB 스키마 버전 관리',               25, 12, 'ACTIVE', 'TUE', '14:00:00', '16:00:00', 'http://video.url/93',  'thumb_93.png',  'pdf_flyway_01.pdf',        8),
-('Liquibase 활용',         '선언적 DB 변경 관리',               20,  5, 'ACTIVE', 'WED', '10:00:00', '12:00:00', 'http://video.url/94',  'thumb_94.png',  'pdf_liquibase_01.pdf',     8),
-('Spring Data REST',       '레포지토리 자동 API화',             20,  7, 'ACTIVE', 'THU', '15:00:00', '17:00:00', 'http://video.url/95',  'thumb_95.png',  'pdf_datarest_01.pdf',      9),
-('HATEOAS 적용',           '하이퍼미디어 API 설계',             15,  3, 'ACTIVE', 'FRI', '19:00:00', '21:00:00', 'http://video.url/96',  'thumb_96.png',  'pdf_hateoas_01.pdf',       9),
-('API 버저닝',             'URL과 헤더 버전 전략',              25, 11, 'ACTIVE', 'SAT', '10:00:00', '12:00:00', 'http://video.url/97',  'thumb_97.png',  'pdf_versioning_01.pdf',    10),
-('개발자 커리어 설계',     '포트폴리오와 이직 전략',            50, 47, 'ACTIVE', 'SUN', '14:00:00', '16:00:00', 'http://video.url/98',  'thumb_98.png',  'pdf_career_01.pdf',        10),
-('오픈소스 기여하기',      'GitHub 오픈소스 PR 전략',           30, 13, 'ACTIVE', 'MON', '10:00:00', '12:00:00', 'http://video.url/99',  'thumb_99.png',  'pdf_opensource_01.pdf',     2),
-('기술 블로그 운영',       '개발자 브랜딩과 글쓰기',            40, 33, 'ACTIVE', 'TUE', '19:00:00', '21:00:00', 'http://video.url/100', 'thumb_100.png', 'pdf_blog_01.pdf',           2);
+('테스트 컨테이너',        'Testcontainers DB 통합 테스트',     20,  4, 'ACTIVE', 'SAT', '14:00:00', '17:00:00', 'http://video.url/90',  'thumb_90.png',  'pdf_testcontainer_01.pdf', 6),
+('인수 테스트',            'RestAssured API 테스트',            25,  9, 'ACTIVE', 'SUN', '10:00:00', '12:00:00', 'http://video.url/91',  'thumb_91.png',  'pdf_acceptance_01.pdf',    7),
+('천상계 자이라 배우기',        '자이라 권위자 라쿤99 초청석',              15,  2, 'ACTIVE', 'MON', '20:00:00', '22:00:00', 'https://youtu.be/m5cdgFhwJzI?si=V0IOzMmloPkr7Z7K',  'thumb_92.png',  'pdf_archunit_01.pdf',      7),
+('알콜 의존증에서 벗어나는법',    '당신도 할수있다 갓생',               25, 12, 'ACTIVE', 'TUE', '14:00:00', '16:00:00', 'https://youtu.be/vsmdRNmes5c?si=P_VE8C34hVm9P86_',  'thumb_93.png',  'pdf_flyway_01.pdf',        8),
+('마늘로 술만드는법',         '마늘로 술만들기',               20,  5, 'ACTIVE', 'WED', '10:00:00', '12:00:00', 'https://youtu.be/7CzrwilND54?si=mvoCYU1cZMCYPmEz',  'thumb_94.png',  'pdf_liquibase_01.pdf',     8),
+('교잡종 알아보기',       '침착맨의 교잡종 강의',             20,  7, 'ACTIVE', 'THU', '15:00:00', '17:00:00', 'https://youtu.be/YfOH0y74UGA?si=aEv-TgxjOWqKtQnv',  'thumb_95.png',  'pdf_datarest_01.pdf',      9),
+('본좌에게 배우는 공중부양',           '유치원생도 배우는 공중부양',             15,  3, 'ACTIVE', 'FRI', '19:00:00', '21:00:00', 'https://youtu.be/-4c93_fLlE4?si=gugNGusPuyrjAGTN',  'thumb_96.png',  'pdf_hateoas_01.pdf',       9),
+('현우진이 말하는 우매함의 봉우리','더닝 크루거 효과란?',              25, 11, 'ACTIVE', 'SAT', '10:00:00', '12:00:00', 'https://youtu.be/lHBWwiBcPX0?si=dCbEn7HpA6fui8d2',  'thumb_97.png',  'pdf_versioning_01.pdf',    10),
+('가정용 우라늄 농축법',     '당신도 될 수 있다 핵보유 가정',            50, 49, 'ACTIVE', 'SUN', '14:00:00', '16:00:00', 'https://youtu.be/jw7SYZ3KsIs?si=j0QaDUl0pyNu3WfL',  'thumb_98.png',  'pdf_career_01.pdf',        10);

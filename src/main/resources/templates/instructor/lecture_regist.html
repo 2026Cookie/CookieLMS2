@@ -55,6 +55,13 @@
             cursor: pointer; margin-top: 24px; transition: background 0.2s;
         }
         .btn-submit:hover { background: var(--btn-dark-hover); }
+        .btn-secondary {
+            width: 100%; padding: 12px; background: var(--powder-petal);
+            border: 1px solid var(--almond-silk); border-radius: 8px;
+            color: var(--text-secondary); font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-secondary:hover { background: var(--almond-silk); color: var(--text-primary); }
     </style>
 </head>
 <body>
@@ -129,10 +136,13 @@
             <p class="hint" th:unless="${isEdit}">목록에 보여질 썸네일 이미지를 등록해주세요.</p>
         </div>
 
-        <div th:if="${!isEdit}">
-            <hr style="margin: 30px 0; border-top: 1px dashed var(--dust-grey);">
-            <div class="section-label" style="border: none; margin-bottom: 8px;">📝 [선택] 수강생 과제 동시 등록</div>
-            <p class="hint" style="margin-bottom: 16px;">과제명 입력 시 강의 생성과 함께 과제가 자동 등록됩니다.</p>
+        <hr style="margin: 30px 0; border-top: 1px dashed var(--dust-grey);">
+         <div th:if="${isEdit}" style="margin-bottom: 20px;">
+             <button type="button" id="btn-toggle-assignment" class="btn-secondary">📝 과제 내용 수정하기</button>
+         </div>
+         <div id="assignment-section" th:style="${isEdit} ? 'display: none;' : 'display: block;'">
+             <div class="section-label" style="border: none; margin-bottom: 8px;">📝 수강생 과제 설정</div>
+             <p class="hint" style="margin-bottom: 16px;" th:text="${isEdit} ? '과제 정보를 수정할 수 있습니다.' : '과제명 입력 시 강의 생성과 함께 과제가 자동 등록됩니다.'"></p>
 
             <div class="form-group">
                 <label>과제명</label>
@@ -160,6 +170,22 @@
     if (errorMsg) alert(errorMsg);
     const successMsg = /*[[${message}]]*/ null;
     if (successMsg) alert(successMsg);
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnToggle = document.getElementById('btn-toggle-assignment');
+        const assignmentSection = document.getElementById('assignment-section');
+
+        if (btnToggle) {
+            btnToggle.addEventListener('click', function() {
+                if (assignmentSection.style.display === 'none' || assignmentSection.style.display === '') {
+                    assignmentSection.style.display = 'block';
+                    this.textContent = '❌ 과제 수정 취소';
+                } else {
+                    assignmentSection.style.display = 'none';
+                    this.textContent = '📝 과제 내용 수정하기';
+                }
+            });
+        }
+    });
     /*]]>*/
 </script>
 <script src="/js/session-timer.js"></script>

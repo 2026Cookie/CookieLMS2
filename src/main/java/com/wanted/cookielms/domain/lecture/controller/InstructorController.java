@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * [규칙 6] 강사 관련 요청 처리 전용 컨트롤러
@@ -123,5 +124,20 @@ public class InstructorController {
         redirectAttributes.addFlashAttribute("message", "강의 수정이 완료되었습니다!");
         return "redirect:/instructor/lectures";
     }
+    @GetMapping("/lecture/{lectureId}/assignment/{assignmentId}/status")
+    public String getAssignmentStatus(
+            @PathVariable Long lectureId,
+            @PathVariable Long assignmentId,
+            Model model) {
 
+        // 1. 서비스 호출하여 대시보드 데이터(학생 목록, 통계, 과제 정보) 가져오기
+        Map<String, Object> dashboardData = instructorService.getAssignmentDashboard(assignmentId, lectureId);
+
+        // 2. 맵에 담긴 모든 데이터를 모델에 추가 (Thymeleaf에서 바로 사용 가능)
+        // students, assignment, totalCount, submittedCount 등이 들어있습니다.
+        model.addAllAttributes(dashboardData);
+
+        // 3. 과제 제출 현황 화면(HTML)으로 이동
+        return "instructor/assignment_status";
+    }
 }

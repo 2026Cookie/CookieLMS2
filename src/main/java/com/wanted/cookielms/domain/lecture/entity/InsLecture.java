@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.time.LocalTime;
 
+
 @Entity
 @Getter
 @Table(name = "lecture")
