@@ -18,11 +18,7 @@ public class AuthService implements UserDetailsService {
 
     private final UserService userService;
 
-    /**
-     * AuthenticationProvider에서 호출하는 메서드로
-     * login 요청 시 전달된 사용자의 id를 매개변수로 DB에서 사용자의 정보를 찾는다.
-     * 전달된 사용자의 개체 타입은 UserDetails를 구현한 구현체가 되어야 한다.
-     * */
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         LoginUserDTO login = userService.findByUsername(username);
