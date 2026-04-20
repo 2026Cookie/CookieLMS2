@@ -23,6 +23,13 @@ public class LectureStuDTO {
 
     private String instructorName; // 강사 이름
 
+    // 과제 등록을 위한 코드
+    private Long assignmentId;
+
+    public void setAssignmentId(Long assignmentId) {
+        this.assignmentId = assignmentId;
+    }
+
     // 🚀 [추가] Repository의 상세조회 '한 방 쿼리'를 위한 전용 생성자!
     // 쿼리 순서: l.lectureId, l.title, u.name, l.currentEnrollment, l.maxCapacity, l.thumbnail, l.videoUrl, l.materialId
     public LectureStuDTO(Long lectureId, String title, String instructorName,

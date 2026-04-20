@@ -36,7 +36,7 @@
         .form-group { margin-bottom: 16px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
         label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
-        input[type="text"], input[type="number"], input[type="time"], input[type="file"], textarea {
+        input[type="text"], input[type="number"], input[type="time"], input[type="datetime-local"], input[type="file"], textarea {
             width: 100%; padding: 11px 14px; border: 1px solid var(--dust-grey);
             border-radius: 8px; background: var(--parchment); color: var(--text-primary);
             font-size: 15px; outline: none; transition: border-color 0.2s; font-family: inherit;
@@ -129,13 +129,34 @@
             <p class="hint" th:unless="${isEdit}">목록에 보여질 썸네일 이미지를 등록해주세요.</p>
         </div>
 
+        <div th:if="${!isEdit}">
+            <hr style="margin: 30px 0; border-top: 1px dashed var(--dust-grey);">
+            <div class="section-label" style="border: none; margin-bottom: 8px;">📝 [선택] 수강생 과제 동시 등록</div>
+            <p class="hint" style="margin-bottom: 16px;">과제명 입력 시 강의 생성과 함께 과제가 자동 등록됩니다.</p>
+
+            <div class="form-group">
+                <label>과제명</label>
+                <input type="text" name="assignmentTitle" placeholder="예: 자바 객체지향 연습">
+            </div>
+
+            <div class="form-group">
+                <label>과제 내용</label>
+                <input type="text" name="assignmentContent" placeholder="인터페이스를 활용한 다형성 구현">
+            </div>
+
+            <div class="form-group">
+                <label>마감 기한</label>
+                <input type="datetime-local" name="assignmentDueDate">
+            </div>
+        </div>
+
         <button type="submit" class="btn-submit" th:text="${isEdit} ? '수정 완료' : '등록하기'">등록하기</button>
     </form>
 </div>
 
 <script th:inline="javascript">
     function validateFile(input) {
-        const file = input.files; // 🌟 추가해서 파일 객체 가져옴
+        const file = input.files[0];
         if (!file) return;
 
         // 확장자 체크
