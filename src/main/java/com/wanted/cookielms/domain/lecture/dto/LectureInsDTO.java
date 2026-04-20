@@ -27,6 +27,9 @@ public class LectureInsDTO {
     private String endTime;
     private MultipartFile thumbnail;
     private String thumbnailPath;
+    private String startDate; // 화면(HTML)에서 "2026-04-20" 형태로 들어옴
+    private String endDate;
+
 
     // 🌟 강사가 과제를 같이 등록할 때 사용할 필드 3개 추가!
     private String assignmentTitle;
