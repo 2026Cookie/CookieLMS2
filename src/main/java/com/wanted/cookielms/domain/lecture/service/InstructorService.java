@@ -115,37 +115,4 @@ public class InstructorService {
         return dto;
     }
 
-    private String storeFile(MultipartFile file, String allowedExtension) throws IOException {
-        if (file == null || file.isEmpty()) {
-            return null;
-        }
-
-        String originalName = file.getOriginalFilename();
-
-        // 1. 확장자 검증
-        if (originalName == null || !originalName.toLowerCase().endsWith(allowedExtension)) {
-            throw new LectureException(LectureErrorCode.INVALID_FILE_EXTENSION);
-        }
-
-        // 2. 용량 검증 (20MB)
-        long maxSize = 20 * 1024 * 1024;
-        if (file.getSize() > maxSize) {
-            throw new LectureException(LectureErrorCode.FILE_SIZE_EXCEEDED);
-        }
-
-        // 3. 고유 파일명 생성
-        String ext = originalName.substring(originalName.lastIndexOf("."));
-        String savedName = UUID.randomUUID().toString() + ext;
-
-        // 4. 물리적 저장
-        File targetDir = new File(uploadPath).getAbsoluteFile();
-        if (!targetDir.exists()) {
-            targetDir.mkdirs();
-        }
-
-        File targetFile = new File(targetDir, savedName);
-        file.transferTo(targetFile);
-
-        return savedName;
-    }
 }

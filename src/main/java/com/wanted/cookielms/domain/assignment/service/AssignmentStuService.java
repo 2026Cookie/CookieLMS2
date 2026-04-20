@@ -7,6 +7,7 @@ import com.wanted.cookielms.domain.assignment.exception.AssignmentErrorCode;
 import com.wanted.cookielms.domain.assignment.exception.AssignmentException;
 import com.wanted.cookielms.domain.assignment.repository.AssignmentStuRepository;
 import com.wanted.cookielms.domain.assignment.repository.AssignmentSubmissionStuRepository;
+import com.wanted.cookielms.global.aop.FileValidation.FileValidation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -56,6 +57,7 @@ public class AssignmentStuService {
                 .build();
     }
 
+    @FileValidation(maxSize = 5, allowedExtensions = {".pdf"}, allowedMimeTypes = {"application/pdf"})
     @Transactional
     public void submitAssignment(Long assignmentId, Long studentId, MultipartFile file) {
         AssignmentStuEntity assignment = assignmentStuRepository.findById(assignmentId)
@@ -66,24 +68,8 @@ public class AssignmentStuService {
         }
 
         String originalFilename = file.getOriginalFilename();
-        String contentType = file.getContentType();
-
-        List<String> allowedExtensions = Arrays.asList("pdf");
-        List<String> allowedMimeTypes = Arrays.asList("application/pdf");
-
-        if (originalFilename != null) {
-            String ext = originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase();
-            if (!allowedExtensions.contains(ext) || contentType == null || !allowedMimeTypes.contains(contentType)) {
-                throw new AssignmentException(AssignmentErrorCode.INVALID_FILE_FORMAT);
-            }
-        } else {
-            throw new AssignmentException(AssignmentErrorCode.FILE_REQUIRED);
-        }
-
-        // 고유한 파일 이름 생성
         String savedFilename = UUID.randomUUID().toString() + "_" + originalFilename;
 
-        // 물리적 파일 저장 로직 추가 (uploads/assignments/ 폴더에 저장)
         try {
             Path uploadDir = Paths.get(baseUploadPath, "assignments").toAbsolutePath().normalize();
             if (!Files.exists(uploadDir)) {
@@ -95,7 +81,7 @@ public class AssignmentStuService {
             throw new AssignmentException(AssignmentErrorCode.FILE_UPLOAD_ERROR);
         }
 
-        Long dummyFileId = (long) (file.getOriginalFilename().length() * 100);
+        Long dummyFileId = (long) (originalFilename.length() * 100);
 
         assignmentSubmissionStuRepository.findByAssignmentIdAndStudentId(assignmentId, studentId)
                 .ifPresentOrElse(

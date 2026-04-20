@@ -80,30 +80,14 @@ public class InstructorController {
     @PostMapping("/lecture/regist")
     public String registLecture(
             LectureInsDTO lectureInsDTO,
-
             @AuthenticationPrincipal AuthDetails authDetails,
-            RedirectAttributes redirectAttributes) {
-        try {
-            Long instructorId = authDetails.getLoginUserDTO().getUserId();
-            instructorService.registLecture(lectureInsDTO,instructorId);
-            log.info("✅ 강의 등록 성공: {}", lectureInsDTO.getTitle());
-            // 성공 시 FlashAttribute 사용
-            redirectAttributes.addFlashAttribute("message", "✅ 강의 등록이 완료되었습니다!");
-            return "redirect:/instructor/lectures";
+            RedirectAttributes redirectAttributes) throws IOException {
 
-        } catch (IllegalArgumentException e) {
-
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/instructor/lecture/regist";
-
-        } catch (IOException e) {
-            log.error("❌ 파일 저장 에러", e);
-            redirectAttributes.addFlashAttribute("errorMessage", "파일 저장 중 오류가 발생했습니다.");
-            return "redirect:/instructor/lecture/regist";
-            //return "redirect:/instructor/lectures";
-        }
-
-
+        Long instructorId = authDetails.getLoginUserDTO().getUserId();
+        instructorService.registLecture(lectureInsDTO, instructorId);
+        log.info("✅ 강의 등록 성공: {}", lectureInsDTO.getTitle());
+        redirectAttributes.addFlashAttribute("message", "✅ 강의 등록이 완료되었습니다!");
+        return "redirect:/instructor/lectures";
     }
 
 
@@ -124,7 +108,7 @@ public class InstructorController {
 
         model.addAttribute("lecture", lecture);
         model.addAttribute("isEdit", true);
-        return "instructor/lecture_regist";
+        return "instructor/lecture_`regist`";
     }
 
     /**
