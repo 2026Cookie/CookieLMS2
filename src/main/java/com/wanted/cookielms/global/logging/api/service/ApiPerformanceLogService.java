@@ -27,6 +27,7 @@ public class ApiPerformanceLogService {
             entity.setExecutionTimeMs(dto.getExecutionTimeMs());
             entity.setCreatedAt(dto.getCreatedAt());
             entity.setUserId(dto.getUserId());
+            entity.setStatusCode(dto.getStatusCode());
 
             apiPerformanceLogRepository.save(entity);
         } catch (Exception e) {

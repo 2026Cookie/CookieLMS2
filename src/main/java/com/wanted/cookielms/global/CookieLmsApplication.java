@@ -17,5 +17,4 @@ public class CookieLmsApplication {
         SpringApplication.run(CookieLmsApplication.class, args);
     }
 
-
 }
