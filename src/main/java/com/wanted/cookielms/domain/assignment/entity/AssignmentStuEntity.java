@@ -42,8 +42,7 @@ public class AssignmentStuEntity {
         this.dueDate = dueDate;
         this.lectureId = lectureId;
     }
-
-    public void update(String title, String content, java.time.LocalDateTime dueDate) {
+    public void updateAssignment(String title, String content, java.time.LocalDateTime dueDate) {
         this.title = title;
         this.content = content;
         this.dueDate = dueDate;

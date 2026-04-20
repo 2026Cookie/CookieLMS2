@@ -2,12 +2,11 @@ package com.wanted.cookielms.domain.lecture.service;
 
 import com.wanted.cookielms.domain.assignment.entity.AssignmentStuEntity; // 🌟 추가
 import com.wanted.cookielms.domain.assignment.repository.AssignmentStuRepository; // 🌟 추가
+import com.wanted.cookielms.domain.assignment.dto.AssignmentStatusDTO;
 import com.wanted.cookielms.domain.lecture.dto.LectureInsDTO;
 import com.wanted.cookielms.domain.lecture.dto.LectureStuDTO;
 import com.wanted.cookielms.domain.lecture.entity.InsLecture;
 import com.wanted.cookielms.domain.lecture.enums.LectureDay;
-import com.wanted.cookielms.domain.lecture.exception.LectureErrorCode;
-import com.wanted.cookielms.domain.lecture.exception.LectureException;
 import com.wanted.cookielms.domain.lecture.repository.LectureInsRepository;
 import com.wanted.cookielms.domain.lecture.repository.LectureStuRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,12 +16,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
+import com.wanted.cookielms.domain.assignment.repository.AssignmentSubmissionStuRepository;
 
-import java.io.File;
 import java.io.IOException;
 import java.time.LocalTime;
-import java.util.UUID;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 @Service
@@ -35,6 +35,7 @@ public class InstructorService {
     private final AssignmentStuRepository assignmentStuRepository; // 🌟 과제 저장소 주입 추가!
     private final ModelMapper modelMapper;
     private final InsFileService insFileService;
+    private final AssignmentSubmissionStuRepository assignmentSubmissionStuRepository;
 
 
 
@@ -42,8 +43,25 @@ public class InstructorService {
     private String uploadPath;
 
     public Page<LectureStuDTO> getMyLectures(Long instructorId, Pageable pageable) {
+        // 1. 강사가 등록한 강의 목록을 DB에서 가져옵니다.
         Page<InsLecture> myLectures = lectureInsRepository.findByInstructorId(instructorId, pageable);
-        return myLectures.map(entity -> modelMapper.map(entity, LectureStuDTO.class));
+
+
+        return myLectures.map(entity -> {
+            LectureStuDTO dto = modelMapper.map(entity, LectureStuDTO.class);
+
+
+            dto.setLectureId(entity.getId());
+
+
+            assignmentStuRepository.findByLectureId(entity.getId())
+                    .ifPresent(assignment -> {
+                        dto.setAssignmentId(assignment.getId());;
+                    });
+
+            // 🌟 4) 정보가 꽉 찬 dto를 반환합니다. (이게 없으면 에러가 납니다!)
+            return dto;
+        });
     }
 
 
@@ -113,30 +131,19 @@ public class InstructorService {
                 LocalTime.parse(dto.getStartTime()),
                 LocalTime.parse(dto.getEndTime())
         );
+
+        AssignmentStuEntity assignment = assignmentStuRepository.findByLectureId(id)
+                .orElseGet(() -> AssignmentStuEntity.builder().lectureId(id).build());
+
         if (dto.getAssignmentTitle() != null && !dto.getAssignmentTitle().trim().isEmpty()) {
-            String content = (dto.getAssignmentContent() != null && !dto.getAssignmentContent().trim().isEmpty())
-                    ? dto.getAssignmentContent() : "과제 내용이 없습니다.";
-
-            // 1. 해당 강의 번호로 기존 과제가 있는지 DB에서 찾아옵니다.
-            AssignmentStuEntity existingAssignment = assignmentStuRepository.findByLectureId(id).orElse(null);
-
-            if (existingAssignment != null) {
-                // 2-A. 기존 과제가 있다면 수정 (※ AssignmentStuEntity에 update 메서드를 만들어주세요!)
-                existingAssignment.update(dto.getAssignmentTitle(), content, dto.getAssignmentDueDate());
-            } else {
-                // 2-B. 예전엔 과제가 없었는데 이번에 새로 추가했다면 새로 만들어서 저장
-                AssignmentStuEntity newAssignment = AssignmentStuEntity.builder()
-                        .title(dto.getAssignmentTitle())
-                        .content(content)
-                        .dueDate(dto.getAssignmentDueDate())
-                        .lectureId(id)
-                        .build();
-                assignmentStuRepository.save(newAssignment);
-            }
+            assignment.updateAssignment(
+                    dto.getAssignmentTitle(),
+                    dto.getAssignmentContent(),
+                    dto.getAssignmentDueDate()
+            );
+            assignmentStuRepository.save(assignment);
         }
-
     }
-
     public LectureInsDTO getLectureForEdit(Long id, Long instructorId) {
         InsLecture lecture = lectureInsRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다. ID: " + id));
@@ -146,6 +153,13 @@ public class InstructorService {
         }
 
         LectureInsDTO dto = modelMapper.map(lecture, LectureInsDTO.class);
+
+        assignmentStuRepository.findByLectureId(id).ifPresent(assignment -> {
+            dto.setAssignmentTitle(assignment.getTitle());
+            dto.setAssignmentContent(assignment.getContent());
+            dto.setAssignmentDueDate(assignment.getDueDate());
+        });
+
         dto.setStartTime(lecture.getStartTime().toString());
         dto.setEndTime(lecture.getEndTime().toString());
         dto.setLectureDay(lecture.getLectureDay().name());
@@ -158,6 +172,24 @@ public class InstructorService {
         }
 
         return dto;
+    }
+    public Map<String, Object> getAssignmentDashboard(Long assignmentId, Long lectureId) {
+        List<AssignmentStatusDTO> statusList = assignmentSubmissionStuRepository.findSubmissionStatusByAssignmentAndLecture(assignmentId, lectureId);
+
+        AssignmentStuEntity assignment = assignmentStuRepository.findById(assignmentId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 과제입니다. ID: " + assignmentId));
+
+        long totalStudents = statusList.size();
+        long submittedCount = statusList.stream().filter(AssignmentStatusDTO::isSubmitted).count();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("students", statusList);
+        result.put("assignment", assignment);
+        result.put("totalCount", totalStudents);
+        result.put("submittedCount", submittedCount);
+        result.put("unsubmittedCount", totalStudents - submittedCount);
+
+        return result;
     }
 
 }

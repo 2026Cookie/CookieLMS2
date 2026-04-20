@@ -3,6 +3,7 @@ package com.wanted.cookielms.domain.lecture.dto;
 import lombok.*;
 
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor // 모든 필드 생성자 (Lombok)
@@ -25,6 +26,7 @@ public class LectureStuDTO {
 
     // 과제 등록을 위한 코드
     private Long assignmentId;
+
 
     public void setAssignmentId(Long assignmentId) {
         this.assignmentId = assignmentId;

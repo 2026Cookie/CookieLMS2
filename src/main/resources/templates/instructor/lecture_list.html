@@ -109,11 +109,19 @@
 
                 <div class="lecture-title" th:text="${lecture.title}"></div>
             </div>
-            <button class="btn-edit"
-                    th:onclick="|location.href='@{/instructor/lecture/edit/{id}(id=${lecture.lectureId})}'|">
-                수정하기
-            </button>
-        </div>
+            <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
+                <button class="btn-edit"
+                        th:onclick="|location.href='@{/instructor/lecture/edit/{id}(id=${lecture.lectureId})}'|">
+                    수정하기
+                </button>
+
+                <button th:if="${lecture.assignmentId != null}"
+                        class="btn-edit"
+                        style="background: #5c7c5f; color: white; border-color: #5c7c5f;"
+                        th:onclick="|location.href='@{/instructor/lecture/{lId}/assignment/{aId}/status(lId=${lecture.lectureId}, aId=${lecture.assignmentId})}'|">
+                    과제 제출 현황
+                </button>
+            </div>
     </div>
 
     <div class="empty" th:if="${#lists.isEmpty(lectures.content)}">
