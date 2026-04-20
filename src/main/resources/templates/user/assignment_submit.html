@@ -81,6 +81,14 @@
             <span class="info-label">과제명</span>
             <span class="info-value" th:text="${assignment.title}"></span>
         </div>
+
+        <hr style="margin: 12px 0; border: none; border-top: 1px dashed var(--dust-grey);">
+        <div style="margin-bottom: 12px;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">📝 과제 내용</div>
+            <div style="font-size: 14px; color: var(--text-primary); white-space: pre-wrap; line-height: 1.5;"
+                 th:text="${assignment.content}">과제 내용이 없습니다.</div>
+        </div>
+        <hr style="margin: 12px 0; border: none; border-top: 1px dashed var(--dust-grey);">
         <div class="info-row">
             <span class="info-label">마감 기한</span>
             <span class="info-value" th:text="${#temporals.format(assignment.dueDate, 'yyyy-MM-dd HH:mm')}"></span>

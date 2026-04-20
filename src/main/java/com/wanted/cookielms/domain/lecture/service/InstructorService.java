@@ -113,6 +113,28 @@ public class InstructorService {
                 LocalTime.parse(dto.getStartTime()),
                 LocalTime.parse(dto.getEndTime())
         );
+        if (dto.getAssignmentTitle() != null && !dto.getAssignmentTitle().trim().isEmpty()) {
+            String content = (dto.getAssignmentContent() != null && !dto.getAssignmentContent().trim().isEmpty())
+                    ? dto.getAssignmentContent() : "과제 내용이 없습니다.";
+
+            // 1. 해당 강의 번호로 기존 과제가 있는지 DB에서 찾아옵니다.
+            AssignmentStuEntity existingAssignment = assignmentStuRepository.findByLectureId(id).orElse(null);
+
+            if (existingAssignment != null) {
+                // 2-A. 기존 과제가 있다면 수정 (※ AssignmentStuEntity에 update 메서드를 만들어주세요!)
+                existingAssignment.update(dto.getAssignmentTitle(), content, dto.getAssignmentDueDate());
+            } else {
+                // 2-B. 예전엔 과제가 없었는데 이번에 새로 추가했다면 새로 만들어서 저장
+                AssignmentStuEntity newAssignment = AssignmentStuEntity.builder()
+                        .title(dto.getAssignmentTitle())
+                        .content(content)
+                        .dueDate(dto.getAssignmentDueDate())
+                        .lectureId(id)
+                        .build();
+                assignmentStuRepository.save(newAssignment);
+            }
+        }
+
     }
 
     public LectureInsDTO getLectureForEdit(Long id, Long instructorId) {
@@ -128,6 +150,12 @@ public class InstructorService {
         dto.setEndTime(lecture.getEndTime().toString());
         dto.setLectureDay(lecture.getLectureDay().name());
         dto.setThumbnailPath(lecture.getThumbnail());
+        AssignmentStuEntity assignment = assignmentStuRepository.findByLectureId(id).orElse(null);
+        if (assignment != null) {
+            dto.setAssignmentTitle(assignment.getTitle());
+            dto.setAssignmentContent(assignment.getContent());
+            dto.setAssignmentDueDate(assignment.getDueDate());
+        }
 
         return dto;
     }
