@@ -161,15 +161,12 @@ public class UserController {
             return "redirect:/user/verify-password";
         }
         session.setAttribute("verifiedLoginId", loginId);
-        return "redirect:/user/mypage/info";
+        return "redirect:/user/mypage/edit";
     }
 
     @GetMapping("/mypage/info")
-    public String mypageInfo(HttpSession session, Model model) {
-        if (session.getAttribute("verifiedLoginId") == null) {
-            return "redirect:/user/verify-password";
-        }
-        String loginId = (String) session.getAttribute("verifiedLoginId");
+    public String mypageInfo(Model model) {
+        String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
         MypageDTO mypage = userService.getMypage(loginId);
         model.addAttribute("userInfo", mypage);
         return "user/mypage_info";
