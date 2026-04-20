@@ -25,7 +25,7 @@ public class LectureStuService {
     private final EnrollmentRepository enrollmentRepository;
     private final ModelMapper modelMapper;
 
-    // 🌟 1. 하연님이 추가했던 과제 저장소 주입 (유지)
+    // 과제 저장소 주입
     private final AssignmentStuRepository assignmentStuRepository;
 
     // 전체 강의 목록 조회
@@ -41,7 +41,7 @@ public class LectureStuService {
         return lectureStuRepository.findMyLecturesWithProjection(userId, safeKeyword, pageable);
     }
 
-    // 강의 상세 조회 (🚀 팀원의 최적화 + 하연님의 과제 로직 병합!)
+    // 강의 상세 조회
     public LectureStuDTO getLectureDetail(Long lectureId, Long userId) {
         // 🚀 팀원 코드: 새로 만든 '상세보기 한 방 쿼리'를 사용해서 DTO를 바로 가져옵니다.
         LectureStuDTO dto = lectureStuRepository.findLectureDetailWithInstructorName(lectureId)
@@ -56,7 +56,7 @@ public class LectureStuService {
         dto.setUserEnrolled(isEnrolled);
         dto.setUserInstructor(isInstructor);
 
-        // 🌟 하연님 코드: 이 강의에 연결된 과제가 있다면 그 과제의 ID를 DTO에 담아줍니다!
+        // 이 강의에 연결된 과제가 있다면 그 과제의 ID를 DTO에 담아줍니다!
         assignmentStuRepository.findByLectureId(lectureId)
                 .ifPresent(assignment -> dto.setAssignmentId(assignment.getId()));
 

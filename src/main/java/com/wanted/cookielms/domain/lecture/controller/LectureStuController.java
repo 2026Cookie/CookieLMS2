@@ -45,7 +45,7 @@ public class LectureStuController {
 
     @GetMapping
     @ResponseBody
-    public ResponseEntity<Page<MyLectureListDTO>> getLectures( // 🚀 MyLectureListDTO로 변경!
+    public ResponseEntity<Page<MyLectureListDTO>> getLectures(
     @RequestParam(required = false) String keyword,
     @PageableDefault(size = 6) Pageable pageable) {
         return ResponseEntity.ok(lectureStuService.getAllLectures(keyword, pageable));

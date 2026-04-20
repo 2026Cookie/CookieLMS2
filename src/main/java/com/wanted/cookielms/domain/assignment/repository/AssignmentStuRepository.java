@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface AssignmentStuRepository extends JpaRepository<AssignmentStuEntity, Long> {
-    // 나중에 특정 강의의 과제 목록을 불러올 때 사용할 메서드
+    // 특정 강의의 과제 목록을 불러올 때 사용하는 메서드
     java.util.Optional<AssignmentStuEntity> findByLectureId(Long lectureId);
 }

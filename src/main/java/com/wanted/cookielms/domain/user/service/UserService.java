@@ -88,7 +88,6 @@ public class UserService {
         user.updatePassword(passwordEncoder.encode(newPassword));
     }
 
-    // 정보 조회 비번 확인용
     public boolean verifyPassword(String loginId, String password) {
         return userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .map(user -> passwordEncoder.matches(password, user.getPassword()))
