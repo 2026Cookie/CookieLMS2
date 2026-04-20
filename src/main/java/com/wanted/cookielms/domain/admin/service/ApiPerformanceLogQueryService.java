@@ -1,6 +1,7 @@
 package com.wanted.cookielms.domain.admin.service;
 
 import com.wanted.cookielms.domain.admin.dto.ApiMetricsDto;
+import com.wanted.cookielms.global.logging.api.entity.ApiPerformanceLogEntity;
 import com.wanted.cookielms.global.logging.api.repository.ApiPerformanceLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.wanted.cookielms.domain.admin.dto.EndpointCallDetailDto;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -46,11 +48,18 @@ public class ApiPerformanceLogQueryService {
 List<ApiMetricsDto.EndpointAvgTime> slowEndpoints = apiPerformanceLogRepository
                 .findAvgResponseTimeByEndpoint(sevenDaysAgo, PageRequest.of(0, 10))
                 .stream()
-                .map(row -> new ApiMetricsDto.EndpointAvgTime(
-                        (String) row[0],
-                        (Double) row[1],
-                        null  // traceId not available in query
-                ))
+                .map(row -> {
+                    Long id = ((Number) row[3]).longValue();
+                    String traceId = apiPerformanceLogRepository.findById(id)
+                            .map(ApiPerformanceLogEntity::getTraceId)
+                            .orElse(null);
+                    return new ApiMetricsDto.EndpointAvgTime(
+                            (String) row[0],
+                            (Double) row[1],
+                            ((Number) row[2]).longValue(),
+                            traceId
+                    );
+                })
                 .toList();
 
         return ApiMetricsDto.builder()
@@ -59,5 +68,20 @@ List<ApiMetricsDto.EndpointAvgTime> slowEndpoints = apiPerformanceLogRepository
                 .hourlyTraffic(hourlyTraffic)
                 .slowEndpoints(slowEndpoints)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<EndpointCallDetailDto> getEndpointCallDetails(String endpoint) {
+        return apiPerformanceLogRepository
+                .findByEndpointOrderByCreatedAtDesc(endpoint, PageRequest.of(0, 20))
+                .stream()
+                .map(log -> new EndpointCallDetailDto(
+                        log.getTraceId(),
+                        log.getHttpMethod().name(),
+                        log.getStatusCode(),
+                        log.getExecutionTimeMs(),
+                        log.getCreatedAt()
+                ))
+                .toList();
     }
 }

@@ -53,7 +53,7 @@ public class BusinessServiceLogQueryService {
                         ((Number) row.get("avgTime")).doubleValue(),
                         ((Number) row.get("maxTime")).longValue(),
                         ((Number) row.get("minTime")).longValue(),
-                        null
+                        (String) row.get("sampleTraceId")
                 ))
                 .toList();
     }
@@ -66,9 +66,27 @@ public class BusinessServiceLogQueryService {
                         ((Number) row.get("failureCount")).longValue(),
                         ((Number) row.get("successCount")).longValue(),
                         ((Number) row.get("totalCalls")).longValue(),
-                        null
+                        (String) row.get("sampleTraceId")
                 ))
                 .toList();
+    }
+
+    public List<Map<String, Object>> getMethodCallDetails(String classMethod) {
+        List<BusinessServiceLogEntity> logs = businessServiceLogRepository
+                .findByClassMethodOrderByCreatedAtDesc(classMethod);
+
+        return logs.stream()
+                .limit(20)
+                .map(log -> {
+                    Map<String, Object> detail = new HashMap<>();
+                    detail.put("traceId", log.getTraceId());
+                    detail.put("classMethod", log.getClassMethod());
+                    detail.put("executionTimeMs", log.getExecutionTimeMs());
+                    detail.put("isSuccess", log.getIsSuccess());
+                    detail.put("createdAt", log.getCreatedAt());
+                    return detail;
+                })
+                .collect(Collectors.toList());
     }
 
     /**

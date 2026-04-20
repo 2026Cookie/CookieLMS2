@@ -190,6 +190,28 @@
     </div>
 </div>
 
+<!-- 모달: 엔드포인트 상세 호출 -->
+<div id="endpointDetailModal" class="modal-overlay" onclick="closeModal('endpointDetailModal', event)">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="endpointDetailTitle">엔드포인트 호출 기록</h3>
+            <button class="modal-close" onclick="closeModalById('endpointDetailModal')">✕</button>
+        </div>
+        <div class="modal-body" id="endpointDetailBody"><div class="loading">불러오는 중...</div></div>
+    </div>
+</div>
+
+<!-- 모달: 메서드 상세 호출 -->
+<div id="methodDetailModal" class="modal-overlay" onclick="closeModal('methodDetailModal', event)">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="methodDetailTitle">메서드 호출 기록</h3>
+            <button class="modal-close" onclick="closeModalById('methodDetailModal')">✕</button>
+        </div>
+        <div class="modal-body" id="methodDetailBody"><div class="loading">불러오는 중...</div></div>
+    </div>
+</div>
+
 <!-- 모달: 유저 상세 -->
 <div id="userModal" class="modal-overlay" onclick="closeModal('userModal', event)">
     <div class="modal">
@@ -251,12 +273,10 @@
 
         html += '<div class="section-title" style="margin-top:12px;">느린 엔드포인트</div>';
         if (data.slowEndpoints && data.slowEndpoints.length > 0) {
-            html += '<table class="data-table"><thead><tr><th>엔드포인트</th><th>평균(ms)</th><th>추적</th></tr></thead><tbody>';
+            html += '<table class="data-table"><thead><tr><th>엔드포인트</th><th>평균(ms)</th><th>호출 수</th><th>상세</th></tr></thead><tbody>';
             (data.slowEndpoints || []).forEach(e => {
-                const traceBtn = e.traceId
-                    ? `<button class="link-btn" onclick="openTraceModal('${e.traceId}')">🔗</button>`
-                    : '-';
-                html += `<tr><td>${e.endpoint}</td><td>${e.avgMs.toFixed(2)}</td><td>${traceBtn}</td></tr>`;
+                const detailBtn = `<button class="link-btn" onclick="openEndpointDetailModal('${e.endpoint}')">보기</button>`;
+                html += `<tr><td>${e.endpoint}</td><td>${e.avgMs.toFixed(2)}</td><td>${e.callCount}</td><td>${detailBtn}</td></tr>`;
             });
             html += '</tbody></table>';
         } else {
@@ -275,17 +295,15 @@
 
         html += '<div class="section-title">느린 기능 Top 10</div>';
         if (data.slowMethods && data.slowMethods.length > 0) {
-            html += '<table class="data-table"><thead><tr><th>메서드</th><th>평균(ms)</th><th>최대(ms)</th><th>호출</th><th>추적</th></tr></thead><tbody>';
+            html += '<table class="data-table"><thead><tr><th>메서드</th><th>평균(ms)</th><th>최대(ms)</th><th>호출</th><th>상세</th></tr></thead><tbody>';
             data.slowMethods.forEach(m => {
-                const traceBtn = m.sampleTraceId
-                    ? `<button class="link-btn" onclick="openTraceModal('${m.sampleTraceId}')">🔗</button>`
-                    : '-';
+                const detailBtn = `<button class="link-btn" onclick="openMethodDetailModal('${m.classMethod}')">보기</button>`;
                 html += `<tr>
                     <td>${m.classMethod}</td>
                     <td>${m.avgExecutionTimeMs.toFixed(2)}</td>
                     <td>${m.maxExecutionTimeMs}</td>
                     <td>${m.callCount}</td>
-                    <td>${traceBtn}</td>
+                    <td>${detailBtn}</td>
                 </tr>`;
             });
             html += '</tbody></table>';
@@ -314,6 +332,101 @@
             html += '<div class="info-box">데이터가 없습니다.</div>';
         }
 
+        el.innerHTML = html;
+    }
+
+    // ── 엔드포인트 상세 모달 ──────────────────────────────────
+    function openEndpointDetailModal(endpoint) {
+        document.getElementById('endpointDetailTitle').textContent = `${endpoint} - 호출 기록`;
+        document.getElementById('endpointDetailModal').classList.add('active');
+        const body = document.getElementById('endpointDetailBody');
+        body.innerHTML = '<div class="loading">불러오는 중...</div>';
+
+        const url = `/admin/logs/endpoint${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
+        fetch(url)
+            .then(r => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            })
+            .then(data => displayEndpointCalls(data, body))
+            .catch(err => {
+                console.error('Error:', err);
+                body.innerHTML = `<div class="msg-error">데이터를 불러올 수 없습니다.</div>`;
+            });
+    }
+
+    function displayEndpointCalls(calls, el) {
+        if (!calls || calls.length === 0) {
+            el.innerHTML = '<div class="info-box">호출 기록이 없습니다.</div>';
+            return;
+        }
+
+        let html = '<table class="data-table"><thead><tr><th>TraceId</th><th>메서드</th><th>상태</th><th>시간(ms)</th><th>발생시각</th><th>상세</th></tr></thead><tbody>';
+
+        calls.forEach(call => {
+            const time = call.createdAt ? call.createdAt.replace('T', ' ').substring(0, 19) : '-';
+            const traceBtn = call.traceId
+                ? `<button class="link-btn" onclick="openTraceModal('${call.traceId}')">보기</button>`
+                : '-';
+            html += `<tr>
+                <td style="font-size:11px; font-family:monospace;">${call.traceId ? call.traceId.substring(0, 12) : '-'}</td>
+                <td>${call.httpMethod}</td>
+                <td>${call.statusCode}</td>
+                <td>${call.executionTimeMs}</td>
+                <td>${time}</td>
+                <td>${traceBtn}</td>
+            </tr>`;
+        });
+
+        html += '</tbody></table>';
+        el.innerHTML = html;
+    }
+
+    // ── 메서드 상세 모달 ──────────────────────────────────────
+    function openMethodDetailModal(classMethod) {
+        document.getElementById('methodDetailTitle').textContent = `${classMethod} - 호출 기록`;
+        document.getElementById('methodDetailModal').classList.add('active');
+        const body = document.getElementById('methodDetailBody');
+        body.innerHTML = '<div class="loading">불러오는 중...</div>';
+
+        fetch(`/admin/logs/method/${encodeURIComponent(classMethod)}`)
+            .then(r => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            })
+            .then(data => displayMethodCalls(data, body))
+            .catch(err => {
+                console.error('Error:', err);
+                body.innerHTML = `<div class="msg-error">데이터를 불러올 수 없습니다.</div>`;
+            });
+    }
+
+    function displayMethodCalls(calls, el) {
+        if (!calls || calls.length === 0) {
+            el.innerHTML = '<div class="info-box">호출 기록이 없습니다.</div>';
+            return;
+        }
+
+        let html = '<table class="data-table"><thead><tr><th>TraceId</th><th>실행시간(ms)</th><th>결과</th><th>발생시각</th><th>상세</th></tr></thead><tbody>';
+
+        calls.forEach(call => {
+            const time = call.createdAt ? call.createdAt.replace('T', ' ').substring(0, 19) : '-';
+            const status = call.isSuccess
+                ? '<span class="badge badge-success">성공</span>'
+                : '<span class="badge badge-danger">실패</span>';
+            const traceBtn = call.traceId
+                ? `<button class="link-btn" onclick="openTraceModal('${call.traceId}')">보기</button>`
+                : '-';
+            html += `<tr>
+                <td style="font-size:11px; font-family:monospace;">${call.traceId ? call.traceId.substring(0, 12) : '-'}</td>
+                <td>${call.executionTimeMs}</td>
+                <td>${status}</td>
+                <td>${time}</td>
+                <td>${traceBtn}</td>
+            </tr>`;
+        });
+
+        html += '</tbody></table>';
         el.innerHTML = html;
     }
 
@@ -598,39 +711,76 @@
     // ── 사용자별 CRITICAL 에러 상세 모달 ──────────────────────
     function openUserErrorsModal(userId, loginId) {
         document.getElementById('userModalTitle').textContent = `${loginId} - CRITICAL 에러`;
+
+        // 밴 버튼 추가
+        const modalHeader = document.querySelector('#userModal .modal-header');
+        const existingBtn = modalHeader.querySelector('.ban-btn');
+        if (!existingBtn) {
+            const banBtn = document.createElement('button');
+            banBtn.className = 'action-btn ban-btn';
+            banBtn.style.marginRight = '10px';
+            banBtn.textContent = '밴';
+            banBtn.onclick = function() { banUser(userId); closeModalById('userModal'); };
+
+            const unbanBtn = document.createElement('button');
+            unbanBtn.className = 'action-btn unban-btn';
+            unbanBtn.style.marginRight = '10px';
+            unbanBtn.textContent = '밴 해제';
+            unbanBtn.onclick = function() { unbanUser(userId); closeModalById('userModal'); };
+
+            const closeBtn = modalHeader.querySelector('.modal-close');
+            modalHeader.insertBefore(unbanBtn, closeBtn);
+            modalHeader.insertBefore(banBtn, closeBtn);
+        }
+
         document.getElementById('userModal').classList.add('active');
         const body = document.getElementById('userModalBody');
         body.innerHTML = '<div class="loading">불러오는 중...</div>';
 
-        fetch(`/admin/users/${userId}/errors`)
-            .then(r => r.json())
-            .then(errors => {
-                const criticalErrors = errors.filter(e => e.severity === 'CRITICAL');
-                displayUserErrorsList(criticalErrors, body);
-            })
-            .catch(() => { body.innerHTML = '<div class="msg-error">데이터를 불러올 수 없습니다.</div>'; });
+        Promise.all([
+            fetch(`/admin/users/${userId}/errors`).then(r => r.json()),
+            fetch(`/admin/users/${userId}/service-failures`).then(r => r.json())
+        ]).then(([errors, failures]) => {
+            const criticalErrors = errors.filter(e => e.severity === 'CRITICAL');
+            displayUserErrorsList(criticalErrors, failures, body);
+        }).catch(() => {
+            body.innerHTML = '<div class="msg-error">데이터를 불러올 수 없습니다.</div>';
+        });
     }
 
-    function displayUserErrorsList(errors, el) {
-        if (!errors || errors.length === 0) {
-            el.innerHTML = '<div class="info-box">CRITICAL 에러가 없습니다.</div>';
-            return;
+    function displayUserErrorsList(errors, failures, el) {
+        let html = '';
+
+        html += '<div class="section-title">CRITICAL 에러</div>';
+        if (errors && errors.length > 0) {
+            html += '<table class="data-table"><thead><tr><th>에러코드</th><th>메시지</th><th>발생시각</th><th>상세</th></tr></thead><tbody>';
+            errors.forEach(e => {
+                const time = e.createdAt ? e.createdAt.replace('T', ' ').substring(0, 19) : '-';
+                const msg = e.errorMessage ? e.errorMessage.substring(0, 50) : '-';
+                html += `<tr>
+                    <td><span class="badge badge-danger">${e.errorCode}</span></td>
+                    <td>${msg}</td>
+                    <td>${time}</td>
+                    <td><button class="link-btn" onclick="openErrorDetailFromUserModal('${e.id}')">보기</button></td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+        } else {
+            html += '<div class="info-box">CRITICAL 에러가 없습니다.</div>';
         }
 
-        let html = '<table class="data-table"><thead><tr><th>에러코드</th><th>메시지</th><th>발생시각</th><th>상세</th></tr></thead><tbody>';
+        html += '<div class="section-title" style="margin-top:12px;">서비스 실패 이력</div>';
+        if (failures && failures.length > 0) {
+            html += '<table class="data-table"><thead><tr><th>메서드</th><th>실행시간(ms)</th><th>시각</th></tr></thead><tbody>';
+            failures.forEach(f => {
+                const time = f.createdAt ? f.createdAt.replace('T', ' ').substring(0, 19) : '-';
+                html += `<tr><td>${f.classMethod}</td><td>${f.executionTimeMs}</td><td>${time}</td></tr>`;
+            });
+            html += '</tbody></table>';
+        } else {
+            html += '<div class="info-box">서비스 실패 이력이 없습니다.</div>';
+        }
 
-        errors.forEach(e => {
-            const time = e.createdAt ? e.createdAt.replace('T', ' ').substring(0, 19) : '-';
-            const msg = e.errorMessage ? e.errorMessage.substring(0, 50) : '-';
-            html += `<tr>
-                <td><span class="badge badge-danger">${e.errorCode}</span></td>
-                <td>${msg}</td>
-                <td>${time}</td>
-                <td><button class="link-btn" onclick="openErrorDetailFromUserModal('${e.id}')">보기</button></td>
-            </tr>`;
-        });
-
-        html += '</tbody></table>';
         el.innerHTML = html;
     }
 

@@ -20,10 +20,12 @@ public interface ApiPerformanceLogRepository extends JpaRepository<ApiPerformanc
     @Query("""
     SELECT a.endpoint, COUNT(a)
     FROM ApiPerformanceLogEntity a
-    WHERE a.createdAt >= :since 
+    WHERE a.createdAt >= :since
     AND a.httpMethod = 'GET'
     AND (a.endpoint NOT LIKE '/admin/logs%'
-        AND a.endpoint NOT LIKE '/admin/users/%'
+        AND a.endpoint NOT LIKE '/admin/users%'
+        AND a.endpoint NOT LIKE '/admin/insights%'
+        AND a.endpoint NOT LIKE '/user/waitlist%'
         AND a.endpoint NOT LIKE '/uploads/%'
         AND a.endpoint NOT LIKE '/css/%'
         AND a.endpoint NOT LIKE '/js/%'
@@ -55,9 +57,9 @@ public interface ApiPerformanceLogRepository extends JpaRepository<ApiPerformanc
             """)
     List<Object[]> findHourlyTrafficToday(@Param("startOfDay") LocalDateTime startOfDay);
 
-    // 엔드포인트별 평균 응답시간
+    // 엔드포인트별 평균 응답시간 + 호출 수
     @Query("""
-    SELECT a.endpoint, AVG(a.executionTimeMs)
+    SELECT a.endpoint, AVG(a.executionTimeMs), COUNT(a), MAX(a.id)
     FROM ApiPerformanceLogEntity a
     WHERE a.createdAt >= :since
     GROUP BY a.endpoint
@@ -125,5 +127,7 @@ public interface ApiPerformanceLogRepository extends JpaRepository<ApiPerformanc
         ORDER BY dayOfWeek, hour
         """, nativeQuery = true)
     List<Object[]> findTrafficHeatmap(@Param("since") LocalDateTime since);
+
+    List<ApiPerformanceLogEntity> findByEndpointOrderByCreatedAtDesc(String endpoint, Pageable pageable);
 
 }

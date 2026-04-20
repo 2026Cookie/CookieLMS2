@@ -131,4 +131,18 @@ public class AdminController {
         return ResponseEntity.ok(adminInsightService.getAllInsights());
     }
 
+    @ResponseBody
+    @GetMapping("/logs/endpoint/**")
+    public ResponseEntity<List<EndpointCallDetailDto>> getEndpointCallDetails(jakarta.servlet.http.HttpServletRequest request) {
+        String endpoint = request.getRequestURI().substring("/admin/logs/endpoint".length());
+        if (endpoint.isEmpty()) endpoint = "/";
+        return ResponseEntity.ok(apiPerformanceLogQueryService.getEndpointCallDetails(endpoint));
+    }
+
+    @ResponseBody
+    @GetMapping("/logs/method/{classMethod}")
+    public ResponseEntity<List<Map<String, Object>>> getMethodCallDetails(@PathVariable String classMethod) {
+        return ResponseEntity.ok(businessServiceLogQueryService.getMethodCallDetails(classMethod));
+    }
+
 }
