@@ -130,12 +130,39 @@
         const div = document.getElementById('pagination');
         div.innerHTML = '';
         if (total <= 1) return;
-        for (let i = 0; i < total; i++) {
+
+        // ✅ 개선: 10개 단위 블록 계산 로직 추가
+        const blockSize = 10;
+        const currentBlock = Math.floor(cur / blockSize);
+        const startPage = currentBlock * blockSize;
+        let endPage = startPage + blockSize;
+        if (endPage > total) endPage = total;
+
+        // ✅ 추가: [이전] 버튼 (첫 블록이 아닐 때만)
+        if (currentBlock > 0) {
+            const prevBtn = document.createElement('button');
+            prevBtn.innerText = '이전';
+            prevBtn.className = 'page-btn';
+            prevBtn.onclick = () => loadLectures(keyword, startPage - 1);
+            div.appendChild(prevBtn);
+        }
+
+        // ✅ 개선: 현재 블록에 해당하는 번호만 출력
+        for (let i = startPage; i < endPage; i++) {
             const b = document.createElement('button');
             b.innerText = i + 1;
             b.className = 'page-btn' + (i === cur ? ' active' : '');
             b.onclick = () => loadLectures(keyword, i);
             div.appendChild(b);
+        }
+
+        // ✅ 추가: [다음] 버튼 (마지막 블록이 아닐 때만)
+        if (endPage < total) {
+            const nextBtn = document.createElement('button');
+            nextBtn.innerText = '다음';
+            nextBtn.className = 'page-btn';
+            nextBtn.onclick = () => loadLectures(keyword, endPage);
+            div.appendChild(nextBtn);
         }
     }
 </script>
