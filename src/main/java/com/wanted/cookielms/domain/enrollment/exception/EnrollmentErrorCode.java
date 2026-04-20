@@ -14,7 +14,7 @@ public enum EnrollmentErrorCode {
     ENROLLMENT_CAPACITY_EXCEEDED(HttpStatus.CONFLICT, "ENR003", "수강 정원이 초과되었습니다.", ErrorSeverity.WARNING),
     ENROLLMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "ENR004", "수강 신청 내역을 찾을 수 없습니다.", ErrorSeverity.WARNING),
     ALREADY_WAITLISTED(HttpStatus.CONFLICT, "ENR005", "이미 대기열에 등록되어 있습니다.", ErrorSeverity.INFO),
-    WAITLIST_NOT_FOUND(HttpStatus.NOT_FOUND, "ENR006", "대기열 정보를 찾을 수 없습니다.", ErrorSeverity.WARNING);
+    WAITLIST_NOT_FOUND(HttpStatus.NOT_FOUND, "ENR006", "대기열 정보를 찾을 수 없습니다.", ErrorSeverity.CRITICAL);
 
     private final HttpStatus status;
     private final String code;
