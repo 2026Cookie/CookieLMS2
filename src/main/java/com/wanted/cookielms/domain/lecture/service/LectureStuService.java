@@ -39,7 +39,11 @@ public class LectureStuService {
 
     // 내 강의만 가져오기
     public Page<MyLectureListDTO> getMyLectures(Long userId, String keyword, Pageable pageable) {
+        // 키워드가 비어있을 때 처리
         String safeKeyword = (keyword == null || keyword.trim().isEmpty()) ? null : keyword;
+
+        // 🔥 리포지토리의 쿼리 메서드를 호출하며 'userId'를 넘깁니다.
+        // 이 userId가 6번으로 정확히 넘어가야 8개만 뜹니다.
         return lectureStuRepository.findMyLecturesWithProjection(userId, safeKeyword, pageable);
     }
 

@@ -85,7 +85,7 @@
 </header>
 
 <div class="main">
-    <div class="page-title">전체 강의 목록</div>
+    <div class="page-title">내 강의 목록</div>
     <div class="search-bar">
         <input type="text" id="searchInput" class="search-input" placeholder="강의 제목을 검색해보세요" onkeyup="if(event.keyCode===13) searchLectures()">
         <button class="search-btn" onclick="searchLectures()">검색</button>
@@ -100,7 +100,7 @@
     function searchLectures() { loadLectures(document.getElementById('searchInput').value, 0); }
 
     function loadLectures(keyword, page) {
-        let url = `/lectures?page=${page}&size=6`;
+        let url = `/lectures/my?page=${page}&size=6`;
         if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
         fetch(url).then(r => r.json()).then(data => {
             const grid = document.getElementById('lectureList');
