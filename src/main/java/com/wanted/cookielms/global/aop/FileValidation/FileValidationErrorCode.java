@@ -1,5 +1,6 @@
 package com.wanted.cookielms.global.aop.FileValidation;
 
+import com.wanted.cookielms.global.error.handler.ErrorCode;
 import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +8,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum FileValidationErrorCode {
+public enum FileValidationErrorCode implements ErrorCode {
 
     FILE_SIZE_EXCEEDED_Servlet(HttpStatus.BAD_REQUEST, "FV001", "파일 용량을 초과했습니다 from Servlet", ErrorSeverity.CRITICAL),
     FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "FV002", "파일 용량을 초과했습니다.", ErrorSeverity.CRITICAL),

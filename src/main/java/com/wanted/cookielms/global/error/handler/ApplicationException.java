@@ -22,17 +22,14 @@ public class ApplicationException extends RuntimeException {
         this.severity = severity;
     }
 
-    public ApplicationException(HttpStatus status, String code, String message) {
-        this(status, code, message, ErrorSeverity.WARNING);
-    }
 
     /**
-     * ErrorCode 열거형을 이용한 생성자
+     * ErrorCode 열거형(인터페이스)을 이용한 생성자
      */
-    public ApplicationException(GlobalErrorCode globalErrorCode) {
-        super(globalErrorCode.getMessage());
-        this.status = globalErrorCode.getStatus();
-        this.code = globalErrorCode.getCode();
-        this.severity = globalErrorCode.getSeverity();
+    public ApplicationException(ErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.status = errorCode.getStatus();
+        this.code = errorCode.getCode();
+        this.severity = errorCode.getSeverity();
     }
 }

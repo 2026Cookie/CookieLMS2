@@ -1,5 +1,6 @@
 package com.wanted.cookielms.domain.enrollment.exception;
 
+import com.wanted.cookielms.global.error.handler.ErrorCode;
 import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +8,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum EnrollmentErrorCode {
+public enum EnrollmentErrorCode implements ErrorCode {
 
     ALREADY_ENROLLED(HttpStatus.CONFLICT, "ENR001", "이미 수강 신청한 강의입니다.", ErrorSeverity.INFO),
     LECTURE_NOT_FOUND(HttpStatus.NOT_FOUND, "ENR002", "존재하지 않는 강의입니다.", ErrorSeverity.WARNING),

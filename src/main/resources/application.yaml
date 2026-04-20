@@ -21,12 +21,12 @@ spring:
   # JPA 및 하이버네이트 설정
   jpa:
     hibernate:
-      ddl-auto: create-drop  # 임시로 update 사용 (trace_id 컬럼 생성 후 validate로 변경)
+      ddl-auto: update  # 임시로 update 사용 (trace_id 컬럼 생성 후 validate로 변경)
     show-sql: true # SQL 콘솔 출력
     properties:
       hibernate:
         format_sql: true # SQL 정렬
-        highlight_sql: true # SQL 키워드 강조
+        highlight_sql: true # SQL 키워드 강조coookielms
         dialect: org.hibernate.dialect.MySQLDialect # MySQL 방언 명시
 
 

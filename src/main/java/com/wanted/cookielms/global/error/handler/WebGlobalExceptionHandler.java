@@ -2,6 +2,7 @@ package com.wanted.cookielms.global.error.handler;
 
 import com.wanted.cookielms.domain.auth.dto.AuthDetails;
 import com.wanted.cookielms.global.aop.FileValidation.FileValidationErrorCode;
+import com.wanted.cookielms.global.aop.FileValidation.FileValidationException;
 import com.wanted.cookielms.global.logging.error.service.ErrorLogService;
 import com.wanted.cookielms.global.logging.error.entity.ErrorLogEntity;
 import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
@@ -9,9 +10,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.http.HttpHeaders;       // 🌟 추가됨
+import org.springframework.http.ResponseEntity;     // 🌟 추가됨
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -74,7 +76,7 @@ public class WebGlobalExceptionHandler {
     }
 
     /**
-     * [3] 파일 업로드 용량 초과 (resolve-lazily=true 일 때 컨트롤러 바인딩 시점에 던져짐)
+     * [3] 파일 업로드 용량 초과
      */
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ModelAndView handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e,
@@ -95,7 +97,6 @@ public class WebGlobalExceptionHandler {
 
     /**
      * [4] 예상치 못한 서버 에러 (500)
-     * HttpRequestMethodNotSupportedException, NoHandlerFoundException은 CustomErrorController에서 처리
      */
     @ExceptionHandler(Exception.class)
     public ModelAndView handleUnhandledException(Exception e, HttpServletRequest request) {
@@ -112,6 +113,34 @@ public class WebGlobalExceptionHandler {
                 traceId
         );
     }
+
+    /**
+     * [5] 🌟 UX를 고려한 전역 Alert 예외 처리 (수정됨)
+     */
+    @ExceptionHandler(FileValidationException.class)
+    public ResponseEntity<String> handleAlertException(FileValidationException e, HttpServletRequest request) {
+
+        String traceId = generateTraceId();
+        saveErrorLog(e, e.getCode(), e.getMessage(), request, traceId, e.getSeverity());
+
+        // 2. 스크립트 생성 (작은따옴표 이스케이프 처리)
+        String safeMessage = e.getMessage() != null ? e.getMessage().replace("'", "\\'") : "오류가 발생했습니다.";
+        String script;
+
+        if (e.getRedirectUrl() == null) {
+            // URL이 없으면 이전 폼으로 복귀 (입력 데이터 보존)
+            script = String.format("<script>alert('%s'); history.back();</script>", safeMessage);
+        } else {
+            // URL이 있으면 해당 페이지로 강제 이동
+            script = String.format("<script>alert('%s'); location.href='%s';</script>", safeMessage, e.getRedirectUrl());
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, "text/html; charset=UTF-8");
+
+        return new ResponseEntity<>(script, headers, e.getStatus());
+    }
+
 
     // =========================================================================
     // Private Helper Methods
@@ -137,6 +166,8 @@ public class WebGlobalExceptionHandler {
                     .stackTrace(getStackTraceAsString(e))
                     .traceId(traceId)
                     .severity(severity)
+                    // 필요하다면 아래 줄의 주석을 풀고 userId를 저장할 수도 있습니다.
+                    // .userId(getCurrentUserId())
                     .build();
 
             errorLogService.saveErrorLogAsync(errorLog);
@@ -160,15 +191,13 @@ public class WebGlobalExceptionHandler {
     }
 
     private String generateTraceId() {
-        // MDC에서 기존 traceId 가져오기 (TraceIdFilter에서 생성한 것)
         String traceId = MDC.get("traceId");
         if (traceId == null) {
-            traceId = UUID.randomUUID().toString();  // fallback (없을 경우만 생성)
+            traceId = UUID.randomUUID().toString();
         }
         return traceId;
     }
 
-    // After ✅
     private Long getCurrentUserId() {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
