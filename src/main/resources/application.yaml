@@ -22,6 +22,7 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect # MySQL 방언 명시
 
 
+
   # [추가] 파일 업로드 용량 제한 설정
   # 유튜브 링크 방식을 사용하므로 영상 용량은 필요 없지만,
   # PDF 등 수업 자료 업로드를 안전하게 제한하기 위해 설정합니다.
@@ -33,10 +34,13 @@ spring:
   flyway:
     enabled: false
 
+
 # 로그 레벨 설정 (디버깅용)
 logging:
   level:
     org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace # 종호
+
 
 # 서버 에러 처리 설정
 server:
@@ -60,3 +64,4 @@ app:
 file:
   upload:
     path: uploads/
+

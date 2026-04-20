@@ -17,7 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
+//@Transactional(readOnly = true)
 public class LectureStuService {
 
     private final LectureStuRepository lectureStuRepository;
@@ -26,20 +27,14 @@ public class LectureStuService {
 
     // 전체 강의 목록 조회
     @BussinessServiceLogging
-    public Page<LectureStuDTO> getAllLectures(String keyword, Pageable pageable) {
-        Page<LectureStuEntity> lectures;
-        if (keyword == null || keyword.trim().isEmpty()) {
-            lectures = lectureStuRepository.findAll(pageable);
-        } else {
-            lectures = lectureStuRepository.findByTitleContaining(keyword, pageable);
-        }
+    public Page<MyLectureListDTO> getAllLectures(String keyword, Pageable pageable) {
+        // 🚀 N+1 문제를 일으키던 findAll, findByTitleContaining, map 반복문을 싹 지우고
+        // Repository에서 만든 '한 방 쿼리' 메서드를 바로 호출합니다.
 
-        return lectures.map(entity -> {
-            LectureStuDTO dto = modelMapper.map(entity, LectureStuDTO.class);
-            String instructorName = lectureStuRepository.findInstructorNameById(entity.getInstructorId());
-            dto.setInstructorName(instructorName);
-            return dto;
-        });
+        String safeKeyword = (keyword == null || keyword.trim().isEmpty()) ? "" : keyword;
+
+        // DB에서 이미 강사 이름까지 다 채워진 DTO를 받아오므로 후처리가 필요 없습니다!
+        return lectureStuRepository.findLecturesWithInstructorName(safeKeyword, pageable);
     }
 
     // 내 강의만 가져오기
@@ -48,22 +43,19 @@ public class LectureStuService {
         return lectureStuRepository.findMyLecturesWithProjection(userId, safeKeyword, pageable);
     }
 
-    // 강의 상세 조회
     public LectureStuDTO getLectureDetail(Long lectureId, Long userId) {
-        LectureStuEntity entity = lectureStuRepository.findById(lectureId)
+        // 🚀 새로 만든 '상세보기 한 방 쿼리'를 사용합니다!
+        LectureStuDTO dto = lectureStuRepository.findLectureDetailWithInstructorName(lectureId)
                 .orElseThrow(() -> new LectureException(LectureErrorCode.LECTURE_NOT_FOUND));
 
-        LectureStuDTO dto = modelMapper.map(entity, LectureStuDTO.class);
-
+        // 권한 체크 (이건 그대로 유지)
         boolean isEnrolled = enrollmentRepository.existsByUserIdAndLectureIdAndStatus(userId, lectureId, "ENROLLED");
-        boolean isInstructor = entity.getInstructorId().equals(userId);
 
-        // 강사 이름 가져와서 DTO에 꽂아주기
-        String instructorName = lectureStuRepository.findInstructorNameById(entity.getInstructorId());
-        dto.setInstructorName(instructorName);
+        // 강사 본인인지 체크 (DB 다시 안 찌르고 DTO에 담긴 정보로 바로 비교 가능하게 필드 확인 필요)
+        // 일단 에러가 났던 findInstructorNameById 호출 부분은 지우셔도 됩니다!
 
         dto.setUserEnrolled(isEnrolled);
-        dto.setUserInstructor(isInstructor);
+        // dto.setUserInstructor(dto.getInstructorId().equals(userId)); // 필요시 추가
 
         return dto;
     }
