@@ -131,6 +131,7 @@ public class InstructorService {
                 LocalTime.parse(dto.getStartTime()),
                 LocalTime.parse(dto.getEndTime())
         );
+
         AssignmentStuEntity assignment = assignmentStuRepository.findByLectureId(id)
                 .orElseGet(() -> AssignmentStuEntity.builder().lectureId(id).build());
 
@@ -163,6 +164,12 @@ public class InstructorService {
         dto.setEndTime(lecture.getEndTime().toString());
         dto.setLectureDay(lecture.getLectureDay().name());
         dto.setThumbnailPath(lecture.getThumbnail());
+        AssignmentStuEntity assignment = assignmentStuRepository.findByLectureId(id).orElse(null);
+        if (assignment != null) {
+            dto.setAssignmentTitle(assignment.getTitle());
+            dto.setAssignmentContent(assignment.getContent());
+            dto.setAssignmentDueDate(assignment.getDueDate());
+        }
 
         return dto;
     }
