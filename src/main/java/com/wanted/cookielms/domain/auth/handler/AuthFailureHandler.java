@@ -44,10 +44,7 @@ public class AuthFailureHandler extends SimpleUrlAuthenticationFailureHandler {
                 .errorCode("AUTH_FAILURE")
                 .errorMessage("로그인 실패 (" + loginId + "): " + errorMessage)
                 .exceptionName(exception.getClass().getSimpleName())
-                .requestUri(request.getRequestURI())
-                .httpMethod(request.getMethod())
                 .clientIp(getClientIp(request))
-                .userId(null)  // ✅ 로그인 실패는 userId 없음
                 .stackTrace(exception.getMessage())
                 .traceId(traceId)
                 .severity(ErrorSeverity.WARNING)

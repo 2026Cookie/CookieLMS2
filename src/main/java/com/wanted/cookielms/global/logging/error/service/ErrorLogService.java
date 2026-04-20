@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -26,6 +28,17 @@ public class ErrorLogService {
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveErrorLogAsync(ErrorLogEntity errorLog) {
+        // createdAt 설정 (@CreatedDate 자동 설정용)
+        if (errorLog.getCreatedAt() == null) {
+            try {
+                var field = errorLog.getClass().getDeclaredField("createdAt");
+                field.setAccessible(true);
+                field.set(errorLog, LocalDateTime.now());
+            } catch (Exception e) {
+                log.debug("Failed to set createdAt", e);
+            }
+        }
+
         // CRITICAL 등급만 DB 저장
         if (errorLog.getSeverity() == ErrorSeverity.CRITICAL) {
             try {

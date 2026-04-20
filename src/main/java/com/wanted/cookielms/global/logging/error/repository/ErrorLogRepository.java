@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,13 +16,13 @@ public interface ErrorLogRepository extends JpaRepository<ErrorLogEntity, Long> 
 
     List<ErrorLogEntity> findByErrorCodeOrderByCreatedAtDesc(String errorCode);
 
-    List<ErrorLogEntity> findByUserIdOrderByCreatedAtDesc(Long userId);
-
     Page<ErrorLogEntity> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     List<ErrorLogEntity> findByTraceIdOrderByCreatedAtDesc(String traceId);
 
     Page<ErrorLogEntity> findBySeverityOrderByCreatedAtDesc(ErrorSeverity severity, Pageable pageable);
+
+    List<ErrorLogEntity> findBySeverityOrderByCreatedAtDesc(ErrorSeverity severity);
 
     Page<ErrorLogEntity> findByCreatedAtBetweenOrderByCreatedAtDesc(LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
@@ -29,12 +30,20 @@ public interface ErrorLogRepository extends JpaRepository<ErrorLogEntity, Long> 
 
     Page<ErrorLogEntity> findBySeverityAndCreatedAtBetweenOrderByCreatedAtDesc(ErrorSeverity severity, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
+    @Query("SELECT e FROM ErrorLogEntity e WHERE e.traceId IN :traceIds ORDER BY e.createdAt DESC")
+    List<ErrorLogEntity> findByTraceIdIn(@Param("traceIds") List<String> traceIds);
+
+    /**
+     * 사용자별 CRITICAL 에러 건수 집계 (API 로그 join)
+     * API 로그 테이블의 user_id를 기준으로 그룹핑
+     */
     @Query(value = """
-    SELECT e.user_id as userId, u.id as loginId, COUNT(*) as errorCount
+    SELECT a.user_id as userId, u.id as loginId, COUNT(*) as errorCount
     FROM error_logs e
-    LEFT JOIN users u ON e.user_id = u.user_Id
+    JOIN api_performance_logs a ON e.trace_id = a.trace_id
+    LEFT JOIN users u ON a.user_id = u.user_Id
     WHERE e.severity = 'CRITICAL'
-    GROUP BY e.user_id, u.id
+    GROUP BY a.user_id, u.id
     ORDER BY errorCount DESC
 """, nativeQuery = true)
     List<Map<String, Object>> findCriticalErrorCountGroupByUserId();

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ApiPerformanceLogRepository extends JpaRepository<ApiPerformanceLogEntity, Long> {
@@ -46,10 +47,21 @@ public interface ApiPerformanceLogRepository extends JpaRepository<ApiPerformanc
     // 엔드포인트별 평균 응답시간
     @Query("""
             SELECT a.endpoint, AVG(a.executionTimeMs)
-            FROM ApiPerformanceLogEntity a
+            FROM ApiPerformanceLogEntity a 
             WHERE a.createdAt >= :since
             GROUP BY a.endpoint
             ORDER BY AVG(a.executionTimeMs) DESC
             """)
     List<Object[]> findAvgResponseTimeByEndpoint(@Param("since") LocalDateTime since, Pageable pageable);
+
+    /**
+     * traceId로 API 로그 단일 조회
+     */
+    Optional<ApiPerformanceLogEntity> findByTraceId(String traceId);
+
+    /**
+     * 특정 userId의 모든 traceId 조회
+     */
+    @Query("SELECT a.traceId FROM ApiPerformanceLogEntity a WHERE a.userId = :userId")
+    List<String> findTraceIdsByUserId(@Param("userId") Long userId);
 }

@@ -17,4 +17,5 @@ public class ApiPerformanceLogDto {
     private LocalDateTime createdAt;
     private Long userId;
     private Integer statusCode;
+    private String traceId;
 }

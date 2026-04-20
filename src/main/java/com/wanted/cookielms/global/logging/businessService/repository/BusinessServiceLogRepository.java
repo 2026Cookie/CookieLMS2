@@ -52,8 +52,10 @@ public interface BusinessServiceLogRepository extends JpaRepository<BusinessServ
 
     List<BusinessServiceLogEntity> findByTraceIdOrderByCreatedAtDesc(String traceId);
 
-    List<BusinessServiceLogEntity> findByUserIdAndIsSuccessFalseOrderByCreatedAtDesc(Long userId);
-
     // 특정 메서드의 실패 기록 조회
     List<BusinessServiceLogEntity> findByClassMethodAndIsSuccessFalse(String classMethod);
+
+    // 특정 traceId 목록에 해당하는 실패 기록 조회 (API 로그 userId join 용)
+    @Query("SELECT b FROM BusinessServiceLogEntity b WHERE b.traceId IN :traceIds AND b.isSuccess = false ORDER BY b.createdAt DESC")
+    List<BusinessServiceLogEntity> findByTraceIdInAndIsSuccessFalseOrderByCreatedAtDesc(@Param("traceIds") List<String> traceIds);
 }
