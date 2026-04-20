@@ -31,6 +31,11 @@ public class UserService {
     @Transactional
     public String join(JoinUserDTO joinUserDTO){
 
+        if (userRepository.existsByEmailAndStatus(joinUserDTO.getEmail(), Status.BANNED)
+                || userRepository.existsByPhoneAndStatus(joinUserDTO.getPhone(), Status.BANNED)) {
+            throw new UserException(UserErrorCode.BANNED_USER_REGISTRATION);
+        }
+
         if (userRepository.existsByLoginIdAndIsDeletedFalse(joinUserDTO.getLoginId())) {
             throw new UserException(UserErrorCode.DUPLICATE_LOGIN_ID);
         }

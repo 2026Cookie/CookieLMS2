@@ -11,7 +11,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
@@ -68,7 +70,11 @@ public class AuthFailureHandler extends SimpleUrlAuthenticationFailureHandler {
             log.error("Root Cause: {}", exception.getCause().getMessage());
         }
 
-        if (exception instanceof BadCredentialsException) {
+        if (exception instanceof LockedException) {
+            return "비정상적인 활동으로 밴당한 회원입니다. 고객센터에 문의해주세요. 고객센터 : 국번 없이 111";
+        } else if (exception instanceof DisabledException) {
+            return "탈퇴한 회원입니다.";
+        } else if (exception instanceof BadCredentialsException) {
             return "비밀번호가 맞지 않습니다.";
         } else if (exception instanceof UsernameNotFoundException) {
             return "등록된 회원 정보가 없습니다.";

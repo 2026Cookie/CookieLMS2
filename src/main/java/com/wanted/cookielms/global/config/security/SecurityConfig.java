@@ -2,6 +2,7 @@ package com.wanted.cookielms.global.config.security;
 
 import com.wanted.cookielms.domain.auth.handler.AuthFailureHandler;
 import com.wanted.cookielms.domain.auth.handler.AuthSuccessHandler;
+import com.wanted.cookielms.domain.auth.service.AuthService;
 import com.wanted.cookielms.domain.user.service.UserService;
 import com.wanted.cookielms.global.config.security.handler.CustomAccessDeniedHandler;
 import com.wanted.cookielms.global.config.security.handler.CustomAuthenticationEntryPoint;
@@ -12,7 +13,6 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -24,22 +24,14 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
     private final AuthFailureHandler authFailureHandler;
-    private final CustomUserDetailsService customUserDetailsService; // 💡 추가됨
+    private final AuthService authService;
+    private final PasswordEncoder passwordEncoder;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    /**
-     * 💡 AuthenticationProvider 명시적 등록
-     * 서비스와 인코더를 연결하여 ProviderNotFoundException 해결
-     */
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(customUserDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
+        provider.setUserDetailsService(authService);
+        provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
 
