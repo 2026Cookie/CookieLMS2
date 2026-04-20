@@ -172,10 +172,10 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO users (email, id, password, name, nickname, phone, role, status, isDeleted, is_deleted, created_at, updated_at, deleted_at)
 VALUES
--- ADMIN 1명
+-- ADMIN
 ('admin@cookielms.com', 'admin', '$2a$10$hashedpassword1234567890abcdef', '운영자', '관리자', '010-0000-0001', 'ADMIN', 'ACTIVE', 0, 0, '2024-01-01 09:00:00', '2024-01-01 09:00:00', NULL),
-
--- INSTRUCTOR 10명
+('user54@cookielms.com', 'admin1', '$2a$10$wfGTAjR94RnWzUYmUTjovurHITcpSrl4KgqGfL2jEKTaRIrYjowoq', '운영자', '관리자', '010-0000-0002', 'ADMIN', 'ACTIVE', 0, 0, '2024-01-01 09:00:00', '2024-01-01 09:00:00', NULL),
+-- INSTRUCTOR
 ('inst01@cookielms.com', 'inst01', '$2a$10$hashedpassword1234567890abcdef', '김자바',   '자바킹',      '010-1001-0001', 'INSTRUCTOR', 'ACTIVE',  0, 0, '2024-01-05 10:00:00', '2024-01-05 10:00:00', NULL),
 ('inst02@cookielms.com', 'inst02', '$2a$10$hashedpassword1234567890abcdef', '이스프링', '스프링마스터', '010-1001-0002', 'INSTRUCTOR', 'ACTIVE',  0, 0, '2024-01-06 10:00:00', '2024-01-06 10:00:00', NULL),
 ('inst03@cookielms.com', 'inst03', '$2a$10$hashedpassword1234567890abcdef', '박리액트', '프론트고수',   '010-1001-0003', 'INSTRUCTOR', 'ACTIVE',  0, 0, '2024-01-07 10:00:00', '2024-01-07 10:00:00', NULL),
@@ -186,8 +186,8 @@ VALUES
 ('inst08@cookielms.com', 'inst08', '$2a$10$hashedpassword1234567890abcdef', '서네트워크','네트워크박사', '010-1001-0008', 'INSTRUCTOR', 'DORMANT', 0, 0, '2024-01-12 10:00:00', '2024-03-01 10:00:00', NULL),
 ('inst09@cookielms.com', 'inst09', '$2a$10$hashedpassword1234567890abcdef', '윤보안',   '보안전문가',  '010-1001-0009', 'INSTRUCTOR', 'ACTIVE',  0, 0, '2024-01-13 10:00:00', '2024-01-13 10:00:00', NULL),
 ('inst10@cookielms.com', 'inst10', '$2a$10$hashedpassword1234567890abcdef', '임도커',   '도커쿠버왕',  '010-1001-0010', 'INSTRUCTOR', 'ACTIVE',  0, 0, '2024-01-14 10:00:00', '2024-01-14 10:00:00', NULL),
-
--- USER (학생) 50명
+('inst11@cookielms.com', 'inst1', '$2a$10$5LnyRwCc3f9TrgXdB8aQEeYX.2Eg2nWxq4HrKgoRU5/Z8hpEKV2ti', '오데이터',   '자바마스터',  '010-1001-0012', 'INSTRUCTOR', 'ACTIVE',  0, 0, '2024-01-14 10:00:00', '2024-01-14 10:00:00', NULL),
+-- USER (학생)
 ('user01@cookielms.com', 'user01', '$2a$10$hashedpassword1234567890abcdef', '강민준', '코딩초보',       '010-2001-0001', 'USER', 'ACTIVE',  0, 0, '2024-02-01 11:00:00', '2024-02-01 11:00:00', NULL),
 ('user02@cookielms.com', 'user02', '$2a$10$hashedpassword1234567890abcdef', '고서연', '열공러',         '010-2001-0002', 'USER', 'ACTIVE',  0, 0, '2024-02-01 11:05:00', '2024-02-01 11:05:00', NULL),
 ('user03@cookielms.com', 'user03', '$2a$10$hashedpassword1234567890abcdef', '권도윤', '개발지망생',     '010-2001-0003', 'USER', 'ACTIVE',  0, 0, '2024-02-02 11:00:00', '2024-02-02 11:00:00', NULL),
@@ -237,8 +237,10 @@ VALUES
 ('user47@cookielms.com', 'user47', '$2a$10$hashedpassword1234567890abcdef', '허민찬', '배치처리공부',   '010-2001-0047', 'USER', 'ACTIVE',  0, 0, '2024-02-24 11:00:00', '2024-02-24 11:00:00', NULL),
 ('user48@cookielms.com', 'user48', '$2a$10$hashedpassword1234567890abcdef', '홍다인', 'WebSocket입문',  '010-2001-0048', 'USER', 'ACTIVE',  0, 0, '2024-02-24 13:00:00', '2024-02-24 13:00:00', NULL),
 ('user49@cookielms.com', 'user49', '$2a$10$hashedpassword1234567890abcdef', '황준영', '백엔드입문',     '010-2001-0049', 'USER', 'ACTIVE',  0, 0, '2024-02-25 11:00:00', '2024-02-25 11:00:00', NULL),
-('user50@cookielms.com', 'user50', '$2a$10$hashedpassword1234567890abcdef', '황지수', '개발공부중',     '010-2001-0050', 'USER', 'ACTIVE',  0, 0, '2024-02-25 13:05:00', '2024-02-25 13:05:00', NULL);
-
+('user50@cookielms.com', 'user50', '$2a$10$hashedpassword1234567890abcdef', '황지수', '개발공부중',     '010-2001-0050', 'USER', 'ACTIVE',  0, 0, '2024-02-25 13:05:00', '2024-02-25 13:05:00', NULL),
+('user51@cookielms.com', 'user1', '$2a$10$gLacJKgCmIdEFGsWhLKkpOpuSxe.l8zT9HTQD2vc3hSEoGEZvKGie', '하승주', '백엔드고수',     '010-2001-0051', 'USER', 'ACTIVE',  0, 0, '2024-02-25 13:05:00', '2024-02-25 13:05:00', NULL),
+('user52@cookielms.com', 'user2', '$2a$10$z4BHQYZK5W2egSonVECBX.q6X3dSruZdIMIT4JrCBXir.xie4R7z6', '홍다희', '자바초보',     '010-2002-0051', 'USER', 'ACTIVE',  0, 0, '2024-02-25 13:05:00', '2024-02-25 13:05:00', NULL),
+('user53@cookielms.com', 'user3', '$2a$10$eH5TnPmyJGRLVW0wvel1Vejj31JFa9bPeRgpcRoTIe2wF1ioxABwK', '최민원', '트랜잭션초보',     '010-2402-0051', 'USER', 'ACTIVE',  0, 0, '2024-02-25 13:05:00', '2024-02-25 13:05:00', NULL);
 -- =====================================================
 -- INSERT: lecture (users 삽입 후)
 -- =====================================================
@@ -342,6 +344,4 @@ VALUES
 ('교잡종 알아보기',       '침착맨의 교잡종 강의',             20,  7, 'ACTIVE', 'THU', '15:00:00', '17:00:00', 'https://youtu.be/YfOH0y74UGA?si=aEv-TgxjOWqKtQnv',  'thumb_95.png',  'pdf_datarest_01.pdf',      9),
 ('본좌에게 배우는 공중부양',           '유치원생도 배우는 공중부양',             15,  3, 'ACTIVE', 'FRI', '19:00:00', '21:00:00', 'https://youtu.be/-4c93_fLlE4?si=gugNGusPuyrjAGTN',  'thumb_96.png',  'pdf_hateoas_01.pdf',       9),
 ('현우진이 말하는 우매함의 봉우리','더닝 크루거 효과란?',              25, 11, 'ACTIVE', 'SAT', '10:00:00', '12:00:00', 'https://youtu.be/lHBWwiBcPX0?si=dCbEn7HpA6fui8d2',  'thumb_97.png',  'pdf_versioning_01.pdf',    10),
-('가정용 우라늄 농축법',     '당신도 될 수 있다 핵보유 가정',            50, 47, 'ACTIVE', 'SUN', '14:00:00', '16:00:00', 'https://youtu.be/jw7SYZ3KsIs?si=j0QaDUl0pyNu3WfL',  'thumb_98.png',  'pdf_career_01.pdf',        10),
-('닭다리 두개 먹는법',      '당신의 소중한 닭다리 지키기',           30, 13, 'ACTIVE', 'MON', '10:00:00', '12:00:00', 'https://youtu.be/wgP9ARwAbNw?si=hQvxWsIddeF3AWKS',  'thumb_99.png',  'pdf_opensource_01.pdf',     2),
-('반드시 부자가 되는 법',       '을지대의 희망 첨단학부',            40, 33, 'ACTIVE', 'TUE', '19:00:00', '21:00:00', 'https://youtu.be/2YNYRsrfdlA?si=gLXcjrZP2ci84UL_', 'thumb_100.png', 'pdf_blog_01.pdf',           2);
+('가정용 우라늄 농축법',     '당신도 될 수 있다 핵보유 가정',            50, 49, 'ACTIVE', 'SUN', '14:00:00', '16:00:00', 'https://youtu.be/jw7SYZ3KsIs?si=j0QaDUl0pyNu3WfL',  'thumb_98.png',  'pdf_career_01.pdf',        10);
