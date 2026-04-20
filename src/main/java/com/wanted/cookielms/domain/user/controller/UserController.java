@@ -49,7 +49,12 @@ public class UserController {
     }
 
     @GetMapping("/login")
-    public String login(){
+    public String login(HttpSession session, Model model){
+        String loginError = (String) session.getAttribute("loginError");
+        if (loginError != null) {
+            model.addAttribute("loginError", loginError);
+            session.removeAttribute("loginError");
+        }
         return "user/login";
     }
 

@@ -1,6 +1,7 @@
 package com.wanted.cookielms.domain.auth.dto;
 
 import com.wanted.cookielms.domain.user.dto.LoginUserDTO;
+import com.wanted.cookielms.domain.user.enums.Status;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -42,16 +43,19 @@ public class AuthDetails implements UserDetails {
         return loginUserDTO.getLoginId();
     }
 
-    // 💡 아래 4개 메서드가 true를 반환해야 로그인이 허용됩니다.
     @Override
     public boolean isAccountNonExpired() { return true; }
 
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    public boolean isAccountNonLocked() {
+        return !Status.BANNED.equals(loginUserDTO.getStatus());
+    }
 
     @Override
     public boolean isCredentialsNonExpired() { return true; }
 
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isEnabled() {
+        return !Boolean.TRUE.equals(loginUserDTO.getIsDeleted());
+    }
 }

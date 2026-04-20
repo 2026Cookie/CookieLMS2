@@ -53,7 +53,7 @@
 </head>
 <body>
 <script th:inline="javascript">
-    const loginError = /*[[${session.loginError}]]*/ null;
+    const loginError = /*[[${loginError}]]*/ null;
     if (loginError) {
         alert(loginError);
     }
