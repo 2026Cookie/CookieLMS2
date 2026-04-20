@@ -69,13 +69,13 @@ public class UserController {
         return "user/enrollments";
     }
 
-    // GET: 아이디 찾기 폼 페이지
+
     @GetMapping("/find_id")
     public String findIdForm() {
         return "user/find_id";
     }
 
-    // POST: 이름 + 전화번호로 아이디 조회
+
     @PostMapping("/find_id")
     public String findId(@RequestParam String name,
                          @RequestParam String phone,
@@ -140,7 +140,7 @@ public class UserController {
         return "redirect:/user/login";
     }
 
-    //마이페이지 정보 조회용
+
     @GetMapping("/mypage")
     public String mypage(Model model) {
         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();

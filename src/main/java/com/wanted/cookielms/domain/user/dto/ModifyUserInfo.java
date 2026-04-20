@@ -25,7 +25,6 @@ public class ModifyUserInfo {
 
     private String currentPassword;
 
-    // 빈 값이면 변경하지 않으므로 빈 문자열도 허용
     @Pattern(regexp = "^$|^(?=.*[!@#$%^&*]).{8,}$", message = "비밀번호는 특수문자를 포함한 8자 이상이어야 합니다.")
     private String newPassword;
 
