@@ -80,6 +80,12 @@
                 align-items: center;
                 box-shadow: 0 1px 4px rgba(44,32,16,0.08);
             }
+            #user-greeting {
+                font-size: 13px;
+                font-weight: 600;
+                color: #5c4a3a;
+                white-space: nowrap;
+            }
         `;
         document.head.appendChild(style);
     }
@@ -168,9 +174,30 @@
             });
     }
 
+    function injectNicknameGreeting() {
+        fetch('/api/me', { credentials: 'same-origin' })
+            .then(function (res) { return res.ok ? res.json() : null; })
+            .then(function (data) {
+                if (!data || !data.nickname) return;
+                const greeting = document.createElement('span');
+                greeting.id = 'user-greeting';
+                const bold = document.createElement('b');
+                bold.textContent = data.nickname;
+                greeting.appendChild(bold);
+                greeting.appendChild(document.createTextNode('님 환영합니다!!'));
+
+                const box = document.getElementById('session-timer-box');
+                if (box && box.parentNode) {
+                    box.parentNode.insertBefore(greeting, box.nextSibling);
+                }
+            })
+            .catch(function () {});
+    }
+
     function init() {
         injectStyles();
         createTimerBox();
+        injectNicknameGreeting();
         intervalId = setInterval(tick, 1000);
     }
 

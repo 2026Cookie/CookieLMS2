@@ -1,5 +1,6 @@
 package com.wanted.cookielms.domain.lecture.service;
 
+import com.wanted.cookielms.domain.assignment.repository.AssignmentStuRepository; // 🌟 하연님의 과제 로직
 import com.wanted.cookielms.domain.enrollment.repository.EnrollmentRepository;
 import com.wanted.cookielms.domain.lecture.dto.LectureStuDTO;
 import com.wanted.cookielms.domain.lecture.dto.MyLectureListDTO;
@@ -18,22 +19,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-//@Transactional(readOnly = true)
 public class LectureStuService {
 
     private final LectureStuRepository lectureStuRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final ModelMapper modelMapper;
 
+    // 🌟 1. 하연님이 추가했던 과제 저장소 주입 (유지)
+    private final AssignmentStuRepository assignmentStuRepository;
+
     // 전체 강의 목록 조회
     @BussinessServiceLogging
     public Page<MyLectureListDTO> getAllLectures(String keyword, Pageable pageable) {
-        // 🚀 N+1 문제를 일으키던 findAll, findByTitleContaining, map 반복문을 싹 지우고
-        // Repository에서 만든 '한 방 쿼리' 메서드를 바로 호출합니다.
-
         String safeKeyword = (keyword == null || keyword.trim().isEmpty()) ? "" : keyword;
-
-        // DB에서 이미 강사 이름까지 다 채워진 DTO를 받아오므로 후처리가 필요 없습니다!
         return lectureStuRepository.findLecturesWithInstructorName(safeKeyword, pageable);
     }
 
@@ -43,19 +41,24 @@ public class LectureStuService {
         return lectureStuRepository.findMyLecturesWithProjection(userId, safeKeyword, pageable);
     }
 
+    // 강의 상세 조회 (🚀 팀원의 최적화 + 하연님의 과제 로직 병합!)
     public LectureStuDTO getLectureDetail(Long lectureId, Long userId) {
-        // 🚀 새로 만든 '상세보기 한 방 쿼리'를 사용합니다!
+        // 🚀 팀원 코드: 새로 만든 '상세보기 한 방 쿼리'를 사용해서 DTO를 바로 가져옵니다.
         LectureStuDTO dto = lectureStuRepository.findLectureDetailWithInstructorName(lectureId)
                 .orElseThrow(() -> new LectureException(LectureErrorCode.LECTURE_NOT_FOUND));
 
-        // 권한 체크 (이건 그대로 유지)
+        // 권한 체크 로직
         boolean isEnrolled = enrollmentRepository.existsByUserIdAndLectureIdAndStatus(userId, lectureId, "ENROLLED");
 
-        // 강사 본인인지 체크 (DB 다시 안 찌르고 DTO에 담긴 정보로 바로 비교 가능하게 필드 확인 필요)
-        // 일단 에러가 났던 findInstructorNameById 호출 부분은 지우셔도 됩니다!
+        // 강사 본인인지 체크 (DTO에 담겨온 instructorId를 사용해서 비교)
+        boolean isInstructor = dto.getInstructorId() != null && dto.getInstructorId().equals(userId);
 
         dto.setUserEnrolled(isEnrolled);
-        // dto.setUserInstructor(dto.getInstructorId().equals(userId)); // 필요시 추가
+        dto.setUserInstructor(isInstructor);
+
+        // 🌟 하연님 코드: 이 강의에 연결된 과제가 있다면 그 과제의 ID를 DTO에 담아줍니다!
+        assignmentStuRepository.findByLectureId(lectureId)
+                .ifPresent(assignment -> dto.setAssignmentId(assignment.getId()));
 
         return dto;
     }
@@ -108,7 +111,7 @@ public class LectureStuService {
         // 케이스 2: https://www.youtube.com/watch?v=영상ID 형태
         else if (url.contains("watch?v=")) {
             int vIndex = url.indexOf("v=") + 2;
-            int ampersandIndex = url.indexOf("&", vIndex); // &t=12s 같은 추가 파라미터 방지
+            int ampersandIndex = url.indexOf("&", vIndex);
             videoId = ampersandIndex != -1 ? url.substring(vIndex, ampersandIndex) : url.substring(vIndex);
         }
         // 케이스 3: 이미 강사님이 똑똑하게 임베드 링크를 넣은 경우
@@ -121,7 +124,6 @@ public class LectureStuService {
             return "https://www.youtube.com/embed/" + videoId;
         }
 
-        // 변환할 수 없는 이상한 주소라면 일단 그대로 반환
         return url;
     }
 }

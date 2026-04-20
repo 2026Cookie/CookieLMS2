@@ -1,5 +1,7 @@
 package com.wanted.cookielms.domain.lecture.service;
 
+import com.wanted.cookielms.domain.assignment.entity.AssignmentStuEntity; // 🌟 추가
+import com.wanted.cookielms.domain.assignment.repository.AssignmentStuRepository; // 🌟 추가
 import com.wanted.cookielms.domain.lecture.dto.LectureInsDTO;
 import com.wanted.cookielms.domain.lecture.dto.LectureStuDTO;
 import com.wanted.cookielms.domain.lecture.entity.InsLecture;
@@ -30,6 +32,7 @@ public class InstructorService {
 
     private final LectureInsRepository lectureInsRepository;
     private final LectureStuRepository lectureStuRepository;
+    private final AssignmentStuRepository assignmentStuRepository; // 🌟 과제 저장소 주입 추가!
     private final ModelMapper modelMapper;
     private final InsFileService insFileService;
 
@@ -63,7 +66,21 @@ public class InstructorService {
                 .instructorId(instructorId)
                 .build();
 
-        lectureInsRepository.save(lecture);
+        // 🌟 강의 먼저 저장 (저장되면서 ID가 자동 생성됨)
+        InsLecture savedLecture = lectureInsRepository.save(lecture);
+
+        // 🌟 추가된 부분: 과제 제목이 입력되어 있다면 과제도 생성해서 저장한다!
+        if (dto.getAssignmentTitle() != null && !dto.getAssignmentTitle().trim().isEmpty()) {
+            AssignmentStuEntity assignment = AssignmentStuEntity.builder()
+                    .title(dto.getAssignmentTitle())
+                    // 내용이 비어있으면 기본값, 있으면 입력값 세팅
+                    .content((dto.getAssignmentContent() != null && !dto.getAssignmentContent().trim().isEmpty()) ? dto.getAssignmentContent() : "과제 내용이 없습니다.")
+                    .dueDate(dto.getAssignmentDueDate())
+                    .lectureId(savedLecture.getId()) // 🌟 정답! "id를 가져와줘!"
+                    .build();
+
+            assignmentStuRepository.save(assignment);
+        }
     }
 
 

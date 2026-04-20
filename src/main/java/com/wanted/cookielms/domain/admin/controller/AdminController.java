@@ -48,6 +48,12 @@ public class AdminController {
     }
 
     @ResponseBody
+    @GetMapping("/users/withdrawn")
+    public ResponseEntity<List<AdminUserDto>> getWithdrawnUsers() {
+        return ResponseEntity.ok(adminService.getWithdrawnUserList());
+    }
+
+    @ResponseBody
     @PostMapping("/users/{userId}/ban")
     public ResponseEntity<Void> banUser(@PathVariable Long userId) {
         adminService.banUser(userId);

@@ -12,4 +12,5 @@ public class AdminUserDto {
     private String name;
     private String email;
     private Status status;
+    private Boolean isDeleted;
 }

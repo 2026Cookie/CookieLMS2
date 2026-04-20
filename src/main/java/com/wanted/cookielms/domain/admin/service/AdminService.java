@@ -22,14 +22,20 @@ public class AdminService {
 
     public List<AdminUserDto> getUserList() {
         return userRepository.findAllByIsDeletedFalseAndRole(Role.USER).stream()
-                .map(u -> new AdminUserDto(u.getUserId(), u.getLoginId(), u.getName(), u.getEmail(), u.getStatus()))
+                .map(u -> new AdminUserDto(u.getUserId(), u.getLoginId(), u.getName(), u.getEmail(), u.getStatus(), false))
                 .collect(Collectors.toList());
     }
 
     public List<AdminUserDto> getBannedUserList() {
         return userRepository.findAllByIsDeletedFalseAndRole(Role.USER).stream()
                 .filter(u -> u.getStatus() == Status.BANNED)
-                .map(u -> new AdminUserDto(u.getUserId(), u.getLoginId(), u.getName(), u.getEmail(), u.getStatus()))
+                .map(u -> new AdminUserDto(u.getUserId(), u.getLoginId(), u.getName(), u.getEmail(), u.getStatus(), false))
+                .collect(Collectors.toList());
+    }
+
+    public List<AdminUserDto> getWithdrawnUserList() {
+        return userRepository.findAllByIsDeletedTrueAndRole(Role.USER).stream()
+                .map(u -> new AdminUserDto(u.getUserId(), u.getLoginId(), u.getName(), u.getEmail(), u.getStatus(), true))
                 .collect(Collectors.toList());
     }
 
