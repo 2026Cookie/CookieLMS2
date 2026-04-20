@@ -63,7 +63,7 @@
         .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; padding: 12px; font-size: 13px; }
         .pagination button { padding: 4px 12px; background: var(--btn-dark); color: var(--text-on-dark); border: none; border-radius: 5px; cursor: pointer; font-size: 12px; }
         .pagination button:disabled { background: var(--dust-grey); cursor: default; }
-        .link-btn { background: none; border: none; color: #4a3728; text-decoration: underline; cursor: pointer; font-size: 12px; }
+        .link-btn { background: none; border: none; color: #4a3728; text-decoration: underline; cursor: pointer; font-size: 12px; padding: 0; }
         .action-btn { padding: 4px 10px; border: none; border-radius: 5px; font-size: 12px; cursor: pointer; color: #fff; }
         .ban-btn { background: var(--error); }
         .unban-btn { background: var(--success); }
@@ -209,20 +209,42 @@
         let html = '';
 
         html += '<div class="section-title">시간대별 호출 (오늘)</div>';
-        html += '<table class="data-table"><thead><tr><th>시간</th><th>호출 수</th></tr></thead><tbody>';
-        (data.hourlyTraffic || []).forEach(h => {
-            html += `<tr><td>${String(h.hour).padStart(2,'0')}:00</td><td>${h.callCount}</td></tr>`;
-        });
-        html += '</tbody></table>';
+        if (data.hourlyTraffic && data.hourlyTraffic.length > 0) {
+            html += '<table class="data-table"><thead><tr><th>시간</th><th>호출 수</th></tr></thead><tbody>';
+            (data.hourlyTraffic || []).forEach(h => {
+                html += `<tr><td>${String(h.hour).padStart(2,'0')}:00</td><td>${h.callCount}</td></tr>`;
+            });
+            html += '</tbody></table>';
+        } else {
+            html += '<div class="info-box">데이터가 없습니다.</div>';
+        }
 
-        html += '<div class="section-title">Top 10 엔드포인트 (최근 7일)</div>';
-        html += '<table class="data-table"><thead><tr><th>엔드포인트</th><th>호출 수</th></tr></thead><tbody>';
-        (data.topEndpoints || []).forEach(e => {
-            html += `<tr><td>${e.endpoint}</td><td>${e.callCount}</td></tr>`;
-        });
-        html += '</tbody></table>';
+        html += '<div class="section-title" style="margin-top:12px;">Top 10 엔드포인트 (최근 7일)</div>';
+        if (data.topEndpoints && data.topEndpoints.length > 0) {
+            html += '<table class="data-table"><thead><tr><th>엔드포인트</th><th>호출 수</th></tr></thead><tbody>';
+            (data.topEndpoints || []).forEach(e => {
+                html += `<tr><td>${e.endpoint}</td><td>${e.callCount}</td></tr>`;
+            });
+            html += '</tbody></table>';
+        } else {
+            html += '<div class="info-box">데이터가 없습니다.</div>';
+        }
 
-        el.innerHTML = html || '<div class="info-box">데이터가 없습니다.</div>';
+        html += '<div class="section-title" style="margin-top:12px;">느린 엔드포인트</div>';
+        if (data.slowEndpoints && data.slowEndpoints.length > 0) {
+            html += '<table class="data-table"><thead><tr><th>엔드포인트</th><th>평균(ms)</th><th>추적</th></tr></thead><tbody>';
+            (data.slowEndpoints || []).forEach(e => {
+                const traceBtn = e.traceId
+                    ? `<button class="link-btn" onclick="openTraceModal('${e.traceId}')">🔗</button>`
+                    : '-';
+                html += `<tr><td>${e.endpoint}</td><td>${e.avgMs.toFixed(2)}</td><td>${traceBtn}</td></tr>`;
+            });
+            html += '</tbody></table>';
+        } else {
+            html += '<div class="info-box">데이터가 없습니다.</div>';
+        }
+
+        el.innerHTML = html;
     }
 
     // ── 섹션 2: 성능 병목 ──────────────────────────────────
@@ -232,24 +254,51 @@
     function displayPerformance(data, el) {
         let html = '';
 
-        html += '<div class="section-title">느린 서비스 메서드 Top 10</div>';
-        html += '<table class="data-table"><thead><tr><th>메서드</th><th>평균(ms)</th></tr></thead><tbody>';
-        (data.slowMethods || []).forEach(m => {
-            html += `<tr><td>${m.classMethod || m.classmethod}</td><td>${Number(m.avgTime || m.avgtime).toFixed(1)}</td></tr>`;
-        });
-        html += '</tbody></table>';
+        html += '<div class="section-title">느린 기능 Top 10</div>';
+        if (data.slowMethods && data.slowMethods.length > 0) {
+            html += '<table class="data-table"><thead><tr><th>메서드</th><th>평균(ms)</th><th>최대(ms)</th><th>호출</th><th>추적</th></tr></thead><tbody>';
+            data.slowMethods.forEach(m => {
+                const traceBtn = m.sampleTraceId
+                    ? `<button class="link-btn" onclick="openTraceModal('${m.sampleTraceId}')">🔗</button>`
+                    : '-';
+                html += `<tr>
+                    <td>${m.classMethod}</td>
+                    <td>${m.avgExecutionTimeMs.toFixed(2)}</td>
+                    <td>${m.maxExecutionTimeMs}</td>
+                    <td>${m.callCount}</td>
+                    <td>${traceBtn}</td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+        } else {
+            html += '<div class="info-box">데이터가 없습니다.</div>';
+        }
 
-        html += '<div class="section-title">실패율 높은 서비스 메서드 Top 10</div>';
-        html += '<table class="data-table"><thead><tr><th>메서드</th><th>실패 수</th></tr></thead><tbody>';
-        (data.failureMethods || []).forEach(m => {
-            html += `<tr><td>${m.classMethod || m.classmethod}</td><td>${m.failureCount || m.failurecount}</td></tr>`;
-        });
-        html += '</tbody></table>';
+        html += '<div class="section-title" style="margin-top:12px;">실패 기능 Top 10</div>';
+        if (data.failureMethods && data.failureMethods.length > 0) {
+            html += '<table class="data-table"><thead><tr><th>메서드</th><th>실패</th><th>성공</th><th>실패율</th><th>추적</th></tr></thead><tbody>';
+            data.failureMethods.forEach(m => {
+                const failureRate = m.totalCalls > 0 ? ((m.failureCount / m.totalCalls) * 100).toFixed(1) : 0;
+                const traceBtn = m.sampleTraceId
+                    ? `<button class="link-btn" onclick="openTraceModal('${m.sampleTraceId}')">🔗</button>`
+                    : '-';
+                html += `<tr>
+                    <td>${m.classMethod}</td>
+                    <td><span class="badge badge-danger">${m.failureCount}</span></td>
+                    <td><span class="badge badge-success">${m.successCount}</span></td>
+                    <td>${failureRate}%</td>
+                    <td>${traceBtn}</td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+        } else {
+            html += '<div class="info-box">데이터가 없습니다.</div>';
+        }
 
-        el.innerHTML = html || '<div class="info-box">데이터가 없습니다.</div>';
+        el.innerHTML = html;
     }
 
-    // ── 섹션 3: CRITICAL 에러 ──────────────────────────────
+    // ── 섹션 3: CRITICAL 에러 ───────────────────────────────
     function loadErrors() {
         fetchWidget('/admin/logs/errors', 'errorsContent', displayErrors);
     }
@@ -263,10 +312,10 @@
             const userCell = loginId ? `<button class="link-btn" onclick="openUserModal(${userId}, '${loginId}')">${loginId}</button>` : '비로그인';
             const detailBtn = userId ? `<button class="link-btn" onclick="openUserModal(${userId}, '${loginId}')">이력 보기</button>` : '-';
             html += `<tr>
-            <td>${userCell}</td>
-            <td><span class="badge badge-danger">${count}건</span></td>
-            <td>${detailBtn}</td>
-        </tr>`;
+                <td>${userCell}</td>
+                <td><span class="badge badge-danger">${count}건</span></td>
+                <td>${detailBtn}</td>
+            </tr>`;
         });
         html += '</tbody></table>';
         el.innerHTML = html;
@@ -294,7 +343,22 @@
     function displayTraceDetail(data, el) {
         let html = `<p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">TraceId: <b>${data.traceId}</b></p>`;
 
-        html += '<div class="section-title">서비스 로그</div>';
+        html += '<div class="section-title">API 요청</div>';
+        if (data.apiLog) {
+            html += `<table class="data-table"><thead><tr><th>엔드포인트</th><th>메서드</th><th>실행시간(ms)</th><th>상태</th><th>시각</th></tr></thead><tbody>`;
+            const time = data.apiLog.createdAt ? data.apiLog.createdAt.replace('T',' ').substring(0,19) : '-';
+            html += `<tr>
+                <td>${data.apiLog.endpoint}</td>
+                <td>${data.apiLog.httpMethod}</td>
+                <td>${data.apiLog.executionTimeMs}</td>
+                <td>${data.apiLog.statusCode}</td>
+                <td>${time}</td>
+            </tr></tbody></table>`;
+        } else {
+            html += '<div class="info-box">API 로그가 없습니다.</div>';
+        }
+
+        html += '<div class="section-title" style="margin-top:12px;">서비스 로그</div>';
         if (data.serviceLogs && data.serviceLogs.length > 0) {
             html += '<table class="data-table"><thead><tr><th>메서드</th><th>실행시간(ms)</th><th>성공</th><th>시각</th></tr></thead><tbody>';
             data.serviceLogs.forEach(s => {
@@ -311,10 +375,13 @@
 
         html += '<div class="section-title" style="margin-top:12px;">에러 로그</div>';
         if (data.errorLogs && data.errorLogs.length > 0) {
-            html += '<table class="data-table"><thead><tr><th>에러코드</th><th>메시지</th><th>시각</th></tr></thead><tbody>';
+            html += '<table class="data-table"><thead><tr><th>에러코드</th><th>메시지</th><th>심각도</th><th>시각</th></tr></thead><tbody>';
             data.errorLogs.forEach(e => {
+                const severityBadge = e.severity === 'CRITICAL' ? '<span class="badge badge-danger">CRITICAL</span>'
+                    : e.severity === 'WARNING' ? '<span class="badge badge-warning">WARNING</span>'
+                        : '<span class="badge badge-success">INFO</span>';
                 const time = e.createdAt ? e.createdAt.replace('T',' ').substring(0,19) : '-';
-                html += `<tr><td><span class="badge badge-danger">${e.errorCode}</span></td><td>${e.errorMessage}</td><td>${time}</td></tr>`;
+                html += `<tr><td><span class="badge badge-danger">${e.errorCode}</span></td><td>${e.errorMessage}</td><td>${severityBadge}</td><td>${time}</td></tr>`;
             });
             html += '</tbody></table>';
         } else {
@@ -368,64 +435,6 @@
         el.innerHTML = html;
     }
 
-    // ── 유저 상세 모달 ────────────────────────────────────
-    function openUserModal(userId, loginId) {
-        document.getElementById('userModalTitle').textContent = `유저 상세 — ${loginId || userId}`;
-        document.getElementById('userModal').classList.add('active');
-        const body = document.getElementById('userModalBody');
-        body.innerHTML = '<div class="loading">불러오는 중...</div>';
-
-        Promise.all([
-            fetch(`/admin/users/${userId}/errors`).then(r => r.json()),
-            fetch(`/admin/users/${userId}/service-failures`).then(r => r.json())
-        ]).then(([errors, failures]) => displayUserDetail(userId, errors, failures, body))
-            .catch(() => { body.innerHTML = '<div class="msg-error">데이터를 불러올 수 없습니다.</div>'; });
-    }
-    function displayUserDetail(userId, errors, failures, el) {
-        let html = `<div style="text-align:right;margin-bottom:12px;">
-            <button class="action-btn ban-btn" onclick="banUser(${userId});closeModalById('userModal')">밴하기</button>
-            <button class="action-btn unban-btn" style="margin-left:6px;" onclick="unbanUser(${userId});closeModalById('userModal')">밴 해제</button>
-        </div>`;
-
-        html += '<div class="section-title">CRITICAL 에러 이력</div>';
-        if (errors && errors.length > 0) {
-            html += '<table class="data-table"><thead><tr><th>에러코드</th><th>URI</th><th>시각</th></tr></thead><tbody>';
-            errors.forEach(e => {
-                const time = e.createdAt ? e.createdAt.replace('T',' ').substring(0,19) : '-';
-                html += `<tr><td><span class="badge badge-danger">${e.errorCode}</span></td><td>${e.requestUri}</td><td>${time}</td></tr>`;
-            });
-            html += '</tbody></table>';
-        } else {
-            html += '<div class="info-box">에러 이력이 없습니다.</div>';
-        }
-
-        html += '<div class="section-title" style="margin-top:12px;">서비스 실패 이력</div>';
-        if (failures && failures.length > 0) {
-            html += '<table class="data-table"><thead><tr><th>메서드</th><th>실행시간(ms)</th><th>시각</th></tr></thead><tbody>';
-            failures.forEach(f => {
-                const time = f.createdAt ? f.createdAt.replace('T',' ').substring(0,19) : '-';
-                html += `<tr><td>${f.classMethod}</td><td>${f.executionTimeMs}</td><td>${time}</td></tr>`;
-            });
-            html += '</tbody></table>';
-        } else {
-            html += '<div class="info-box">서비스 실패 이력이 없습니다.</div>';
-        }
-
-        el.innerHTML = html;
-    }
-
-    // ── 밴/밴해제 ─────────────────────────────────────────
-    function banUser(userId) {
-        fetch(`/admin/users/${userId}/ban`, { method: 'POST' })
-            .then(() => { loadUsers(); loadRecentBans(); })
-            .catch(() => alert('밴 처리에 실패했습니다.'));
-    }
-    function unbanUser(userId) {
-        fetch(`/admin/users/${userId}/unban`, { method: 'POST' })
-            .then(() => { loadUsers(); loadRecentBans(); })
-            .catch(() => alert('밴 해제에 실패했습니다.'));
-    }
-
     function loadWithdrawnUsers() {
         fetchWidget('/admin/users/withdrawn', 'withdrawnContent', displayWithdrawnUsers);
     }
@@ -452,7 +461,52 @@
         el.innerHTML = html;
     }
 
-    // ── 밴/밴해제 ─────────────────────────────────────────
+    // ── 유저 상세 모달 ──────────────────────────────────────
+    function openUserModal(userId, loginId) {
+        document.getElementById('userModalTitle').textContent = `${loginId} - 상세 정보`;
+        document.getElementById('userModal').classList.add('active');
+        const body = document.getElementById('userModalBody');
+        body.innerHTML = '<div class="loading">불러오는 중...</div>';
+        Promise.all([
+            fetch(`/admin/users/${userId}/errors`).then(r => r.json()),
+            fetch(`/admin/users/${userId}/service-failures`).then(r => r.json())
+        ]).then(([errors, failures]) => {
+            displayUserDetail(errors, failures, body);
+        }).catch(() => {
+            body.innerHTML = '<div class="msg-error">데이터를 불러올 수 없습니다.</div>';
+        });
+    }
+    function displayUserDetail(errors, failures, el) {
+        let html = '';
+
+        html += '<div class="section-title">에러 이력</div>';
+        if (errors && errors.length > 0) {
+            html += '<table class="data-table"><thead><tr><th>에러코드</th><th>메시지</th><th>시각</th></tr></thead><tbody>';
+            errors.forEach(e => {
+                const time = e.createdAt ? e.createdAt.replace('T',' ').substring(0,19) : '-';
+                html += `<tr><td><span class="badge badge-danger">${e.errorCode}</span></td><td>${e.errorMessage}</td><td>${time}</td></tr>`;
+            });
+            html += '</tbody></table>';
+        } else {
+            html += '<div class="info-box">에러가 없습니다.</div>';
+        }
+
+        html += '<div class="section-title" style="margin-top:12px;">서비스 실패 이력</div>';
+        if (failures && failures.length > 0) {
+            html += '<table class="data-table"><thead><tr><th>메서드</th><th>실행시간(ms)</th><th>시각</th></tr></thead><tbody>';
+            failures.forEach(f => {
+                const time = f.createdAt ? f.createdAt.replace('T',' ').substring(0,19) : '-';
+                html += `<tr><td>${f.classMethod}</td><td>${f.executionTimeMs}</td><td>${time}</td></tr>`;
+            });
+            html += '</tbody></table>';
+        } else {
+            html += '<div class="info-box">실패 이력이 없습니다.</div>';
+        }
+
+        el.innerHTML = html;
+    }
+
+    // ── 밴/밴해제 ────────────────────────────────────────────
     function banUser(userId) {
         fetch(`/admin/users/${userId}/ban`, { method: 'POST' })
             .then(() => { loadUsers(); loadRecentBans(); loadWithdrawnUsers(); })
@@ -464,7 +518,7 @@
             .catch(() => alert('밴 해제에 실패했습니다.'));
     }
 
-    // ── 초기 로드 ─────────────────────────────────────────
+    // ── 초기 로드 ────────────────────────────────────────────
     window.addEventListener('load', () => {
         loadTraffic();
         loadPerformance();

@@ -102,26 +102,12 @@ public class ErrorLogQueryService {
     /**
      * [조회 8-2] 사용자별 Critical 에러 요약 (API 로그 join)
      */
+    /**
+     * [조회 8-2] 사용자별 Critical 에러 요약 (네이티브 쿼리로 JOIN)
+     * N+1 제거: Repository의 findCriticalErrorCountGroupByUserId 활용
+     */
     public List<Map<String, Object>> getCriticalErrorSummaryByUser() {
-        List<ErrorLogEntity> criticalErrors = errorLogRepository.findBySeverityOrderByCreatedAtDesc(ErrorSeverity.CRITICAL);
-
-        return criticalErrors.stream()
-                .collect(Collectors.groupingBy(
-                        errorLog -> {
-                            String traceId = errorLog.getTraceId();
-                            return apiPerformanceLogRepository.findByTraceId(traceId)
-                                    .map(api -> api.getUserId())
-                                    .orElse(-1L);
-                        },
-                        Collectors.counting()
-                ))
-                .entrySet()
-                .stream()
-                .map(entry -> Map.of(
-                        "userId", (Object) entry.getKey(),
-                        "errorCount", entry.getValue()
-                ))
-                .toList();
+        return errorLogRepository.findCriticalErrorCountGroupByUserId();
     }
 
     /**

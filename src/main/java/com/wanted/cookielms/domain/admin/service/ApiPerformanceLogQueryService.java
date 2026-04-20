@@ -43,10 +43,15 @@ public class ApiPerformanceLogQueryService {
                 .map(row -> new ApiMetricsDto.HourlyTraffic((Integer) row[0], (Long) row[1]))
                 .toList();
 
+// findAvgResponseTimeByEndpoint에서 traceId도 함께 조회:
         List<ApiMetricsDto.EndpointAvgTime> slowEndpoints = apiPerformanceLogRepository
                 .findAvgResponseTimeByEndpoint(sevenDaysAgo, PageRequest.of(0, 10))
                 .stream()
-                .map(row -> new ApiMetricsDto.EndpointAvgTime((String) row[0], (Double) row[1]))
+                .map(row -> new ApiMetricsDto.EndpointAvgTime(
+                        (String) row[0],
+                        (Double) row[1],
+                        (String) row[2]  // traceId
+                ))
                 .toList();
 
         return ApiMetricsDto.builder()

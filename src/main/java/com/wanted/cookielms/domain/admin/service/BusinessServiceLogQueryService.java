@@ -1,5 +1,6 @@
 package com.wanted.cookielms.domain.admin.service;
 
+import com.wanted.cookielms.domain.admin.dto.BusinessMetricsDto;
 import com.wanted.cookielms.global.logging.api.repository.ApiPerformanceLogRepository;
 import com.wanted.cookielms.global.logging.businessService.dto.BusinessServiceLogResponseDto;
 import com.wanted.cookielms.global.logging.businessService.entity.BusinessServiceLogEntity;
@@ -43,15 +44,31 @@ public class BusinessServiceLogQueryService {
     /**
      * 📊 오류 발생이 많은 기능 top N
      */
-    public List<Map<String, Object>> getTopFailureMethods(int limit, LocalDateTime startTime) {
-        return businessServiceLogRepository.findTopFailureMethods(startTime, limit);
+    public List<BusinessMetricsDto.SlowMethodMetric> getTopSlowMethods(int limit, LocalDateTime startTime) {
+        return businessServiceLogRepository.findTopSlowMethods(startTime, limit)
+                .stream()
+                .map(row -> new BusinessMetricsDto.SlowMethodMetric(
+                        (String) row.get("classMethod"),
+                        (Long) row.get("callCount"),
+                        ((Number) row.get("avgTime")).doubleValue(),
+                        (Long) row.get("maxTime"),
+                        (Long) row.get("minTime"),
+                        null  // Phase 2에서 traceId 조회 추가 예정
+                ))
+                .toList();
     }
 
-    /**
-     * 📊 느린 기능 top N
-     */
-    public List<Map<String, Object>> getTopSlowMethods(int limit, LocalDateTime startTime) {
-        return businessServiceLogRepository.findTopSlowMethods(startTime, limit);
+    public List<BusinessMetricsDto.FailureMethodMetric> getTopFailureMethods(int limit, LocalDateTime startTime) {
+        return businessServiceLogRepository.findTopFailureMethods(startTime, limit)
+                .stream()
+                .map(row -> new BusinessMetricsDto.FailureMethodMetric(
+                        (String) row.get("classMethod"),
+                        (Long) row.get("failureCount"),
+                        (Long) row.get("successCount"),
+                        (Long) row.get("totalCalls"),
+                        null  // Phase 2에서 traceId 조회 추가 예정
+                ))
+                .toList();
     }
 
     /**

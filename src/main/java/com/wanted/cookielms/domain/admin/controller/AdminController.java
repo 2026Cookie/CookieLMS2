@@ -77,9 +77,12 @@ public class AdminController {
     @GetMapping("/logs/performance")
     public ResponseEntity<BusinessMetricsDto> getPerformanceMetrics() {
         LocalDateTime since = LocalDateTime.now().minusDays(7);
-        List<Map<String, Object>> slow = businessServiceLogQueryService.getTopSlowMethods(10, since);
-        List<Map<String, Object>> failures = businessServiceLogQueryService.getTopFailureMethods(10, since);
-        return ResponseEntity.ok(new BusinessMetricsDto(slow, failures));
+        List<BusinessMetricsDto.SlowMethodMetric> slow = businessServiceLogQueryService.getTopSlowMethods(10, since);
+        List<BusinessMetricsDto.FailureMethodMetric> failures = businessServiceLogQueryService.getTopFailureMethods(10, since);
+        return ResponseEntity.ok(BusinessMetricsDto.builder()
+                .slowMethods(slow)
+                .failureMethods(failures)
+                .build());
     }
 
     @ResponseBody
