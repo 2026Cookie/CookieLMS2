@@ -49,7 +49,7 @@ public class LectureStuController {
 
     @GetMapping
     @ResponseBody
-    public ResponseEntity<Page<MyLectureListDTO>> getLectures( // 🚀 MyLectureListDTO로 변경!
+    public ResponseEntity<Page<MyLectureListDTO>> getLectures(
     @RequestParam(required = false) String keyword,
     @PageableDefault(size = 6) Pageable pageable) {
         return ResponseEntity.ok(lectureStuService.getAllLectures(keyword, pageable));
@@ -120,8 +120,7 @@ public class LectureStuController {
     @ResponseBody
     public ResponseEntity<Resource> downloadLectureMaterial(@PathVariable Long lectureId, Authentication authentication) {
         Long userId = getLoginUserId(authentication);
-
-        // 권한 체크 등은 이미 Service 단에서 LectureException을 던지고 있으니 통과!
+        
         String materialFileName = lectureStuService.getMaterialId(lectureId, userId);
 
         Path root = Paths.get(uploadPath).toAbsolutePath().normalize();
