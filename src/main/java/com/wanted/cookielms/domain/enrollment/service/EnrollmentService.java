@@ -6,6 +6,7 @@ import com.wanted.cookielms.domain.enrollment.exception.EnrollmentException;
 import com.wanted.cookielms.domain.enrollment.repository.EnrollmentRepository;
 import com.wanted.cookielms.domain.lecture.entity.LectureStuEntity;
 import com.wanted.cookielms.domain.lecture.repository.LectureStuRepository;
+import com.wanted.cookielms.global.aop.BussinessServiceLogging;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ public class EnrollmentService {
     private final LectureStuRepository lectureStuRepository;
     private final WaitlistService waitlistService;
 
+    @BussinessServiceLogging
     @Transactional
     public void enroll(Long lectureId, Long userId) {
 

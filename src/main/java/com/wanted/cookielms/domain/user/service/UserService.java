@@ -11,6 +11,7 @@ import com.wanted.cookielms.domain.user.enums.Status;
 import com.wanted.cookielms.domain.user.exception.UserErrorCode;
 import com.wanted.cookielms.domain.user.exception.UserException;
 import com.wanted.cookielms.domain.user.repository.UserRepository;
+import com.wanted.cookielms.global.aop.BussinessServiceLogging;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -28,6 +29,7 @@ public class UserService {
     private  final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
 
+    @BussinessServiceLogging
     @Transactional
     public String join(JoinUserDTO joinUserDTO){
 

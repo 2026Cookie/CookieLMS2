@@ -9,9 +9,10 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum FileValidationErrorCode {
 
-    FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "FV001", "파일 용량을 초과했습니다.", ErrorSeverity.CRITICAL),
-    INVALID_FILE_EXTENSION(HttpStatus.BAD_REQUEST, "FV002", "지원하지 않는 파일 형식입니다.", ErrorSeverity.INFO),
-    INVALID_FILE_FORMAT(HttpStatus.BAD_REQUEST, "FV003", "파일 형식이 올바르지 않습니다.", ErrorSeverity.INFO);
+    FILE_SIZE_EXCEEDED_Servlet(HttpStatus.BAD_REQUEST, "FV001", "파일 용량을 초과했습니다 from Servlet", ErrorSeverity.CRITICAL),
+    FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "FV002", "파일 용량을 초과했습니다.", ErrorSeverity.CRITICAL),
+    INVALID_FILE_EXTENSION(HttpStatus.BAD_REQUEST, "FV003", "지원하지 않는 파일 형식입니다.", ErrorSeverity.CRITICAL),
+    INVALID_FILE_FORMAT(HttpStatus.BAD_REQUEST, "FV004", "파일 형식이 올바르지 않습니다.", ErrorSeverity.CRITICAL);
 
     private final HttpStatus status;
     private final String code;

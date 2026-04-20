@@ -19,7 +19,7 @@ public class InsFileService {
     @Value("${file.upload.path:uploads/}")
     private String uploadPath;
 
-    @FileValidation(maxSize = 20, allowedExtensions = {".pdf", ".jpg", ".png", ".jpeg", ".gif"})
+    @FileValidation(maxSize = 10, allowedExtensions = {".pdf", ".jpg", ".png", ".jpeg", ".gif"})
     public String storeFile(MultipartFile file, String... allowedExtensions) throws IOException {
         // 빈 파일 + 크기 + 확장자 검증은 AOP에서 처리됨
 

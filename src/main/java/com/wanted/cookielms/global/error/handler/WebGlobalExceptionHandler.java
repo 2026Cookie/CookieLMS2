@@ -1,6 +1,7 @@
 package com.wanted.cookielms.global.error.handler;
 
 import com.wanted.cookielms.domain.auth.dto.AuthDetails;
+import com.wanted.cookielms.global.aop.FileValidation.FileValidationErrorCode;
 import com.wanted.cookielms.global.logging.error.service.ErrorLogService;
 import com.wanted.cookielms.global.logging.error.entity.ErrorLogEntity;
 import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
@@ -15,6 +16,7 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.io.PrintWriter;
@@ -22,7 +24,7 @@ import java.io.StringWriter;
 import java.util.UUID;
 
 @Slf4j
-@ControllerAdvice(annotations = Controller.class)
+@ControllerAdvice
 @RequiredArgsConstructor
 public class WebGlobalExceptionHandler {
 
@@ -72,7 +74,27 @@ public class WebGlobalExceptionHandler {
     }
 
     /**
-     * [3] 예상치 못한 서버 에러 (500)
+     * [3] 파일 업로드 용량 초과 (resolve-lazily=true 일 때 컨트롤러 바인딩 시점에 던져짐)
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ModelAndView handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e,
+                                                             HttpServletRequest request) {
+        String traceId = generateTraceId();
+        FileValidationErrorCode errorCode = FileValidationErrorCode.FILE_SIZE_EXCEEDED_Servlet;
+
+        log.warn("[Multipart Exception] traceId: {}, message: {}", traceId, e.getMessage());
+        saveErrorLog(e, errorCode.getCode(), errorCode.getMessage(), request, traceId, errorCode.getSeverity());
+
+        return createBusinessErrorView(
+                errorCode.getStatus().value(),
+                errorCode.getMessage(),
+                request.getRequestURI(),
+                traceId
+        );
+    }
+
+    /**
+     * [4] 예상치 못한 서버 에러 (500)
      * HttpRequestMethodNotSupportedException, NoHandlerFoundException은 CustomErrorController에서 처리
      */
     @ExceptionHandler(Exception.class)
