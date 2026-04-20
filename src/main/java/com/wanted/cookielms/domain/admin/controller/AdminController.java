@@ -1,9 +1,7 @@
 package com.wanted.cookielms.domain.admin.controller;
 
-import com.wanted.cookielms.domain.admin.dto.AdminUserDto;
-import com.wanted.cookielms.domain.admin.dto.ApiMetricsDto;
-import com.wanted.cookielms.domain.admin.dto.BusinessMetricsDto;
-import com.wanted.cookielms.domain.admin.dto.TraceDetailDto;
+import com.wanted.cookielms.domain.admin.dto.*;
+import com.wanted.cookielms.domain.admin.service.AdminInsightService;
 import com.wanted.cookielms.domain.admin.service.AdminService;
 import com.wanted.cookielms.domain.admin.service.ApiPerformanceLogQueryService;
 import com.wanted.cookielms.domain.admin.service.BusinessServiceLogQueryService;
@@ -34,6 +32,7 @@ public class AdminController {
     private final ErrorLogQueryService errorLogQueryService;
     private final BusinessServiceLogQueryService businessServiceLogQueryService;
     private final TraceLogQueryService traceLogQueryService;
+    private final AdminInsightService adminInsightService;
 
     @ResponseBody
     @GetMapping("/users")
@@ -108,4 +107,28 @@ public class AdminController {
     public ResponseEntity<List<BusinessServiceLogResponseDto>> getUserServiceFailures(@PathVariable Long userId) {
         return ResponseEntity.ok(businessServiceLogQueryService.getFailuresByUserId(userId));
     }
+
+    @ResponseBody
+    @GetMapping("/logs/errors/critical")
+    public ResponseEntity<Page<CriticalErrorListItemDto>> getCriticalErrorsList(
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        return ResponseEntity.ok(errorLogQueryService.getCriticalErrorsList(pageable));
+    }
+
+    @ResponseBody
+    @GetMapping("/logs/errors/{errorId}")
+    public ResponseEntity<CriticalErrorDetailDto> getCriticalErrorDetail(@PathVariable Long errorId) {
+        CriticalErrorDetailDto detail = errorLogQueryService.getCriticalErrorDetail(errorId);
+        return detail != null
+                ? ResponseEntity.ok(detail)
+                : ResponseEntity.notFound().build();
+    }
+
+    @ResponseBody
+    @GetMapping("/insights")
+    public ResponseEntity<InsightsAggregateDto> getInsights() {
+        return ResponseEntity.ok(adminInsightService.getAllInsights());
+    }
+
 }

@@ -1,5 +1,7 @@
 package com.wanted.cookielms.domain.admin.service;
 
+import com.wanted.cookielms.domain.admin.dto.CriticalErrorDetailDto;
+import com.wanted.cookielms.domain.admin.dto.CriticalErrorListItemDto;
 import com.wanted.cookielms.global.logging.api.repository.ApiPerformanceLogRepository;
 import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
 import com.wanted.cookielms.global.logging.error.dto.ErrorLogResponseDTO;
@@ -118,5 +120,19 @@ public class ErrorLogQueryService {
         return errorLogs.stream()
                 .map(ErrorLogResponseDTO::fromList)
                 .toList();
+    }
+
+    /**
+     * [신규] Critical 에러 리스트 (페이징)
+     */
+    public Page<CriticalErrorListItemDto> getCriticalErrorsList(Pageable pageable) {
+        return errorLogRepository.findCriticalErrorsWithApiLog(pageable);
+    }
+
+    /**
+     * [신규] Critical 에러 상세 (단건)
+     */
+    public CriticalErrorDetailDto getCriticalErrorDetail(Long errorId) {
+        return errorLogRepository.findCriticalErrorDetail(errorId);
     }
 }

@@ -157,6 +157,15 @@
             <div class="widget-content" id="withdrawnContent"><div class="loading">데이터를 불러오는 중...</div></div>
         </div>
 
+        <!-- 섹션 6: 관리자 인사이트 (전체 너비) -->
+        <div class="widget widget-full">
+            <div class="widget-header">
+                <h2>💡 관리자 인사이트</h2>
+                <button onclick="loadInsights()">새로고침</button>
+            </div>
+            <div class="widget-content" id="insightsContent"><div class="loading">데이터를 불러오는 중...</div></div>
+        </div>
+
     </div>
 </div>
 
@@ -168,6 +177,17 @@
             <button class="modal-close" onclick="closeModalById('traceModal')">✕</button>
         </div>
         <div class="modal-body" id="traceModalBody"><div class="loading">불러오는 중...</div></div>
+    </div>
+</div>
+
+<!-- 모달: Critical 에러 상세 -->
+<div id="errorDetailModal" class="modal-overlay" onclick="closeModal('errorDetailModal', event)">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>CRITICAL 에러 상세</h3>
+            <button class="modal-close" onclick="closeModalById('errorDetailModal')">✕</button>
+        </div>
+        <div class="modal-body" id="errorDetailBody"><div class="loading">불러오는 중...</div></div>
     </div>
 </div>
 
@@ -298,36 +318,59 @@
         el.innerHTML = html;
     }
 
-    // ── 섹션 3: CRITICAL 에러 ───────────────────────────────
-    function loadErrors() {
-        fetchWidget('/admin/logs/errors', 'errorsContent', displayErrors);
+    // ── 섹션 3: CRITICAL 에러 (상세 리스트) ──────────────────
+    function loadErrors(page = 0) {
+        errorsCurrentPage = page;
+        const url = `/admin/logs/errors/critical?page=${page}&size=20`;
+        const el = document.getElementById('errorsContent');
+        el.innerHTML = '<div class="loading">데이터를 불러오는 중...</div>';
+        fetch(url)
+            .then(r => r.json())
+            .then(data => displayErrorsList(data, el))
+            .catch(() => { el.innerHTML = '<div class="msg-error">데이터를 불러올 수 없습니다.</div>'; });
     }
-    function displayErrors(data, el) {
-        if (!data || data.length === 0) { el.innerHTML = '<div class="info-box">CRITICAL 에러가 없습니다.</div>'; return; }
-        let html = '<table class="data-table"><thead><tr><th>아이디</th><th>CRITICAL 에러 수</th><th>상세</th></tr></thead><tbody>';
-        data.forEach(row => {
-            const userId = row.userId || row.userid;
-            const loginId = row.loginId || row.loginid;
-            const count = row.errorCount || row.errorcount;
-            const userCell = loginId ? `<button class="link-btn" onclick="openUserModal(${userId}, '${loginId}')">${loginId}</button>` : '비로그인';
-            const detailBtn = userId ? `<button class="link-btn" onclick="openUserModal(${userId}, '${loginId}')">이력 보기</button>` : '-';
+
+    function displayErrorsList(data, el) {
+        if (!data || !data.content || data.content.length === 0) {
+            el.innerHTML = '<div class="info-box">CRITICAL 에러가 없습니다.</div>';
+            renderErrorsPagination();
+            return;
+        }
+
+        let html = '<table class="data-table"><thead><tr><th>에러코드</th><th>URI</th><th>메서드</th><th>시간(ms)</th><th>발생시각</th><th>상세</th></tr></thead><tbody>';
+
+        data.content.forEach(err => {
+            const time = err.createdAt ? err.createdAt.replace('T', ' ').substring(0, 19) : '-';
+            const endpoint = err.endpoint || '-';
+            const method = err.httpMethod || '-';
+            const execTime = err.executionTimeMs || '-';
+            const detailBtn = `<button class="link-btn" onclick="openErrorDetailModal(${err.errorId})">보기</button>`;
+
             html += `<tr>
-                <td>${userCell}</td>
-                <td><span class="badge badge-danger">${count}건</span></td>
-                <td>${detailBtn}</td>
-            </tr>`;
+            <td><span class="badge badge-danger">${err.errorCode}</span></td>
+            <td>${endpoint}</td>
+            <td>${method}</td>
+            <td>${execTime}</td>
+            <td>${time}</td>
+            <td>${detailBtn}</td>
+        </tr>`;
         });
+
         html += '</tbody></table>';
         el.innerHTML = html;
+
+        // 페이징 업데이트
+        errorsTotalPages = data.totalPages;
+        renderErrorsPagination();
     }
 
     function renderErrorsPagination() {
         const el = document.getElementById('errorsPagination');
         el.innerHTML = `
-            <button onclick="loadErrors(${errorsCurrentPage - 1})" ${errorsCurrentPage === 0 ? 'disabled' : ''}>◀ 이전</button>
-            <span>${errorsCurrentPage + 1} / ${errorsTotalPages}</span>
-            <button onclick="loadErrors(${errorsCurrentPage + 1})" ${errorsCurrentPage >= errorsTotalPages - 1 ? 'disabled' : ''}>다음 ▶</button>
-        `;
+        <button onclick="loadErrors(${Math.max(0, errorsCurrentPage - 1)})" ${errorsCurrentPage === 0 ? 'disabled' : ''}>◀ 이전</button>
+        <span>${errorsCurrentPage + 1} / ${errorsTotalPages || 1}</span>
+        <button onclick="loadErrors(${errorsCurrentPage + 1})" ${errorsCurrentPage >= (errorsTotalPages || 1) - 1 ? 'disabled' : ''}>다음 ▶</button>
+    `;
     }
 
     // ── traceId 드릴다운 모달 ──────────────────────────────
@@ -527,6 +570,145 @@
         loadRecentBans();
         loadWithdrawnUsers();
     });
+
+    // ── 에러 상세 모달 ───────────────────────────────────────
+    function openErrorDetailModal(errorId) {
+        document.getElementById('errorDetailModal').classList.add('active');
+        const body = document.getElementById('errorDetailBody');
+        body.innerHTML = '<div class="loading">불러오는 중...</div>';
+
+        fetch(`/admin/logs/errors/${errorId}`)
+            .then(r => r.json())
+            .then(data => displayErrorDetail(data, body))
+            .catch(() => { body.innerHTML = '<div class="msg-error">데이터를 불러올 수 없습니다.</div>'; });
+    }
+
+    function displayErrorDetail(err, el) {
+        const time = err.createdAt ? err.createdAt.replace('T', ' ').substring(0, 19) : '-';
+        const traceBtn = err.traceId
+            ? `<button class="link-btn" onclick="openTraceModal('${err.traceId}'); closeModalById('errorDetailModal');">전체 추적 보기</button>`
+            : '-';
+
+        let html = `
+        <div style="margin-bottom:16px;">
+            <p><strong>에러코드:</strong> <span class="badge badge-danger">${err.errorCode}</span></p>
+            <p><strong>심각도:</strong> <span class="badge badge-danger">${err.severity}</span></p>
+            <p><strong>발생시각:</strong> ${time}</p>
+            <p><strong>클라이언트IP:</strong> ${err.clientIp || 'N/A'}</p>
+        </div>
+
+        <div class="section-title">에러 메시지</div>
+        <div class="info-box" style="background:#fff; border-left-color:var(--error); color:var(--text-primary); white-space:pre-wrap; overflow-x:auto; font-size:12px;">
+            ${err.errorMessage}
+        </div>
+
+        <div class="section-title" style="margin-top:12px;">예외 클래스</div>
+        <div class="info-box" style="background:#fff; border-left-color:var(--error); color:var(--text-primary); font-family:monospace; font-size:12px;">
+            ${err.exceptionName}
+        </div>
+
+        <div class="section-title" style="margin-top:12px;">스택 트레이스</div>
+        <div class="info-box" style="background:#fff; border-left-color:var(--error); color:var(--text-primary); white-space:pre-wrap; overflow-x:auto; font-family:monospace; font-size:11px; max-height:300px;">
+            ${err.stackTrace || 'N/A'}
+        </div>
+
+        <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--dust-grey);">
+            <strong>추적:</strong> ${traceBtn}
+        </div>
+    `;
+
+        el.innerHTML = html;
+    }
+
+    // ── 섹션 6: 관리자 인사이트 ──────────────────────────────
+    function loadInsights() {
+        fetchWidget('/admin/insights', 'insightsContent', displayInsights);
+    }
+    function displayInsights(data, el) {
+        let html = '';
+
+        html += '<div class="section-title">⚠️ CRITICAL 에러 유발 사용자 (24h)</div>';
+        if (data.criticalErrorUsers && data.criticalErrorUsers.length > 0) {
+            html += '<table class="data-table"><thead><tr><th>사용자</th><th>에러 수</th><th>마지막 발생</th></tr></thead><tbody>';
+            data.criticalErrorUsers.forEach(u => {
+                const time = u.lastErrorTime ? u.lastErrorTime.replace('T', ' ').substring(0, 16) : '-';
+                html += `<tr>
+                    <td><button class="link-btn" onclick="openUserModal(${u.userId}, '${u.loginId}')">${u.loginId}</button></td>
+                    <td><span class="badge badge-danger">${u.errorCount}</span></td>
+                    <td>${time}</td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+        } else {
+            html += '<div class="info-box">심각한 사용자가 없습니다.</div>';
+        }
+
+        html += '<div class="section-title" style="margin-top:12px;">🔴 엔드포인트별 에러율 Top 10 (7d)</div>';
+        if (data.endpointErrorRates && data.endpointErrorRates.length > 0) {
+            html += '<table class="data-table"><thead><tr><th>엔드포인트</th><th>총 호출</th><th>에러</th><th>에러율</th></tr></thead><tbody>';
+            data.endpointErrorRates.forEach(e => {
+                const rate = e.errorRate.toFixed(1);
+                const rateBadge = rate > 10
+                    ? '<span class="badge badge-danger">' + rate + '%</span>'
+                    : rate > 5
+                    ? '<span class="badge badge-warning">' + rate + '%</span>'
+                    : '<span class="badge badge-success">' + rate + '%</span>';
+                html += `<tr>
+                    <td>${e.endpoint}</td>
+                    <td>${e.totalCalls}</td>
+                    <td>${e.errorCount}</td>
+                    <td>${rateBadge}</td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+        } else {
+            html += '<div class="info-box">데이터가 없습니다.</div>';
+        }
+
+        html += '<div class="section-title" style="margin-top:12px;">📈 트래픽 히트맵 - 요일별×시간별 (4주 평균)</div>';
+        if (data.trafficHeatmap && data.trafficHeatmap.length > 0) {
+            const heatmapData = {};
+            data.trafficHeatmap.forEach(h => {
+                const key = `${h.dayOfWeek}-${h.hour}`;
+                heatmapData[key] = h.callCount;
+            });
+
+            html += '<table class="data-table" style="font-size:11px;"><thead><tr><th>시간</th>';
+            ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(day => {
+                html += `<th>${day}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+
+            for (let hour = 0; hour < 24; hour++) {
+                html += `<tr><td>${String(hour).padStart(2,'0')}:00</td>`;
+                for (let day = 1; day <= 7; day++) {
+                    const key = `${day}-${hour}`;
+                    const count = heatmapData[key] || 0;
+                    const intensity = count === 0 ? 0 : Math.min(100, Math.max(10, (count / 100) * 100));
+                    const bgColor = `rgba(122, 48, 32, ${intensity / 100})`;
+                    html += `<td style="background-color:${bgColor}; text-align:center; font-weight:600;">${count}</td>`;
+                }
+                html += '</tr>';
+            }
+            html += '</tbody></table>';
+        } else {
+            html += '<div class="info-box">데이터가 없습니다.</div>';
+        }
+
+        el.innerHTML = html;
+    }
+
+    // ── 초기 로드 ────────────────────────────────────────────
+    window.addEventListener('load', () => {
+        loadTraffic();
+        loadPerformance();
+        loadErrors();
+        loadUsers();
+        loadRecentBans();
+        loadWithdrawnUsers();
+        loadInsights();
+    });
+
 </script>
 <script src="/js/session-timer.js"></script>
 </body>

@@ -24,7 +24,7 @@ import org.springframework.web.servlet.ModelAndView;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.UUID;
-
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 @Slf4j
 @ControllerAdvice
 @RequiredArgsConstructor
@@ -93,6 +93,16 @@ public class WebGlobalExceptionHandler {
                 request.getRequestURI(),
                 traceId
         );
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Void> handleNoResourceFoundException(NoResourceFoundException e) {
+        // DB 로깅 메서드(saveErrorLog)를 아예 호출하지 않습니다!
+        // 콘솔에 거슬리지 않게 trace나 debug 레벨로만 살짝 남기거나 아예 생략해도 됩니다.
+        log.debug("정적 리소스를 찾을 수 없습니다", e.getResourcePath());
+
+        // 404 Not Found 상태 코드만 반환하고 조용히 요청을 종료합니다.
+        return ResponseEntity.notFound().build();
     }
 
     /**
