@@ -172,10 +172,12 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO users (email, id, password, name, nickname, phone, role, status, isDeleted, is_deleted, created_at, updated_at, deleted_at)
 VALUES
--- ADMIN 1명
+-- ADMIN 2명
 ('admin@cookielms.com', 'admin', '$2a$10$hashedpassword1234567890abcdef', '운영자', '관리자', '010-0000-0001', 'ADMIN', 'ACTIVE', 0, 0, '2024-01-01 09:00:00', '2024-01-01 09:00:00', NULL),
+('user54@cookielms.com', 'admin1', '$2a$10$wfGTAjR94RnWzUYmUTjovurHITcpSrl4KgqGfL2jEKTaRIrYjowoq', '운영자', '관리자', '010-0000-0002', 'ADMIN', 'ACTIVE', 0, 0, '2024-01-01 09:00:00', '2024-01-01 09:00:00', NULL),
 
--- INSTRUCTOR 10명
+
+-- INSTRUCTOR 11명
 ('inst01@cookielms.com', 'inst01', '$2a$10$hashedpassword1234567890abcdef', '김자바',   '자바킹',      '010-1001-0001', 'INSTRUCTOR', 'ACTIVE',  0, 0, '2024-01-05 10:00:00', '2024-01-05 10:00:00', NULL),
 ('inst02@cookielms.com', 'inst02', '$2a$10$hashedpassword1234567890abcdef', '이스프링', '스프링마스터', '010-1001-0002', 'INSTRUCTOR', 'ACTIVE',  0, 0, '2024-01-06 10:00:00', '2024-01-06 10:00:00', NULL),
 ('inst03@cookielms.com', 'inst03', '$2a$10$hashedpassword1234567890abcdef', '박리액트', '프론트고수',   '010-1001-0003', 'INSTRUCTOR', 'ACTIVE',  0, 0, '2024-01-07 10:00:00', '2024-01-07 10:00:00', NULL),
@@ -186,6 +188,8 @@ VALUES
 ('inst08@cookielms.com', 'inst08', '$2a$10$hashedpassword1234567890abcdef', '서네트워크','네트워크박사', '010-1001-0008', 'INSTRUCTOR', 'DORMANT', 0, 0, '2024-01-12 10:00:00', '2024-03-01 10:00:00', NULL),
 ('inst09@cookielms.com', 'inst09', '$2a$10$hashedpassword1234567890abcdef', '윤보안',   '보안전문가',  '010-1001-0009', 'INSTRUCTOR', 'ACTIVE',  0, 0, '2024-01-13 10:00:00', '2024-01-13 10:00:00', NULL),
 ('inst10@cookielms.com', 'inst10', '$2a$10$hashedpassword1234567890abcdef', '임도커',   '도커쿠버왕',  '010-1001-0010', 'INSTRUCTOR', 'ACTIVE',  0, 0, '2024-01-14 10:00:00', '2024-01-14 10:00:00', NULL),
+('inst11@cookielms.com', 'inst1', '$2a$10$5LnyRwCc3f9TrgXdB8aQEeYX.2Eg2nWxq4HrKgoRU5/Z8hpEKV2ti', '오데이터',   '자바마스터',  '010-1001-0012', 'INSTRUCTOR', 'ACTIVE',  0, 0, '2024-01-14 10:00:00', '2024-01-14 10:00:00', NULL),
+
 
 -- USER (학생) 50명
 ('user01@cookielms.com', 'user01', '$2a$10$hashedpassword1234567890abcdef', '강민준', '코딩초보',       '010-2001-0001', 'USER', 'ACTIVE',  0, 0, '2024-02-01 11:00:00', '2024-02-01 11:00:00', NULL),
@@ -237,7 +241,13 @@ VALUES
 ('user47@cookielms.com', 'user47', '$2a$10$hashedpassword1234567890abcdef', '허민찬', '배치처리공부',   '010-2001-0047', 'USER', 'ACTIVE',  0, 0, '2024-02-24 11:00:00', '2024-02-24 11:00:00', NULL),
 ('user48@cookielms.com', 'user48', '$2a$10$hashedpassword1234567890abcdef', '홍다인', 'WebSocket입문',  '010-2001-0048', 'USER', 'ACTIVE',  0, 0, '2024-02-24 13:00:00', '2024-02-24 13:00:00', NULL),
 ('user49@cookielms.com', 'user49', '$2a$10$hashedpassword1234567890abcdef', '황준영', '백엔드입문',     '010-2001-0049', 'USER', 'ACTIVE',  0, 0, '2024-02-25 11:00:00', '2024-02-25 11:00:00', NULL),
-('user50@cookielms.com', 'user50', '$2a$10$hashedpassword1234567890abcdef', '황지수', '개발공부중',     '010-2001-0050', 'USER', 'ACTIVE',  0, 0, '2024-02-25 13:05:00', '2024-02-25 13:05:00', NULL);
+('user50@cookielms.com', 'user50', '$2a$10$hashedpassword1234567890abcdef', '황지수', '개발공부중',     '010-2001-0050', 'USER', 'ACTIVE',  0, 0, '2024-02-25 13:05:00', '2024-02-25 13:05:00', NULL),
+('user51@cookielms.com', 'user1', '$2a$10$gLacJKgCmIdEFGsWhLKkpOpuSxe.l8zT9HTQD2vc3hSEoGEZvKGie', '하승주', '백엔드고수',     '010-2001-0051', 'USER', 'ACTIVE',  0, 0, '2024-02-25 13:05:00', '2024-02-25 13:05:00', NULL),
+('user52@cookielms.com', 'user2', '$2a$10$z4BHQYZK5W2egSonVECBX.q6X3dSruZdIMIT4JrCBXir.xie4R7z6', '홍다희', '자바초보',     '010-2002-0051', 'USER', 'ACTIVE',  0, 0, '2024-02-25 13:05:00', '2024-02-25 13:05:00', NULL),
+('user53@cookielms.com', 'user3', '$2a$10$eH5TnPmyJGRLVW0wvel1Vejj31JFa9bPeRgpcRoTIe2wF1ioxABwK', '최민원', '트랜잭션초보',     '010-2402-0051', 'USER', 'ACTIVE',  0, 0, '2024-02-25 13:05:00', '2024-02-25 13:05:00', NULL);
+
+
+
 
 -- =====================================================
 -- INSERT: lecture (users 삽입 후)
@@ -334,8 +344,8 @@ VALUES
 ('XSS와 CSRF 방어',        '웹 보안 취약점 대응',               25, 10, 'ACTIVE', 'WED', '14:00:00', '16:00:00', 'http://video.url/87',  'thumb_87.png',  'pdf_security2_01.pdf',     5),
 ('SQL 인젝션 방어',        '안전한 쿼리 작성법',                30, 15, 'ACTIVE', 'THU', '19:00:00', '21:00:00', 'http://video.url/88',  'thumb_88.png',  'pdf_sqlinject_01.pdf',     5),
 ('H2 인메모리 DB',         '개발 환경 빠른 구성법',             35, 28, 'ACTIVE', 'FRI', '10:00:00', '12:00:00', 'http://video.url/89',  'thumb_89.png',  'pdf_h2_01.pdf',            6),
-('테스트 컨테이너',        'Testcontainers DB 통합 테스트',     20,  4, 'ACTIVE', 'SAT', '14:00:00', '17:00:00', 'http://video.url/90',  'thumb_90.png',  'pdf_testcontainer_01.pdf', 6),
-('인수 테스트',            'RestAssured API 테스트',            25,  9, 'ACTIVE', 'SUN', '10:00:00', '12:00:00', 'http://video.url/91',  'thumb_91.png',  'pdf_acceptance_01.pdf',    7),
+('테스트 컨테이너',        'Testcontainers DB 통합 테스트',     20,  4, 'ACTIVE', 'SAT', '14:00:00', '17:00:00', 'https://www.youtube.com/watch?v=sly2u8BIi9E',  'thumb_90.png',  'pdf_testcontainer_01.pdf', 6),
+('깃허브 기초',            '깃 관리 방법의 이해',            25,  9, 'ACTIVE', 'SUN', '10:00:00', '12:00:00', 'https://www.youtube.com/watch?v=sly2u8BIi9E',  'thumb_91.png',  'pdf_acceptance_01.pdf',    7),
 ('아키텍처 테스트',        'ArchUnit 의존성 검증',              15,  2, 'ACTIVE', 'MON', '20:00:00', '22:00:00', 'http://video.url/92',  'thumb_92.png',  'pdf_archunit_01.pdf',      7),
 ('Flyway 마이그레이션',    'DB 스키마 버전 관리',               25, 12, 'ACTIVE', 'TUE', '14:00:00', '16:00:00', 'http://video.url/93',  'thumb_93.png',  'pdf_flyway_01.pdf',        8),
 ('Liquibase 활용',         '선언적 DB 변경 관리',               20,  5, 'ACTIVE', 'WED', '10:00:00', '12:00:00', 'http://video.url/94',  'thumb_94.png',  'pdf_liquibase_01.pdf',     8),
