@@ -157,7 +157,7 @@ CREATE TABLE error_logs (
     stack_trace     TEXT                                NULL,
     trace_id        VARCHAR(36)                         NULL,
     PRIMARY KEY (id),
-    INDEX idx_trace_id (trace_id),
+    INDEX idx_trace_id (trace_id)
 );
 
 SET FOREIGN_KEY_CHECKS = 1;
