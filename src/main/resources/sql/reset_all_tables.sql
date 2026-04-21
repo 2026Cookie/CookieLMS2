@@ -153,15 +153,11 @@ CREATE TABLE error_logs (
     error_code      VARCHAR(50)                         NOT NULL,
     error_message   VARCHAR(500)                        NOT NULL,
     exception_name  VARCHAR(100)                        NOT NULL,
-    http_method     VARCHAR(10)                         NOT NULL,
-    request_uri     VARCHAR(500)                        NOT NULL,
     severity        ENUM('CRITICAL','INFO','WARNING')   NULL,
     stack_trace     TEXT                                NULL,
     trace_id        VARCHAR(36)                         NULL,
-    user_id         VARCHAR(50)                         NULL,
     PRIMARY KEY (id),
     INDEX idx_trace_id (trace_id),
-    INDEX idx_user_id  (user_id)
 );
 
 SET FOREIGN_KEY_CHECKS = 1;
