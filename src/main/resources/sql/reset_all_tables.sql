@@ -339,7 +339,11 @@ VALUES
 ('천상계 자이라 배우기',        '자이라 권위자 라쿤99 초청석',              15,  2, 'ACTIVE', 'MON', '20:00:00', '22:00:00', 'https://youtu.be/m5cdgFhwJzI?si=V0IOzMmloPkr7Z7K',  'thumb_92.png',  'pdf_archunit_01.pdf',      7),
 ('알콜 의존증에서 벗어나는법',    '당신도 할수있다 갓생',               25, 12, 'ACTIVE', 'TUE', '14:00:00', '16:00:00', 'https://youtu.be/vsmdRNmes5c?si=P_VE8C34hVm9P86_',  'thumb_93.png',  'pdf_flyway_01.pdf',        8),
 ('마늘로 술만드는법',         '마늘로 술만들기',               20,  5, 'ACTIVE', 'WED', '10:00:00', '12:00:00', 'https://youtu.be/7CzrwilND54?si=mvoCYU1cZMCYPmEz',  'thumb_94.png',  'pdf_liquibase_01.pdf',     8),
-('교잡종 알아보기',       '침착맨의 교잡종 강의',             20,  7, 'ACTIVE', 'THU', '15:00:00', '17:00:00', 'https://youtu.be/YfOH0y74UGA?si=aEv-TgxjOWqKtQnv',  'thumb_95.png',  'pdf_datarest_01.pdf',      9),
-('본좌에게 배우는 공중부양',           '유치원생도 배우는 공중부양',             15,  3, 'ACTIVE', 'FRI', '19:00:00', '21:00:00', 'https://youtu.be/-4c93_fLlE4?si=gugNGusPuyrjAGTN',  'thumb_96.png',  'pdf_hateoas_01.pdf',       9),
+('교잡종 알아보기',       '침착맨의 교잡종 강의',             20,  10, 'ACTIVE', 'THU', '15:00:00', '17:00:00', 'https://youtu.be/YfOH0y74UGA?si=aEv-TgxjOWqKtQnv',  'thumb_95.png',  'pdf_datarest_01.pdf',      9),
+('본좌에게 배우는 공중부양',           '유치원생도 배우는 공중부양',             15,  15, 'ACTIVE', 'FRI', '19:00:00', '21:00:00', 'https://youtu.be/-4c93_fLlE4?si=gugNGusPuyrjAGTN',  'thumb_96.png',  'pdf_hateoas_01.pdf',       9),
 ('현우진이 말하는 우매함의 봉우리','더닝 크루거 효과란?',              25, 11, 'ACTIVE', 'SAT', '10:00:00', '12:00:00', 'https://youtu.be/lHBWwiBcPX0?si=dCbEn7HpA6fui8d2',  'thumb_97.png',  'pdf_versioning_01.pdf',    10),
 ('가정용 우라늄 농축법',     '당신도 될 수 있다 핵보유 가정',            50, 49, 'ACTIVE', 'SUN', '14:00:00', '16:00:00', 'https://youtu.be/jw7SYZ3KsIs?si=j0QaDUl0pyNu3WfL',  'thumb_98.png',  'pdf_career_01.pdf',        10);
+
+
+INSERT INTO assignments (title, content, due_date, lecture_id)
+VALUES ('1주차 과제', '강의 내용을 정리하여 제출하세요.', '2026-04-20 23:59:59', 95);
