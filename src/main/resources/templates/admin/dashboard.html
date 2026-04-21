@@ -215,8 +215,9 @@
 <!-- 모달: 유저 상세 -->
 <div id="userModal" class="modal-overlay" onclick="closeModal('userModal', event)">
     <div class="modal">
-        <div class="modal-header">
-            <h3 id="userModalTitle">유저 상세</h3>
+        <div class="modal-header" style="display:flex; align-items:center; gap:8px;">
+            <h3 id="userModalTitle" style="flex:1; margin:0;">유저 상세</h3>
+            <div id="userModalActions" style="display:flex; gap:8px;"></div>
             <button class="modal-close" onclick="closeModalById('userModal')">✕</button>
         </div>
         <div class="modal-body" id="userModalBody"><div class="loading">불러오는 중...</div></div>
@@ -449,11 +450,18 @@
         let html = '<table class="data-table"><thead><tr><th>사용자</th><th>에러 수</th><th>상세</th></tr></thead><tbody>';
 
         data.forEach(err => {
-            const userBtn = `<button class="link-btn" onclick="openUserErrorsModal(${err.userId}, '${err.loginId}')">${err.loginId}</button>`;
+            const hasUser = err.userId != null;
+            const label = err.loginId || '(미식별)';
+            const userCell = hasUser
+                ? `<button class="link-btn" onclick="openUserErrorsModal(${err.userId}, '${label}')">${label}</button>`
+                : `<span style="color:var(--text-muted);">${label}</span>`;
+            const detailCell = hasUser
+                ? `<button class="link-btn" onclick="openUserErrorsModal(${err.userId}, '${label}')">보기</button>`
+                : `<span style="color:var(--text-muted);">-</span>`;
             html += `<tr>
-            <td>${userBtn}</td>
+            <td>${userCell}</td>
             <td><span class="badge badge-danger">${err.errorCount}</span></td>
-            <td><button class="link-btn" onclick="openUserErrorsModal(${err.userId}, '${err.loginId}')">보기</button></td>
+            <td>${detailCell}</td>
         </tr>`;
         });
 
@@ -710,28 +718,18 @@
 
     // ── 사용자별 CRITICAL 에러 상세 모달 ──────────────────────
     function openUserErrorsModal(userId, loginId) {
+        if (userId == null) {
+            return;
+        }
+
         document.getElementById('userModalTitle').textContent = `${loginId} - CRITICAL 에러`;
 
-        // 밴 버튼 추가
-        const modalHeader = document.querySelector('#userModal .modal-header');
-        const existingBtn = modalHeader.querySelector('.ban-btn');
-        if (!existingBtn) {
-            const banBtn = document.createElement('button');
-            banBtn.className = 'action-btn ban-btn';
-            banBtn.style.marginRight = '10px';
-            banBtn.textContent = '밴';
-            banBtn.onclick = function() { banUser(userId); closeModalById('userModal'); };
-
-            const unbanBtn = document.createElement('button');
-            unbanBtn.className = 'action-btn unban-btn';
-            unbanBtn.style.marginRight = '10px';
-            unbanBtn.textContent = '밴 해제';
-            unbanBtn.onclick = function() { unbanUser(userId); closeModalById('userModal'); };
-
-            const closeBtn = modalHeader.querySelector('.modal-close');
-            modalHeader.insertBefore(unbanBtn, closeBtn);
-            modalHeader.insertBefore(banBtn, closeBtn);
-        }
+        // 액션 버튼(밴 / 밴 해제) 우측 상단 컨테이너에 렌더
+        const actions = document.getElementById('userModalActions');
+        actions.innerHTML = `
+            <button class="action-btn unban-btn" onclick="unbanUser(${userId}); closeModalById('userModal');">밴 해제</button>
+            <button class="action-btn ban-btn" onclick="banUser(${userId}); closeModalById('userModal');">밴</button>
+        `;
 
         document.getElementById('userModal').classList.add('active');
         const body = document.getElementById('userModalBody');

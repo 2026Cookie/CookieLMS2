@@ -69,31 +69,36 @@ public interface ErrorLogRepository extends JpaRepository<ErrorLogEntity, Long> 
     List<ErrorLogEntity> findByTraceIdIn(@Param("traceIds") List<String> traceIds);
 
     /**
-     * 사용자별 CRITICAL 에러 건수 집계 (API 로그 join)
-     * API 로그 테이블의 user_id를 기준으로 그룹핑
+     * 특정 사용자의 에러 로그 (user_id 직접 조회)
+     */
+    List<ErrorLogEntity> findByUserIdOrderByCreatedAtDesc(Long userId);
+
+    /**
+     * 사용자별 CRITICAL 에러 건수 집계
+     * error_logs.user_id를 기준으로 직접 그룹핑 (Security 필터 차단 요청 포함)
+     * 익명 요청(user_id IS NULL)은 제외
      */
     @Query(value = """
-    SELECT a.user_id as userId, u.id as loginId, COUNT(*) as errorCount
+    SELECT e.user_id as userId, u.id as loginId, COUNT(*) as errorCount
     FROM error_logs e
-    JOIN api_performance_logs a ON e.trace_id = a.trace_id
-    LEFT JOIN users u ON a.user_id = u.user_Id
+    LEFT JOIN users u ON e.user_id = u.user_Id
     WHERE e.severity = 'CRITICAL'
-    GROUP BY a.user_id, u.id
+      AND e.user_id IS NOT NULL
+    GROUP BY e.user_id, u.id
     ORDER BY errorCount DESC
 """, nativeQuery = true)
     List<Map<String, Object>> findCriticalErrorCountGroupByUserId();
 
     @Query("""
         SELECT new com.wanted.cookielms.domain.admin.dto.InsightErrorUserDto(
-            a.userId, u.loginId, COUNT(e), MAX(e.createdAt)
+            e.userId, u.loginId, COUNT(e), MAX(e.createdAt)
         )
         FROM ErrorLogEntity e
-        LEFT JOIN ApiPerformanceLogEntity a ON e.traceId = a.traceId
-        LEFT JOIN User u ON a.userId = u.userId
+        LEFT JOIN User u ON e.userId = u.userId
         WHERE e.severity = 'CRITICAL'
         AND e.createdAt >= :since
-        AND a.userId IS NOT NULL
-        GROUP BY a.userId, u.loginId
+        AND e.userId IS NOT NULL
+        GROUP BY e.userId, u.loginId
         HAVING COUNT(e) >= :threshold
         ORDER BY COUNT(e) DESC
         """)

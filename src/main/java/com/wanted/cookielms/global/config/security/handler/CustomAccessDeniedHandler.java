@@ -46,6 +46,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                 .clientIp(getClientIp(request))
                 .stackTrace("Security Filter Level: Access Denied")
                 .traceId(traceId)
+                .userId(getCurrentUserId())
                 .severity(globalErrorCode.getSeverity())
                 .build();
 
