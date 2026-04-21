@@ -1,9 +1,7 @@
 package com.wanted.cookielms.domain.admin.controller;
 
-import com.wanted.cookielms.domain.admin.dto.AdminUserDto;
-import com.wanted.cookielms.domain.admin.dto.ApiMetricsDto;
-import com.wanted.cookielms.domain.admin.dto.BusinessMetricsDto;
-import com.wanted.cookielms.domain.admin.dto.TraceDetailDto;
+import com.wanted.cookielms.domain.admin.dto.*;
+import com.wanted.cookielms.domain.admin.service.AdminInsightService;
 import com.wanted.cookielms.domain.admin.service.AdminService;
 import com.wanted.cookielms.domain.admin.service.ApiPerformanceLogQueryService;
 import com.wanted.cookielms.domain.admin.service.BusinessServiceLogQueryService;
@@ -34,6 +32,7 @@ public class AdminController {
     private final ErrorLogQueryService errorLogQueryService;
     private final BusinessServiceLogQueryService businessServiceLogQueryService;
     private final TraceLogQueryService traceLogQueryService;
+    private final AdminInsightService adminInsightService;
 
     @ResponseBody
     @GetMapping("/users")
@@ -77,9 +76,12 @@ public class AdminController {
     @GetMapping("/logs/performance")
     public ResponseEntity<BusinessMetricsDto> getPerformanceMetrics() {
         LocalDateTime since = LocalDateTime.now().minusDays(7);
-        List<Map<String, Object>> slow = businessServiceLogQueryService.getTopSlowMethods(10, since);
-        List<Map<String, Object>> failures = businessServiceLogQueryService.getTopFailureMethods(10, since);
-        return ResponseEntity.ok(new BusinessMetricsDto(slow, failures));
+        List<BusinessMetricsDto.SlowMethodMetric> slow = businessServiceLogQueryService.getTopSlowMethods(10, since);
+        List<BusinessMetricsDto.FailureMethodMetric> failures = businessServiceLogQueryService.getTopFailureMethods(10, since);
+        return ResponseEntity.ok(BusinessMetricsDto.builder()
+                .slowMethods(slow)
+                .failureMethods(failures)
+                .build());
     }
 
     @ResponseBody
@@ -105,4 +107,42 @@ public class AdminController {
     public ResponseEntity<List<BusinessServiceLogResponseDto>> getUserServiceFailures(@PathVariable Long userId) {
         return ResponseEntity.ok(businessServiceLogQueryService.getFailuresByUserId(userId));
     }
+
+    @ResponseBody
+    @GetMapping("/logs/errors/critical")
+    public ResponseEntity<Page<CriticalErrorListItemDto>> getCriticalErrorsList(
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        return ResponseEntity.ok(errorLogQueryService.getCriticalErrorsList(pageable));
+    }
+
+    @ResponseBody
+    @GetMapping("/logs/errors/{errorId}")
+    public ResponseEntity<CriticalErrorDetailDto> getCriticalErrorDetail(@PathVariable Long errorId) {
+        CriticalErrorDetailDto detail = errorLogQueryService.getCriticalErrorDetail(errorId);
+        return detail != null
+                ? ResponseEntity.ok(detail)
+                : ResponseEntity.notFound().build();
+    }
+
+    @ResponseBody
+    @GetMapping("/insights")
+    public ResponseEntity<InsightsAggregateDto> getInsights() {
+        return ResponseEntity.ok(adminInsightService.getAllInsights());
+    }
+
+    @ResponseBody
+    @GetMapping("/logs/endpoint/**")
+    public ResponseEntity<List<EndpointCallDetailDto>> getEndpointCallDetails(jakarta.servlet.http.HttpServletRequest request) {
+        String endpoint = request.getRequestURI().substring("/admin/logs/endpoint".length());
+        if (endpoint.isEmpty()) endpoint = "/";
+        return ResponseEntity.ok(apiPerformanceLogQueryService.getEndpointCallDetails(endpoint));
+    }
+
+    @ResponseBody
+    @GetMapping("/logs/method/{classMethod}")
+    public ResponseEntity<List<Map<String, Object>>> getMethodCallDetails(@PathVariable String classMethod) {
+        return ResponseEntity.ok(businessServiceLogQueryService.getMethodCallDetails(classMethod));
+    }
+
 }

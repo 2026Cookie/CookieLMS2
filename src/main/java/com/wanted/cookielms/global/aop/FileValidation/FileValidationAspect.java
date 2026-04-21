@@ -1,5 +1,7 @@
 package com.wanted.cookielms.global.aop.FileValidation;
 
+// 🌟 AlertException import 추가
+import com.wanted.cookielms.global.aop.FileValidation.FileValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -31,10 +33,12 @@ public class FileValidationAspect {
                     return null;
                 }
 
+                // 🌟 수정 1: 파일 크기 초과
                 if (file.getSize() > maxSizeBytes) {
                     throw new FileValidationException(FileValidationErrorCode.FILE_SIZE_EXCEEDED);
                 }
 
+                // 🌟 수정 2: 허용되지 않은 확장자
                 if (allowedExts.length > 0) {
                     String originalName = file.getOriginalFilename();
                     String ext = originalName.substring(originalName.lastIndexOf(".")).toLowerCase();
@@ -43,6 +47,7 @@ public class FileValidationAspect {
                     }
                 }
 
+                // 🌟 수정 3: 허용되지 않은 MIME 타입
                 if (allowedMimeTypes.length > 0) {
                     String contentType = file.getContentType();
                     if (contentType == null || !Arrays.asList(allowedMimeTypes).contains(contentType)) {

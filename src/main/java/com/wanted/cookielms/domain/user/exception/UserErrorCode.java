@@ -1,5 +1,6 @@
 package com.wanted.cookielms.domain.user.exception;
 
+import com.wanted.cookielms.global.error.handler.ErrorCode;
 import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +8,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum UserErrorCode {
+public enum UserErrorCode implements ErrorCode {
 
     DUPLICATE_LOGIN_ID(HttpStatus.CONFLICT, "USR001", "이미 존재하는 아이디입니다.", ErrorSeverity.INFO),
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "USR002", "이미 존재하는 이메일입니다.", ErrorSeverity.INFO),

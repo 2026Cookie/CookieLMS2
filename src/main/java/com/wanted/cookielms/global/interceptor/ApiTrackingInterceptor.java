@@ -13,7 +13,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import com.wanted.cookielms.domain.auth.dto.AuthDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-
+import org.slf4j.MDC;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -55,6 +55,8 @@ public class ApiTrackingInterceptor implements HandlerInterceptor {
             userId = authDetails.getLoginUserDTO().getUserId();
         }
 
+        String traceId = MDC.get("traceId");
+
         ApiPerformanceLogDto dto = new ApiPerformanceLogDto();
         dto.setEndpoint(request.getRequestURI());
         dto.setHttpMethod(httpMethod);
@@ -62,6 +64,7 @@ public class ApiTrackingInterceptor implements HandlerInterceptor {
         dto.setCreatedAt(LocalDateTime.now());
         dto.setUserId(userId);
         dto.setStatusCode(response.getStatus());
+        dto.setTraceId(traceId);
 
         apiPerformanceLogService.saveAsync(dto);
     }

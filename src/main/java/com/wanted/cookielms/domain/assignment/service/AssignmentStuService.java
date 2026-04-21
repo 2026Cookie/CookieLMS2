@@ -7,6 +7,7 @@ import com.wanted.cookielms.domain.assignment.exception.AssignmentErrorCode;
 import com.wanted.cookielms.domain.assignment.exception.AssignmentException;
 import com.wanted.cookielms.domain.assignment.repository.AssignmentStuRepository;
 import com.wanted.cookielms.domain.assignment.repository.AssignmentSubmissionStuRepository;
+import com.wanted.cookielms.global.aop.BussinessServiceLogging;
 import com.wanted.cookielms.global.aop.FileValidation.FileValidation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,6 +58,7 @@ public class AssignmentStuService {
                 .build();
     }
 
+    @BussinessServiceLogging
     @FileValidation(maxSize = 5, allowedExtensions = {".pdf"}, allowedMimeTypes = {"application/pdf"})
     @Transactional
     public void submitAssignment(Long assignmentId, Long studentId, MultipartFile file) {

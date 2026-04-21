@@ -1,5 +1,6 @@
 package com.wanted.cookielms.domain.assignment.exception;
 
+import com.wanted.cookielms.global.error.handler.ErrorCode;
 import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +8,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum AssignmentErrorCode {
+public enum AssignmentErrorCode implements ErrorCode {
 
     ASSIGNMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "ASG001", "존재하지 않는 과제입니다.", ErrorSeverity.WARNING),
     SUBMISSION_DEADLINE_PASSED(HttpStatus.CONFLICT, "ASG002", "제출 기한이 지났습니다. (비정상 접근 감지)", ErrorSeverity.CRITICAL),

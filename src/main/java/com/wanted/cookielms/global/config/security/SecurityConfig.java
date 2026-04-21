@@ -93,6 +93,7 @@ public class SecurityConfig {
                 // 5. 보안 설정
                 .csrf(csrf -> csrf.disable());
 
+
         return http.build();
     }
 }

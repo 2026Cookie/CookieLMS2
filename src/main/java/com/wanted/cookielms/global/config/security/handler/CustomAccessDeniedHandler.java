@@ -37,18 +37,13 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         }
 
         // ✅ SecurityContextHolder에서 userId 추출
-        Long userId = getCurrentUserId();
-
         GlobalErrorCode globalErrorCode = GlobalErrorCode.FORBIDDEN;
 
         ErrorLogEntity errorLog = ErrorLogEntity.builder()
                 .errorCode(globalErrorCode.getCode())
                 .errorMessage(globalErrorCode.getMessage() + ": " + accessDeniedException.getMessage())
                 .exceptionName(accessDeniedException.getClass().getSimpleName())
-                .requestUri(request.getRequestURI())
-                .httpMethod(request.getMethod())
                 .clientIp(getClientIp(request))
-                .userId(userId)  // ✅ userId 추가
                 .stackTrace("Security Filter Level: Access Denied")
                 .traceId(traceId)
                 .severity(globalErrorCode.getSeverity())

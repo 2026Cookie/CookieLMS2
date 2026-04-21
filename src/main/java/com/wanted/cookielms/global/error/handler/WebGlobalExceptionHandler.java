@@ -1,6 +1,8 @@
 package com.wanted.cookielms.global.error.handler;
 
 import com.wanted.cookielms.domain.auth.dto.AuthDetails;
+import com.wanted.cookielms.global.aop.FileValidation.FileValidationErrorCode;
+import com.wanted.cookielms.global.aop.FileValidation.FileValidationException;
 import com.wanted.cookielms.global.logging.error.service.ErrorLogService;
 import com.wanted.cookielms.global.logging.error.entity.ErrorLogEntity;
 import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
@@ -8,21 +10,23 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.http.HttpHeaders;       // 🌟 추가됨
+import org.springframework.http.ResponseEntity;     // 🌟 추가됨
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.UUID;
-
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 @Slf4j
-@ControllerAdvice(annotations = Controller.class)
+@ControllerAdvice
 @RequiredArgsConstructor
 public class WebGlobalExceptionHandler {
 
@@ -72,8 +76,37 @@ public class WebGlobalExceptionHandler {
     }
 
     /**
-     * [3] 예상치 못한 서버 에러 (500)
-     * HttpRequestMethodNotSupportedException, NoHandlerFoundException은 CustomErrorController에서 처리
+     * [3] 파일 업로드 용량 초과
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ModelAndView handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e,
+                                                             HttpServletRequest request) {
+        String traceId = generateTraceId();
+        FileValidationErrorCode errorCode = FileValidationErrorCode.FILE_SIZE_EXCEEDED_Servlet;
+
+        log.warn("[Multipart Exception] traceId: {}, message: {}", traceId, e.getMessage());
+        saveErrorLog(e, errorCode.getCode(), errorCode.getMessage(), request, traceId, errorCode.getSeverity());
+
+        return createBusinessErrorView(
+                errorCode.getStatus().value(),
+                errorCode.getMessage(),
+                request.getRequestURI(),
+                traceId
+        );
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Void> handleNoResourceFoundException(NoResourceFoundException e) {
+        // DB 로깅 메서드(saveErrorLog)를 아예 호출하지 않습니다!
+        // 콘솔에 거슬리지 않게 trace나 debug 레벨로만 살짝 남기거나 아예 생략해도 됩니다.
+        log.debug("정적 리소스를 찾을 수 없습니다", e.getResourcePath());
+
+        // 404 Not Found 상태 코드만 반환하고 조용히 요청을 종료합니다.
+        return ResponseEntity.notFound().build();
+    }
+
+    /**
+     * [4] 예상치 못한 서버 에러 (500)
      */
     @ExceptionHandler(Exception.class)
     public ModelAndView handleUnhandledException(Exception e, HttpServletRequest request) {
@@ -90,6 +123,34 @@ public class WebGlobalExceptionHandler {
                 traceId
         );
     }
+
+    /**
+     * [5] 🌟 UX를 고려한 전역 Alert 예외 처리 (수정됨)
+     */
+    @ExceptionHandler(FileValidationException.class)
+    public ResponseEntity<String> handleAlertException(FileValidationException e, HttpServletRequest request) {
+
+        String traceId = generateTraceId();
+        saveErrorLog(e, e.getCode(), e.getMessage(), request, traceId, e.getSeverity());
+
+        // 2. 스크립트 생성 (작은따옴표 이스케이프 처리)
+        String safeMessage = e.getMessage() != null ? e.getMessage().replace("'", "\\'") : "오류가 발생했습니다.";
+        String script;
+
+        if (e.getRedirectUrl() == null) {
+            // URL이 없으면 이전 폼으로 복귀 (입력 데이터 보존)
+            script = String.format("<script>alert('%s'); history.back();</script>", safeMessage);
+        } else {
+            // URL이 있으면 해당 페이지로 강제 이동
+            script = String.format("<script>alert('%s'); location.href='%s';</script>", safeMessage, e.getRedirectUrl());
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, "text/html; charset=UTF-8");
+
+        return new ResponseEntity<>(script, headers, e.getStatus());
+    }
+
 
     // =========================================================================
     // Private Helper Methods
@@ -111,13 +172,12 @@ public class WebGlobalExceptionHandler {
                     .errorCode(errorCodeString)
                     .errorMessage(errorMessage)
                     .exceptionName(e.getClass().getSimpleName())
-                    .requestUri(request.getRequestURI())
-                    .httpMethod(request.getMethod())
                     .clientIp(getClientIp(request))
-                    .userId(getCurrentUserId())
                     .stackTrace(getStackTraceAsString(e))
                     .traceId(traceId)
                     .severity(severity)
+                    // 필요하다면 아래 줄의 주석을 풀고 userId를 저장할 수도 있습니다.
+                    // .userId(getCurrentUserId())
                     .build();
 
             errorLogService.saveErrorLogAsync(errorLog);
@@ -141,15 +201,13 @@ public class WebGlobalExceptionHandler {
     }
 
     private String generateTraceId() {
-        // MDC에서 기존 traceId 가져오기 (TraceIdFilter에서 생성한 것)
         String traceId = MDC.get("traceId");
         if (traceId == null) {
-            traceId = UUID.randomUUID().toString();  // fallback (없을 경우만 생성)
+            traceId = UUID.randomUUID().toString();
         }
         return traceId;
     }
 
-    // After ✅
     private Long getCurrentUserId() {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();

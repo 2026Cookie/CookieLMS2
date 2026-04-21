@@ -19,10 +19,7 @@ public class ErrorLogResponseDTO {
     private String errorCode;
     private String errorMessage;
     private String exceptionName;
-    private String requestUri;
-    private String httpMethod;
     private String clientIp;
-    private Long userId;
     private String stackTrace;
     private String traceId;
     private ErrorSeverity severity;
@@ -37,10 +34,7 @@ public class ErrorLogResponseDTO {
                 .errorCode(errorLog.getErrorCode())
                 .errorMessage(errorLog.getErrorMessage())
                 .exceptionName(errorLog.getExceptionName())
-                .requestUri(errorLog.getRequestUri())
-                .httpMethod(errorLog.getHttpMethod())
                 .clientIp(errorLog.getClientIp())
-                .userId(errorLog.getUserId())
                 .stackTrace(errorLog.getStackTrace())
                 .traceId(errorLog.getTraceId())
                 .severity(errorLog.getSeverity())

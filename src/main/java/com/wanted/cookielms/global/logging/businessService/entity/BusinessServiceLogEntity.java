@@ -23,12 +23,6 @@ public class BusinessServiceLogEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
-    private String serviceName;
-
-    @Column(nullable = false, length = 100)
-    private String methodName;
-
     @Column(nullable = false, length = 255)
     private String classMethod;
 
@@ -37,8 +31,6 @@ public class BusinessServiceLogEntity {
 
     @Column(nullable = false)
     private Boolean isSuccess;
-
-    private Long userId;
 
     @Column(length = 36)
     private String traceId;
