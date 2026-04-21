@@ -12,7 +12,7 @@ public enum EnrollmentErrorCode implements ErrorCode {
 
     ALREADY_ENROLLED(HttpStatus.CONFLICT, "ENR001", "이미 수강 신청한 강의입니다.", ErrorSeverity.INFO),
     LECTURE_NOT_FOUND(HttpStatus.NOT_FOUND, "ENR002", "존재하지 않는 강의입니다.", ErrorSeverity.WARNING),
-    ENROLLMENT_CAPACITY_EXCEEDED(HttpStatus.CONFLICT, "ENR003", "수강 정원이 초과되었습니다.", ErrorSeverity.WARNING),
+    ENROLLMENT_CAPACITY_EXCEEDED(HttpStatus.CONFLICT, "ENR003", "수강 정원이 초과되었습니다.", ErrorSeverity.CRITICAL),
     ENROLLMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "ENR004", "수강 신청 내역을 찾을 수 없습니다.", ErrorSeverity.WARNING),
     ALREADY_WAITLISTED(HttpStatus.CONFLICT, "ENR005", "이미 대기열에 등록되어 있습니다.", ErrorSeverity.INFO),
     WAITLIST_NOT_FOUND(HttpStatus.NOT_FOUND, "ENR006", "대기열 정보를 찾을 수 없습니다.", ErrorSeverity.CRITICAL);

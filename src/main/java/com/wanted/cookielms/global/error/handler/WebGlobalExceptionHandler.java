@@ -127,21 +127,34 @@ public class WebGlobalExceptionHandler {
     /**
      * [5] 🌟 UX를 고려한 전역 Alert 예외 처리 (수정됨)
      */
+    /**
+     * [5] AlertException - 메시지 텍스트만 응답, DB에 에러 로그 저장
+     */
+    @ExceptionHandler(AlertException.class)
+    public ResponseEntity<String> handleAlertException(AlertException e, HttpServletRequest request) {
+        String traceId = generateTraceId();
+        saveErrorLog(e, e.getCode(), e.getMessage(), request, traceId, e.getSeverity());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, "text/plain; charset=UTF-8");
+        return new ResponseEntity<>(e.getMessage(), headers, e.getStatus());
+    }
+
+    /**
+     * [6] FileValidationException - script + redirect 방식 유지
+     */
     @ExceptionHandler(FileValidationException.class)
-    public ResponseEntity<String> handleAlertException(FileValidationException e, HttpServletRequest request) {
+    public ResponseEntity<String> handleFileValidationException(FileValidationException e, HttpServletRequest request) {
 
         String traceId = generateTraceId();
         saveErrorLog(e, e.getCode(), e.getMessage(), request, traceId, e.getSeverity());
 
-        // 2. 스크립트 생성 (작은따옴표 이스케이프 처리)
         String safeMessage = e.getMessage() != null ? e.getMessage().replace("'", "\\'") : "오류가 발생했습니다.";
         String script;
 
         if (e.getRedirectUrl() == null) {
-            // URL이 없으면 이전 폼으로 복귀 (입력 데이터 보존)
             script = String.format("<script>alert('%s'); history.back();</script>", safeMessage);
         } else {
-            // URL이 있으면 해당 페이지로 강제 이동
             script = String.format("<script>alert('%s'); location.href='%s';</script>", safeMessage, e.getRedirectUrl());
         }
 

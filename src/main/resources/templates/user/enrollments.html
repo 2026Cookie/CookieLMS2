@@ -195,8 +195,10 @@
     }
 
     function enroll(id) {
-        fetch(`/api/enrollments/${id}`, {method:'POST'}).then(r => r.text()).then(msg => {
+        fetch(`/api/enrollments/${id}`, {method:'POST'}).then(async r => {
+            const msg = await r.text();
             alert(msg);
+            if (!r.ok) return;
             fetch('/api/enrollments/my').then(r => r.json()).then(ids => { myEnrolledIds = ids; loadLectures(currentKeyword, currentPage); });
         }).catch(() => alert('서버 오류가 발생했습니다.'));
     }
