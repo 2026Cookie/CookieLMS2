@@ -1,10 +1,14 @@
 package com.wanted.cookielms.domain.enrollment.exception;
 
-import com.wanted.cookielms.global.error.handler.ApplicationException;
+import com.wanted.cookielms.global.error.handler.AlertException;
 
-public class EnrollmentException extends ApplicationException {
+public class EnrollmentException extends AlertException {
 
     public EnrollmentException(EnrollmentErrorCode errorCode) {
-        super(errorCode.getStatus(), errorCode.getCode(), errorCode.getMessage(), errorCode.getSeverity());
+        super(errorCode);
+    }
+
+    public EnrollmentException(EnrollmentErrorCode errorCode, String redirectUrl) {
+        super(errorCode, redirectUrl);
     }
 }
