@@ -5,6 +5,7 @@
 
     let remaining = SESSION_MINUTES * 60;
     let intervalId;
+    let initialized = false;
 
     function pad(n) {
         return String(n).padStart(2, '0');
@@ -194,11 +195,32 @@
             .catch(function () {});
     }
 
+    function startCountdown() {
+        if (initialized) return;
+        initialized = true;
+        updateDisplay();
+        intervalId = setInterval(tick, 1000);
+    }
+
     function init() {
         injectStyles();
         createTimerBox();
         injectNicknameGreeting();
-        intervalId = setInterval(tick, 1000);
+
+        fetch('/api/session/remaining', { credentials: 'same-origin' })
+            .then(function (res) { return res.ok ? res.json() : null; })
+            .then(function (data) {
+                if (data && data.remaining > 0) {
+                    remaining = data.remaining;
+                } else {
+                    window.location.href = '/user/login?expired=true';
+                    return;
+                }
+                startCountdown();
+            })
+            .catch(function () {
+                startCountdown();
+            });
     }
 
     if (document.readyState === 'loading') {
