@@ -9,6 +9,8 @@ import com.wanted.cookielms.domain.lecture.entity.InsLecture;
 import com.wanted.cookielms.domain.lecture.enums.LectureDay;
 import com.wanted.cookielms.domain.lecture.repository.LectureInsRepository;
 import com.wanted.cookielms.domain.lecture.repository.LectureStuRepository;
+import com.wanted.cookielms.global.aop.BussinessServiceLogging;
+import com.wanted.cookielms.global.aop.FileValidation.FileValidation;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -64,7 +66,7 @@ public class InstructorService {
         });
     }
 
-
+    @BussinessServiceLogging
     @Transactional
     public void registLecture(LectureInsDTO dto, Long instructorId) throws IOException {
         String savedPdfName = insFileService.storeFile(dto.getLectureFile(), ".pdf");

@@ -11,7 +11,6 @@ public class BusinessServiceLogResponseDto {
     private final String classMethod;
     private final Long executionTimeMs;
     private final Boolean isSuccess;
-    private final Long userId;
     private final String traceId;
     private final LocalDateTime createdAt;
 
@@ -20,7 +19,6 @@ public class BusinessServiceLogResponseDto {
         this.classMethod = entity.getClassMethod();
         this.executionTimeMs = entity.getExecutionTimeMs();
         this.isSuccess = entity.getIsSuccess();
-        this.userId = entity.getUserId();
         this.traceId = entity.getTraceId();
         this.createdAt = entity.getCreatedAt();
     }

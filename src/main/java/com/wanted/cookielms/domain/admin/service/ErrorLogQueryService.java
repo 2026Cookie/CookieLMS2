@@ -1,5 +1,8 @@
 package com.wanted.cookielms.domain.admin.service;
 
+import com.wanted.cookielms.domain.admin.dto.CriticalErrorDetailDto;
+import com.wanted.cookielms.domain.admin.dto.CriticalErrorListItemDto;
+import com.wanted.cookielms.global.logging.api.repository.ApiPerformanceLogRepository;
 import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
 import com.wanted.cookielms.global.logging.error.dto.ErrorLogResponseDTO;
 import com.wanted.cookielms.global.logging.error.entity.ErrorLogEntity;
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -20,6 +24,7 @@ import java.util.Map;
 public class ErrorLogQueryService {
 
     private final ErrorLogRepository errorLogRepository;
+    private final ApiPerformanceLogRepository apiPerformanceLogRepository;
 
     /**
      * [조회 1] 모든 에러 로그 (페이징)
@@ -35,7 +40,7 @@ public class ErrorLogQueryService {
     public List<ErrorLogResponseDTO> getErrorsByTraceId(String traceId) {
         List<ErrorLogEntity> errorLogs = errorLogRepository.findByTraceIdOrderByCreatedAtDesc(traceId);
         return errorLogs.stream()
-                .map(ErrorLogResponseDTO::from)  // 상세 정보 포함
+                .map(ErrorLogResponseDTO::from)
                 .toList();
     }
 
@@ -81,15 +86,28 @@ public class ErrorLogQueryService {
     }
 
     /**
-     * [조회 8] 특정 사용자의 에러 로그
+     * [조회 8] 특정 사용자의 에러 로그 (API 로그를 통한 join)
      */
     public List<ErrorLogResponseDTO> getErrorsByUserId(Long userId) {
-        List<ErrorLogEntity> errorLogs = errorLogRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        List<String> traceIds = apiPerformanceLogRepository.findTraceIdsByUserId(userId);
+
+        if (traceIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<ErrorLogEntity> errorLogs = errorLogRepository.findByTraceIdIn(traceIds);
         return errorLogs.stream()
                 .map(ErrorLogResponseDTO::fromList)
                 .toList();
     }
 
+    /**
+     * [조회 8-2] 사용자별 Critical 에러 요약 (API 로그 join)
+     */
+    /**
+     * [조회 8-2] 사용자별 Critical 에러 요약 (네이티브 쿼리로 JOIN)
+     * N+1 제거: Repository의 findCriticalErrorCountGroupByUserId 활용
+     */
     public List<Map<String, Object>> getCriticalErrorSummaryByUser() {
         return errorLogRepository.findCriticalErrorCountGroupByUserId();
     }
@@ -102,5 +120,19 @@ public class ErrorLogQueryService {
         return errorLogs.stream()
                 .map(ErrorLogResponseDTO::fromList)
                 .toList();
+    }
+
+    /**
+     * [신규] Critical 에러 리스트 (페이징)
+     */
+    public Page<CriticalErrorListItemDto> getCriticalErrorsList(Pageable pageable) {
+        return errorLogRepository.findCriticalErrorsWithApiLog(pageable);
+    }
+
+    /**
+     * [신규] Critical 에러 상세 (단건)
+     */
+    public CriticalErrorDetailDto getCriticalErrorDetail(Long errorId) {
+        return errorLogRepository.findCriticalErrorDetail(errorId);
     }
 }

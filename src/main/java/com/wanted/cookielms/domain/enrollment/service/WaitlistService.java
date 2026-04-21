@@ -26,6 +26,7 @@ public class WaitlistService {
     private final EnrollmentRepository enrollmentRepository;
     private final LectureStuRepository lectureStuRepository;
 
+    @BussinessServiceLogging
     @Transactional
     public int registerWaitlist(Long lectureId, Long userId) {
 

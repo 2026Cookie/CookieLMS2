@@ -34,12 +34,9 @@ public class BusinessServiceLoggingAspect {
 
             long executionTime = System.currentTimeMillis() - startTime;
             BusinessServiceLogEntity log = new BusinessServiceLogEntity();
-            log.setServiceName(className);
-            log.setMethodName(methodName);
             log.setClassMethod(classMethod);
             log.setExecutionTimeMs(executionTime);
             log.setIsSuccess(true);
-            log.setUserId(getCurrentUserId());
             log.setTraceId(getTraceId());
 
             businessServiceLogService.saveBusinessServiceLog(log);
@@ -49,12 +46,9 @@ public class BusinessServiceLoggingAspect {
         } catch (Exception e) {
             long executionTime = System.currentTimeMillis() - startTime;
             BusinessServiceLogEntity log = new BusinessServiceLogEntity();
-            log.setServiceName(className);
-            log.setMethodName(methodName);
             log.setClassMethod(classMethod);
             log.setExecutionTimeMs(executionTime);
             log.setIsSuccess(false);
-            log.setUserId(getCurrentUserId());
             log.setTraceId(getTraceId());
 
             businessServiceLogService.saveBusinessServiceLog(log);

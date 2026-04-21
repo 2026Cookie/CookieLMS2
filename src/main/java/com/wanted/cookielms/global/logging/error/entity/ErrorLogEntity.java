@@ -33,17 +33,8 @@ public class ErrorLogEntity {
     @Column(nullable = false, length = 100)
     private String exceptionName;
 
-    @Column(nullable = false, length = 500)
-    private String requestUri;
-
-    @Column(nullable = false, length = 10)
-    private String httpMethod;
-
     @Column(length = 50)
     private String clientIp;
-
-    @Column(name = "user_id")
-    private Long userId;
 
     @Column(columnDefinition = "TEXT")
     private String stackTrace;
@@ -61,15 +52,11 @@ public class ErrorLogEntity {
 
     @Builder
     public ErrorLogEntity(String errorCode, String errorMessage, String exceptionName,
-                          String requestUri, String httpMethod, String clientIp,
-                          Long userId, String stackTrace, String traceId, ErrorSeverity severity) {
+                          String clientIp, String stackTrace, String traceId, ErrorSeverity severity) {
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
         this.exceptionName = exceptionName;
-        this.requestUri = requestUri;
-        this.httpMethod = httpMethod;
         this.clientIp = clientIp;
-        this.userId = userId;
         this.stackTrace = stackTrace;
         this.traceId = traceId;
         this.severity = severity;

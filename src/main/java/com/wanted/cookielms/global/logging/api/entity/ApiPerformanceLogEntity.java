@@ -13,7 +13,8 @@ import java.time.LocalDateTime;
 @Table(name = "api_performance_logs", indexes = {
         @Index(name = "idx_api_log_created_at", columnList = "created_at"),
         @Index(name = "idx_api_log_endpoint", columnList = "endpoint"),
-        @Index(name = "idx_api_log_user_id", columnList = "user_id")
+        @Index(name = "idx_api_log_user_id", columnList = "user_id"),
+        @Index(name = "idx_api_log_trace_id", columnList = "trace_id")
 })
 @Getter
 @Setter
@@ -44,4 +45,7 @@ public class ApiPerformanceLogEntity {
 
     @Column(name = "status_code")
     private Integer statusCode;
+
+    @Column(name = "trace_id", length = 36)
+    private String traceId;
 }

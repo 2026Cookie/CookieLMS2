@@ -44,5 +44,7 @@ public class ApiMetricsDto {
     public static class EndpointAvgTime {
         private String endpoint;
         private Double avgMs;
+        private Long callCount;
+        private String traceId;
     }
 }
