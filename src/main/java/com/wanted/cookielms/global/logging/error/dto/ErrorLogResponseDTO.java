@@ -22,6 +22,7 @@ public class ErrorLogResponseDTO {
     private String clientIp;
     private String stackTrace;
     private String traceId;
+    private Long userId;
     private ErrorSeverity severity;
     private LocalDateTime createdAt;
 
@@ -37,6 +38,7 @@ public class ErrorLogResponseDTO {
                 .clientIp(errorLog.getClientIp())
                 .stackTrace(errorLog.getStackTrace())
                 .traceId(errorLog.getTraceId())
+                .userId(errorLog.getUserId())
                 .severity(errorLog.getSeverity())
                 .createdAt(errorLog.getCreatedAt())
                 .build();

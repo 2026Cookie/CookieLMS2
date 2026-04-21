@@ -121,12 +121,14 @@ CREATE TABLE api_performance_logs (
     http_method         ENUM('GET','POST','PUT','DELETE')        NOT NULL,
     status_code         INT                                     NOT NULL,
     execution_time_ms   INT                                     NOT NULL,
-    client_ip           VARCHAR(255)                            NULL,
+    trace_id            VARCHAR(36)                             NULL,
     created_at          DATETIME                                NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (log_id),
     CONSTRAINT api_performance_logs_ibfk_1 FOREIGN KEY (user_id) REFERENCES users (user_id),
-    INDEX idx_endpoint   (endpoint),
-    INDEX idx_created_at (created_at)
+    INDEX idx_api_log_endpoint   (endpoint),
+    INDEX idx_api_log_created_at (created_at),
+    INDEX idx_api_log_user_id    (user_id),
+    INDEX idx_api_log_trace_id   (trace_id)
 );
 
 CREATE TABLE business_service_logs (
@@ -135,10 +137,7 @@ CREATE TABLE business_service_logs (
     created_at          DATETIME(6)     NOT NULL,
     execution_time_ms   BIGINT          NOT NULL,
     is_success          BIT(1)          NOT NULL,
-    method_name         VARCHAR(100)    NOT NULL,
-    service_name        VARCHAR(100)    NOT NULL,
     trace_id            VARCHAR(36)     NULL,
-    user_id             BIGINT          NULL,
     PRIMARY KEY (id),
     INDEX idx_class_method (class_method),
     INDEX idx_created_at   (created_at),
@@ -156,8 +155,11 @@ CREATE TABLE error_logs (
     severity        ENUM('CRITICAL','INFO','WARNING')   NULL,
     stack_trace     TEXT                                NULL,
     trace_id        VARCHAR(36)                         NULL,
+    user_id         BIGINT                              NULL,
     PRIMARY KEY (id),
-    INDEX idx_trace_id (trace_id)
+    INDEX idx_error_log_trace_id (trace_id),
+    INDEX idx_error_log_user_id  (user_id),
+    INDEX idx_error_log_severity (severity)
 );
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -2,7 +2,6 @@ package com.wanted.cookielms.domain.admin.service;
 
 import com.wanted.cookielms.domain.admin.dto.CriticalErrorDetailDto;
 import com.wanted.cookielms.domain.admin.dto.CriticalErrorListItemDto;
-import com.wanted.cookielms.global.logging.api.repository.ApiPerformanceLogRepository;
 import com.wanted.cookielms.global.logging.error.entity.enums.ErrorSeverity;
 import com.wanted.cookielms.global.logging.error.dto.ErrorLogResponseDTO;
 import com.wanted.cookielms.global.logging.error.entity.ErrorLogEntity;
@@ -24,7 +23,6 @@ import java.util.stream.Collectors;
 public class ErrorLogQueryService {
 
     private final ErrorLogRepository errorLogRepository;
-    private final ApiPerformanceLogRepository apiPerformanceLogRepository;
 
     /**
      * [조회 1] 모든 에러 로그 (페이징)
@@ -86,17 +84,11 @@ public class ErrorLogQueryService {
     }
 
     /**
-     * [조회 8] 특정 사용자의 에러 로그 (API 로그를 통한 join)
+     * [조회 8] 특정 사용자의 에러 로그 (error_logs.user_id 직접 조회)
+     * Security 필터 차단(403) 케이스도 포함됨
      */
     public List<ErrorLogResponseDTO> getErrorsByUserId(Long userId) {
-        List<String> traceIds = apiPerformanceLogRepository.findTraceIdsByUserId(userId);
-
-        if (traceIds.isEmpty()) {
-            return List.of();
-        }
-
-        List<ErrorLogEntity> errorLogs = errorLogRepository.findByTraceIdIn(traceIds);
-        return errorLogs.stream()
+        return errorLogRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
                 .map(ErrorLogResponseDTO::fromList)
                 .toList();
     }

@@ -175,9 +175,8 @@ public class WebGlobalExceptionHandler {
                     .clientIp(getClientIp(request))
                     .stackTrace(getStackTraceAsString(e))
                     .traceId(traceId)
+                    .userId(getCurrentUserId())
                     .severity(severity)
-                    // 필요하다면 아래 줄의 주석을 풀고 userId를 저장할 수도 있습니다.
-                    // .userId(getCurrentUserId())
                     .build();
 
             errorLogService.saveErrorLogAsync(errorLog);

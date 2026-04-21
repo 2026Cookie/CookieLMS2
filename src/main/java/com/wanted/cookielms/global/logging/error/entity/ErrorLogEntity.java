@@ -13,7 +13,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "error_logs", indexes = {
-        @Index(name = "idx_trace_id", columnList = "traceId")
+        @Index(name = "idx_error_log_trace_id", columnList = "traceId"),
+        @Index(name = "idx_error_log_user_id", columnList = "userId"),
+        @Index(name = "idx_error_log_severity", columnList = "severity")
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -42,6 +44,9 @@ public class ErrorLogEntity {
     @Column(length = 36)
     private String traceId;
 
+    @Column
+    private Long userId;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private ErrorSeverity severity;
@@ -52,13 +57,15 @@ public class ErrorLogEntity {
 
     @Builder
     public ErrorLogEntity(String errorCode, String errorMessage, String exceptionName,
-                          String clientIp, String stackTrace, String traceId, ErrorSeverity severity) {
+                          String clientIp, String stackTrace, String traceId,
+                          Long userId, ErrorSeverity severity) {
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
         this.exceptionName = exceptionName;
         this.clientIp = clientIp;
         this.stackTrace = stackTrace;
         this.traceId = traceId;
+        this.userId = userId;
         this.severity = severity;
     }
 }
