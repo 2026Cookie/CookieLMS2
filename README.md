@@ -90,4 +90,6 @@ Pull Requests: https://github.com/2026Cookie/CookieLMS2/pulls
 
 Issues: https://github.com/2026Cookie/CookieLMS2/issues
 
+Notion: https://www.notion.so/ohgiraffers/336649136c1180f6a16dfbbbbf56af8a
+
 
