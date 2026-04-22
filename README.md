@@ -81,8 +81,11 @@
 
 
  팀 문서 링크 
+
 Discussions: https://github.com/2026Cookie/CookieLMS2/discussions
+
 Pull Requests: https://github.com/2026Cookie/CookieLMS2/pulls
+
 Issues: https://github.com/2026Cookie/CookieLMS2/issues
 <img width="1506" height="1190" alt="image" src="https://github.com/user-attachments/assets/4309b42d-27e3-4667-9626-966825850d80" />
 
