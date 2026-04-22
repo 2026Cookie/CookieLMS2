@@ -17,11 +17,19 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--parchment); color: var(--text-primary); min-height: 100vh; }
         header {
-            background: var(--btn-dark); color: var(--text-on-dark);
-            padding: 18px 32px; display: flex; align-items: center; justify-content: space-between;
+            background: var(--linen); border-bottom: 1px solid var(--dust-grey);
+            padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
         }
-        .header-left h1 { font-size: 20px; font-weight: 700; }
-        .header-left p { font-size: 13px; opacity: 0.7; margin-top: 2px; }
+        .logo { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .header-right a { font-size: 14px; color: var(--text-secondary); text-decoration: none; }
+        .header-right a:hover { color: var(--text-primary); }
+        .btn-logout {
+            padding: 7px 16px; background: transparent; border: 1.5px solid var(--almond-silk);
+            border-radius: 6px; font-size: 13px; color: var(--text-secondary);
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-logout:hover { background: var(--powder-petal); }
         .main { max-width: 1360px; margin: 0 auto; padding: 32px 24px; }
         .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
         .widget-full { grid-column: 1 / -1; }
@@ -93,9 +101,11 @@
 </head>
 <body>
 <header>
-    <div class="header-left">
-        <h1>관리자 대시보드</h1>
-        <p>시스템 모니터링 및 관리 센터</p>
+    <div class="logo">관리자 대시보드</div>
+    <div class="header-right">
+        <form th:action="@{/logout}" method="post" style="display:inline;">
+            <button type="submit" class="btn-logout">로그아웃</button>
+        </form>
     </div>
 </header>
 
