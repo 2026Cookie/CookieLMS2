@@ -115,16 +115,25 @@ public class ErrorLogQueryService {
     }
 
     /**
-     * [신규] Critical 에러 리스트 (페이징)
+     * Critical 에러 리스트 (페이징)
      */
     public Page<CriticalErrorListItemDto> getCriticalErrorsList(Pageable pageable) {
         return errorLogRepository.findCriticalErrorsWithApiLog(pageable);
     }
 
     /**
-     * [신규] Critical 에러 상세 (단건)
+     * Critical 에러 상세 (단건)
      */
     public CriticalErrorDetailDto getCriticalErrorDetail(Long errorId) {
         return errorLogRepository.findCriticalErrorDetail(errorId);
+    }
+
+    /**
+     * 익명(userId=null) CRITICAL 에러 목록
+     */
+    public List<ErrorLogResponseDTO> getAnonymousCriticalErrors() {
+        return errorLogRepository.findAnonymousCriticalErrors().stream()
+                .map(ErrorLogResponseDTO::fromList)
+                .toList();
     }
 }
