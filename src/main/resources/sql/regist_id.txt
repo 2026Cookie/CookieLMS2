@@ -1,0 +1,5 @@
+강사A:inst1,instinst*
+학생B: user1,useruser*
+학생C:user2,useruser*
+학생E:user3,useruser*
+관리자F:admin1,adminadmin*
