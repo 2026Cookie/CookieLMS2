@@ -10,6 +10,7 @@ public class CookieLmsApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(CookieLmsApplication.class, args);
+
     }
 
 }

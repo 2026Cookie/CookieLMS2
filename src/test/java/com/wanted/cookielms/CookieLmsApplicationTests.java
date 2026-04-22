@@ -8,6 +8,7 @@ class CookieLmsApplicationTests {
 
     @Test
     void contextLoads() {
+
     }
 
 }

@@ -50,7 +50,7 @@ public class InstructorService {
 
 
         return myLectures.map(entity -> {
-            LectureStuDTO dto = modelMapper.map(entity, LectureStuDTO.class);
+             LectureStuDTO dto = modelMapper.map(entity, LectureStuDTO.class);
 
 
             dto.setLectureId(entity.getId());
