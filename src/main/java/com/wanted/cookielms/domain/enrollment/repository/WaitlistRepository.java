@@ -4,6 +4,7 @@ import com.wanted.cookielms.domain.enrollment.entity.Waitlist;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -20,7 +21,10 @@ public interface WaitlistRepository extends JpaRepository<Waitlist, Long> {
 
     Optional<Waitlist> findByUserIdAndLectureIdAndStatus(Long userId, Long lectureId, String status);
 
-    java.util.List<Waitlist> findByUserIdAndStatus(Long userId, String status);
+    List<Waitlist> findByUserIdAndStatus(Long userId, String status);
 
     int countByLectureIdAndStatusAndWaitNumberLessThan(Long lectureId, String status, int waitNumber);
+
+    // [성능 비교용] 특정 번호 이후 대기자 조회 (취소 재정렬 방식에서 사용)
+    List<Waitlist> findByLectureIdAndStatusAndWaitNumberGreaterThan(Long lectureId, String status, int waitNumber);
 }

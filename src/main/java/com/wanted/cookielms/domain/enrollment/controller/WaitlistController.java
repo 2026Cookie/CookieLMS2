@@ -35,13 +35,14 @@ public class WaitlistController {
         return ResponseEntity.ok(String.valueOf(waitNumber));
     }
 
-    @DeleteMapping("/api/waitlist/{lectureId}")
+    @PostMapping("/api/waitlist/{lectureId}/cancel")
     @ResponseBody
     public ResponseEntity<String> cancelWaitlist(@PathVariable Long lectureId, @CurrentUserId Long userId) {
         if (userId == null) {
             return ResponseEntity.ok("로그인이 필요합니다.");
         }
-        waitlistService.cancelWaitlist(lectureId, userId);
+        waitlistService.cancelWaitlist(lectureId, userId);           // 현재 방식 (UPDATE 1번)
+        //waitlistService.cancelWaitlistByReorder(lectureId, userId);  // [성능 비교용] 재정렬 방식 (UPDATE N번)
         return ResponseEntity.ok("대기열 취소가 완료되었습니다.");
     }
 

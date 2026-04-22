@@ -204,7 +204,7 @@
     }
 
     function cancel(id) {
-        fetch(`/api/enrollments/${id}`, {method:'DELETE'}).then(r => r.text()).then(msg => {
+        fetch(`/api/enrollments/${id}/cancel`, {method:'POST'}).then(r => r.text()).then(msg => {
             alert(msg);
             fetch('/api/enrollments/my').then(r => r.json()).then(ids => { myEnrolledIds = ids; loadLectures(currentKeyword, currentPage); });
         }).catch(() => alert('서버 오류가 발생했습니다.'));

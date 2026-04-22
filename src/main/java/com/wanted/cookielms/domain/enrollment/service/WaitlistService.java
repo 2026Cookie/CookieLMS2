@@ -26,7 +26,7 @@ public class WaitlistService {
     private final EnrollmentRepository enrollmentRepository;
     private final LectureStuRepository lectureStuRepository;
 
-    @BussinessServiceLogging
+
     @Transactional
     public int registerWaitlist(Long lectureId, Long userId) {
 
@@ -56,6 +56,7 @@ public class WaitlistService {
                 .collect(Collectors.toList());
     }
 
+
     public int getWaitNumber(Long lectureId, Long userId) {
         Waitlist waitlist = waitlistRepository.findByUserIdAndLectureIdAndStatus(userId, lectureId, "WAITING")
                 .orElseThrow(() -> new EnrollmentException(EnrollmentErrorCode.WAITLIST_NOT_FOUND));
@@ -66,12 +67,31 @@ public class WaitlistService {
         return ahead + 1;
     }
 
+
     @BussinessServiceLogging
     @Transactional
     public void cancelWaitlist(Long lectureId, Long userId) {
         Waitlist waitlist = waitlistRepository.findByUserIdAndLectureIdAndStatus(userId, lectureId, "WAITING")
                 .orElseThrow(() -> new EnrollmentException(EnrollmentErrorCode.WAITLIST_NOT_FOUND));
         waitlist.changeStatus("CANCELLED");
+    }
+
+    // [성능 비교용] 재정렬 방식 - 취소 후 이후 대기자 번호 전부 UPDATE
+    @BussinessServiceLogging
+    @Transactional
+    public void cancelWaitlistByReorder(Long lectureId, Long userId) {
+        Waitlist waitlist = waitlistRepository.findByUserIdAndLectureIdAndStatus(userId, lectureId, "WAITING")
+                .orElseThrow(() -> new EnrollmentException(EnrollmentErrorCode.WAITLIST_NOT_FOUND));
+
+        int cancelledNumber = waitlist.getWaitNumber();
+        waitlist.changeStatus("CANCELLED");
+
+        // 취소된 번호 이후 대기자 전부 번호 1씩 감소 (재정렬)
+        List<Waitlist> toReorder = waitlistRepository
+                .findByLectureIdAndStatusAndWaitNumberGreaterThan(lectureId, "WAITING", cancelledNumber);
+        for (Waitlist w : toReorder) {
+            w.decreaseWaitNumber();
+        }
     }
 
 

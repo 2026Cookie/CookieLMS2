@@ -63,7 +63,7 @@
 <script th:inline="javascript">
     function cancelWaitlist(lectureId) {
         if (!confirm('대기열을 취소하시겠습니까?')) return;
-        fetch(`/api/waitlist/${lectureId}`, {method:'DELETE'})
+        fetch(`/api/waitlist/${lectureId}/cancel`, {method:'POST'})
             .then(r => r.text()).then(msg => { alert(msg); location.href = '/user/enrollments'; })
             .catch(() => alert('서버 오류가 발생했습니다.'));
     }
