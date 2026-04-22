@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오류 - Cookiego</title>
+    <style>
+        :root {
+            --parchment: #edede9; --dust-grey: #d6ccc2; --linen: #f5ebe0;
+            --powder-petal: #e3d5ca; --almond-silk: #d5bdaf;
+            --text-primary: #2c2010; --text-secondary: #5c4a3a;
+            --text-muted: #8b7355; --text-on-dark: #f5ebe0;
+            --btn-dark: #4a3728; --btn-dark-hover: #2c2010;
+            --error: #7a3020; --shadow: rgba(44,32,16,0.10);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--parchment); color: var(--text-primary);
+            min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px;
+        }
+        .card {
+            background: var(--linen); border: 1px solid var(--dust-grey);
+            border-radius: 16px; box-shadow: 0 4px 24px var(--shadow);
+            padding: 56px 48px; width: 100%; max-width: 480px; text-align: center;
+        }
+        .error-code { font-size: 72px; font-weight: 800; color: var(--almond-silk); line-height: 1; margin-bottom: 12px; }
+        .error-title { font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+        .error-message { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; line-height: 1.6; }
+        .detail-box {
+            background: var(--parchment); border: 1px solid var(--dust-grey);
+            border-radius: 10px; padding: 14px 16px; margin-bottom: 28px; text-align: left;
+        }
+        .detail-row { display: flex; gap: 8px; font-size: 13px; margin-bottom: 6px; }
+        .detail-row:last-child { margin-bottom: 0; }
+        .detail-label { color: var(--text-muted); font-weight: 600; width: 70px; flex-shrink: 0; }
+        .detail-value { color: var(--text-secondary); word-break: break-all; }
+        .btn-row { display: flex; gap: 10px; }
+        .btn {
+            flex: 1; padding: 13px; border-radius: 8px; font-size: 15px;
+            font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;
+        }
+        .btn-primary { background: var(--btn-dark); color: var(--text-on-dark); }
+        .btn-primary:hover { background: var(--btn-dark-hover); }
+        .btn-secondary { background: var(--almond-silk); color: var(--text-primary); }
+        .btn-secondary:hover { background: var(--powder-petal); }
+        .support-text { margin-top: 20px; font-size: 12px; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="error-code" th:text="${status}">404</div>
+    <div class="error-title">요청 처리에 실패했습니다</div>
+    <div class="error-message" th:text="${message}">입력하신 주소가 잘못되었거나 삭제된 페이지입니다.</div>
+
+    <div class="detail-box">
+        <div class="detail-row">
+            <span class="detail-label">요청 경로</span>
+            <span class="detail-value" th:text="${requestUri}">/unknown-page</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">추적 ID</span>
+            <span class="detail-value" th:text="${traceId}">trace-id</span>
+        </div>
+    </div>
+
+    <div class="btn-row">
+        <button class="btn btn-secondary" onclick="history.back()">이전으로</button>
+        <button class="btn btn-primary" onclick="location.href='/'">홈으로</button>
+    </div>
+
+    <div class="support-text">고객센터 : 국번없이 111</div>
+</div>
+</body>
+</html>

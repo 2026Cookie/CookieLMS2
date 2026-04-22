@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지 - Cookiego</title>
+    <style>
+        :root {
+            --parchment: #edede9; --dust-grey: #d6ccc2; --linen: #f5ebe0;
+            --powder-petal: #e3d5ca; --almond-silk: #d5bdaf;
+            --text-primary: #2c2010; --text-secondary: #5c4a3a;
+            --text-muted: #8b7355; --text-on-dark: #f5ebe0;
+            --btn-dark: #4a3728; --btn-dark-hover: #2c2010;
+            --error: #7a3020; --shadow: rgba(44,32,16,0.10);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--parchment); color: var(--text-primary);
+            min-height: 100vh; display: flex; justify-content: center; align-items: center;
+        }
+        .card {
+            background: var(--linen); border: 1px solid var(--dust-grey);
+            border-radius: 16px; box-shadow: 0 4px 24px var(--shadow);
+            padding: 48px 40px; width: 100%; max-width: 400px;
+        }
+        .back-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--text-muted); margin-bottom: 28px; text-decoration: none; }
+        .back-link:hover { color: var(--text-secondary); }
+        .avatar { width: 64px; height: 64px; background: var(--powder-petal); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 16px; }
+        h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+        .subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 32px; }
+        .menu-list { display: flex; flex-direction: column; gap: 10px; }
+        .menu-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 16px; background: var(--parchment);
+            border: 1px solid var(--dust-grey); border-radius: 10px;
+            text-decoration: none; color: var(--text-primary);
+            font-size: 15px; font-weight: 500; transition: all 0.2s;
+        }
+        .menu-item:hover { background: var(--powder-petal); border-color: var(--almond-silk); }
+        .menu-item .icon { font-size: 18px; }
+        .menu-item.danger { color: var(--error); }
+        .menu-item.danger:hover { background: #f9ede9; border-color: #e8c8c0; }
+        .divider { height: 1px; background: var(--dust-grey); margin: 6px 0; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <a th:href="@{/user/main}" class="back-link">← 메인으로</a>
+    <div class="avatar">👤</div>
+    <h1>마이페이지</h1>
+    <p class="subtitle">계정 정보를 관리하세요</p>
+
+    <div class="menu-list">
+        <a th:href="@{/user/mypage/info}" class="menu-item">
+            <span class="icon">👤</span> 내 정보 보기
+        </a>
+        <div class="divider"></div>
+        <a th:href="@{/user/withdraw}" class="menu-item danger">
+            <span class="icon">🚪</span> 회원 탈퇴
+        </a>
+    </div>
+</div>
+<script src="/js/session-timer.js"></script>
+</body>
+</html>

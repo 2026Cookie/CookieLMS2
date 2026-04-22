@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>강의 등록/수정 - Cookiego</title>
+    <style>
+        :root {
+            --parchment: #edede9; --dust-grey: #d6ccc2; --linen: #f5ebe0;
+            --powder-petal: #e3d5ca; --almond-silk: #d5bdaf;
+            --text-primary: #2c2010; --text-secondary: #5c4a3a;
+            --text-muted: #8b7355; --text-on-dark: #f5ebe0;
+            --btn-dark: #4a3728; --btn-dark-hover: #2c2010;
+            --shadow: rgba(44,32,16,0.10);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--parchment); color: var(--text-primary); min-height: 100vh; }
+        header {
+            background: var(--linen); border-bottom: 1px solid var(--dust-grey);
+            padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .logo { font-size: 18px; font-weight: 700; color: var(--text-primary); text-decoration: none; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .header-right a { font-size: 14px; color: var(--text-secondary); text-decoration: none; }
+        .header-right a:hover { color: var(--text-primary); }
+        .btn-logout {
+            padding: 7px 16px; background: transparent; border: 1.5px solid var(--almond-silk);
+            border-radius: 6px; font-size: 13px; color: var(--text-secondary);
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-logout:hover { background: var(--powder-petal); }
+        .main { max-width: 560px; margin: 0 auto; padding: 40px 24px; }
+        .card {
+            background: var(--linen); border: 1px solid var(--dust-grey);
+            border-radius: 16px; box-shadow: 0 4px 24px var(--shadow);
+            padding: 48px 40px; width: 100%; max-width: 560px;
+        }
+        .back-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--text-muted); margin-bottom: 28px; text-decoration: none; }
+        .back-link:hover { color: var(--text-secondary); }
+        h2 { font-size: 22px; font-weight: 700; margin-bottom: 28px; }
+        .section-label {
+            font-size: 12px; font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin: 24px 0 14px; padding-bottom: 6px; border-bottom: 1px solid var(--dust-grey);
+        }
+        .form-group { margin-bottom: 16px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+        input[type="text"], input[type="number"], input[type="time"], input[type="datetime-local"], input[type="file"], textarea {
+            width: 100%; padding: 11px 14px; border: 1px solid var(--dust-grey);
+            border-radius: 8px; background: var(--parchment); color: var(--text-primary);
+            font-size: 15px; outline: none; transition: border-color 0.2s; font-family: inherit;
+        }
+        textarea { height: 100px; resize: none; }
+        input:focus, textarea:focus { border-color: var(--almond-silk); background: #fff; }
+        .schedule-box {
+            background: var(--powder-petal); border: 1px solid var(--almond-silk);
+            border-radius: 10px; padding: 20px; margin-bottom: 16px;
+        }
+        .schedule-box .section-label { margin-top: 0; border-bottom-color: var(--almond-silk); }
+        .hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+        .btn-submit {
+            width: 100%; padding: 14px; background: var(--btn-dark); color: var(--text-on-dark);
+            border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
+            cursor: pointer; margin-top: 24px; transition: background 0.2s;
+        }
+        .btn-submit:hover { background: var(--btn-dark-hover); }
+        .btn-secondary {
+            width: 100%; padding: 12px; background: var(--powder-petal);
+            border: 1px solid var(--almond-silk); border-radius: 8px;
+            color: var(--text-secondary); font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-secondary:hover { background: var(--almond-silk); color: var(--text-primary); }
+    </style>
+</head>
+<body>
+<header>
+    <a th:href="@{/instructor/main}" class="logo">Cookiego</a>
+    <div class="header-right">
+        <a th:href="@{/user/mypage}">마이페이지</a>
+        <form th:action="@{/logout}" method="post" style="display:inline;">
+            <button type="submit" class="btn-logout">로그아웃</button>
+        </form>
+    </div>
+</header>
+<div class="main">
+<div class="card">
+    <a th:href="@{/instructor/lectures}" class="back-link">← 강의 목록으로</a>
+    <h2 th:text="${isEdit} ? '강의 수정' : '새 강의 등록'">강의 등록</h2>
+
+    <form th:action="${isEdit} ? '/instructor/lecture/edit/' + ${lecture.lectureId} : '/instructor/lecture/regist'"
+          method="post" enctype="multipart/form-data">
+
+        <div class="section-label">기본 정보</div>
+        <div class="form-group">
+            <label>강의 제목</label>
+            <input type="text" name="title" th:value="${lecture?.title}" placeholder="강의 제목을 입력하세요" required>
+        </div>
+        <div class="form-group">
+            <label>강의 설명</label>
+            <textarea name="description" placeholder="강의 상세 설명" th:text="${lecture?.description}" required></textarea>
+        </div>
+        <div class="form-group">
+            <label>유튜브 영상 주소</label>
+            <input type="text" name="videoUrl" th:value="${lecture?.videoUrl}" placeholder="https://..." required autocomplete="off">
+        </div>
+
+        <div class="schedule-box">
+            <div class="section-label">강의 세부 설정</div>
+            <div class="form-row">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>최대 인원</label>
+                    <input type="number" name="maxCapacity" th:value="${lecture?.maxCapacity} ?: 30" required>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>강의 요일</label>
+                    <select name="lectureDay" required
+                            style="width: 100%; padding: 11px 14px; border: 1px solid var(--dust-grey); border-radius: 8px; background: var(--parchment); color: var(--text-primary); font-size: 15px; outline: none; transition: border-color 0.2s; font-family: inherit;">
+                        <option value="" disabled th:selected="${lecture?.lectureDay == null}">요일 선택</option>
+                        <option value="MON" th:selected="${lecture?.lectureDay == 'MON'}">월요일</option>
+                        <option value="TUE" th:selected="${lecture?.lectureDay == 'TUE'}">화요일</option>
+                        <option value="WED" th:selected="${lecture?.lectureDay == 'WED'}">수요일</option>
+                        <option value="THU" th:selected="${lecture?.lectureDay == 'THU'}">목요일</option>
+                        <option value="FRI" th:selected="${lecture?.lectureDay == 'FRI'}">금요일</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row" style="margin-bottom:0; margin-top:14px;">
+                <div>
+                    <label>시작 시간</label>
+                    <input type="time" name="startTime" th:value="${lecture?.startTime}" required>
+                </div>
+                <div>
+                    <label>종료 시간</label>
+                    <input type="time" name="endTime" th:value="${lecture?.endTime}" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>수업 자료 (PDF, 최대 20MB)</label>
+            <input type="file" name="lectureFile" id="lectureFile" accept=".pdf"
+                   th:required="${!isEdit}">
+        </div>
+
+        <div class="form-group">
+            <label>강의 썸네일 이미지 (.jpg, .png)</label>
+            <div th:if="${lecture?.thumbnailPath != null}" style="margin-bottom: 12px;">
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">현재 등록된 썸네일:</p>
+                <img th:src="@{/lectures/thumbnail/{filename}(filename=${lecture.thumbnailPath})}"
+                     style="width: 100%; max-width: 200px; border-radius: 8px; border: 1px solid var(--dust-grey);">
+            </div>
+            <input type="file" name="thumbnail" id="thumbnail" accept="image/*">
+            <p class="hint" th:if="${isEdit}">파일을 선택하지 않으면 기존 썸네일이 유지됩니다.</p>
+            <p class="hint" th:unless="${isEdit}">목록에 보여질 썸네일 이미지를 등록해주세요.</p>
+        </div>
+
+        <hr style="margin: 30px 0; border-top: 1px dashed var(--dust-grey);">
+         <div th:if="${isEdit}" style="margin-bottom: 20px;">
+             <button type="button" id="btn-toggle-assignment" class="btn-secondary">📝 과제 내용 수정하기</button>
+         </div>
+         <div id="assignment-section" th:style="${isEdit} ? 'display: none;' : 'display: block;'">
+             <div class="section-label" style="border: none; margin-bottom: 8px;">📝 수강생 과제 설정</div>
+             <p class="hint" style="margin-bottom: 16px;" th:text="${isEdit} ? '과제 정보를 수정할 수 있습니다.' : '과제명 입력 시 강의 생성과 함께 과제가 자동 등록됩니다.'"></p>
+
+            <div class="form-group">
+                <label>과제명</label>
+                <input type="text" name="assignmentTitle" th:value="${lecture?.assignmentTitle}" placeholder="예: 자바 객체지향 연습">
+            </div>
+
+            <div class="form-group">
+                <label>과제 내용</label>
+                <input type="text" name="assignmentContent" th:value="${lecture?.assignmentContent}" placeholder="인터페이스를 활용한 다형성 구현">
+            </div>
+
+            <div class="form-group">
+                <label>마감 기한</label>
+                <input type="datetime-local" name="assignmentDueDate" th:value="${lecture?.assignmentDueDate}">
+            </div>
+        </div>
+
+        <button type="submit" class="btn-submit" th:text="${isEdit} ? '수정 완료' : '등록하기'">등록하기</button>
+    </form>
+</div>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const errorMsg = /*[[${errorMessage}]]*/ null;
+    if (errorMsg) alert(errorMsg);
+    const successMsg = /*[[${message}]]*/ null;
+    if (successMsg) alert(successMsg);
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnToggle = document.getElementById('btn-toggle-assignment');
+        const assignmentSection = document.getElementById('assignment-section');
+
+        if (btnToggle) {
+            btnToggle.addEventListener('click', function() {
+                if (assignmentSection.style.display === 'none' || assignmentSection.style.display === '') {
+                    assignmentSection.style.display = 'block';
+                    this.textContent = '❌ 과제 수정 취소';
+                } else {
+                    assignmentSection.style.display = 'none';
+                    this.textContent = '📝 과제 내용 수정하기';
+                }
+            });
+        }
+    });
+    /*]]>*/
+</script>
+<script src="/js/session-timer.js"></script>
+</body>
+</html>

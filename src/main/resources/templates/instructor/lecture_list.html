@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 강의 목록 - Cookiego</title>
+    <style>
+        :root {
+            --parchment: #edede9; --dust-grey: #d6ccc2; --linen: #f5ebe0;
+            --powder-petal: #e3d5ca; --almond-silk: #d5bdaf;
+            --text-primary: #2c2010; --text-secondary: #5c4a3a;
+            --text-muted: #8b7355; --text-on-dark: #f5ebe0;
+            --btn-dark: #4a3728; --btn-dark-hover: #2c2010;
+            --shadow: rgba(44,32,16,0.10);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--parchment); color: var(--text-primary); min-height: 100vh; }
+        header {
+            background: var(--linen); border-bottom: 1px solid var(--dust-grey);
+            padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .logo { font-size: 18px; font-weight: 700; color: var(--text-primary); text-decoration: none; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .header-right a { font-size: 14px; color: var(--text-secondary); text-decoration: none; }
+        .header-right a:hover { color: var(--text-primary); }
+        .btn-logout {
+            padding: 7px 16px; background: transparent; border: 1.5px solid var(--almond-silk);
+            border-radius: 6px; font-size: 13px; color: var(--text-secondary);
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-logout:hover { background: var(--powder-petal); }
+        .main { max-width: 800px; margin: 0 auto; padding: 40px 24px; }
+        .top-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+        .page-title { font-size: 22px; font-weight: 700; }
+        .btn-new {
+            padding: 10px 20px; background: var(--btn-dark); color: var(--text-on-dark);
+            border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
+            cursor: pointer; text-decoration: none; transition: background 0.2s;
+        }
+        .btn-new:hover { background: var(--btn-dark-hover); }
+        .subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; }
+        .lecture-list { display: flex; flex-direction: column; gap: 12px; }
+        .lecture-item {
+            background: var(--linen); border: 1px solid var(--dust-grey);
+            border-radius: 12px; padding: 18px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 8px var(--shadow); transition: all 0.2s;
+        }
+        .lecture-item:hover { border-color: var(--almond-silk); background: var(--powder-petal); }
+        .lecture-info { display: flex; align-items: center; gap: 14px; }
+        .lecture-num {
+            width: 36px; height: 36px; background: var(--powder-petal);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700; color: var(--text-muted); flex-shrink: 0;
+        }
+        .lecture-title { font-size: 15px; font-weight: 600; }
+        .btn-edit {
+            padding: 8px 16px; background: transparent; border: 1.5px solid var(--almond-silk);
+            border-radius: 7px; font-size: 13px; font-weight: 600; color: var(--text-secondary);
+            cursor: pointer; transition: all 0.2s; white-space: nowrap;
+        }
+        .btn-edit:hover { background: var(--almond-silk); color: var(--text-primary); }
+        .empty { text-align: center; padding: 60px 0; color: var(--text-muted); font-size: 15px; }
+        .lecture-thumb {
+            width: 60px; height: 40px;
+            background: var(--powder-petal);
+            border-radius: 6px;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid var(--dust-grey);
+        }
+        .lecture-thumb img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .no-thumb {
+            font-size: 9px; color: var(--text-muted); font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <a th:href="@{/instructor/main}" class="logo">Cookiego</a>
+    <div class="header-right">
+        <a th:href="@{/user/mypage}">마이페이지</a>
+        <form th:action="@{/logout}" method="post" style="display:inline;">
+            <button type="submit" class="btn-logout">로그아웃</button>
+        </form>
+    </div>
+</header>
+
+<div class="main">
+    <div class="top-row">
+        <div class="page-title">내 강의 목록</div>
+        <a th:href="@{/instructor/lecture/regist}" class="btn-new">+ 새 강의 등록</a>
+    </div>
+    <p class="subtitle">등록한 강의 목록입니다.</p>
+
+    <div class="lecture-list" th:if="${not #lists.isEmpty(lectures.content)}">
+        <div class="lecture-item" th:each="lecture, iterStat : ${lectures.content}">
+            <div class="lecture-info">
+                <div class="lecture-num" th:text="${lectures.totalElements - (lectures.number * lectures.size) - iterStat.index}"></div>
+
+                <div class="lecture-thumb">
+                    <img th:if="${lecture.thumbnail != null}"
+                         th:src="@{/lectures/thumbnail/{filename}(filename=${lecture.thumbnail})}" alt="강의 썸네일">
+                    <span th:unless="${lecture.thumbnail != null}" class="no-thumb">No Image</span>
+                </div>
+
+                <div class="lecture-title" th:text="${lecture.title}"></div>
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
+                <button class="btn-edit"
+                        th:onclick="|location.href='@{/instructor/lecture/edit/{id}(id=${lecture.lectureId})}'|">
+                    수정하기
+                </button>
+
+                <button th:if="${lecture.assignmentId != null}"
+                        class="btn-edit"
+                        style="background: #5c7c5f; color: white; border-color: #5c7c5f;"
+                        th:onclick="|location.href='@{/instructor/lecture/{lId}/assignment/{aId}/status(lId=${lecture.lectureId}, aId=${lecture.assignmentId})}'|">
+                    과제 제출 현황
+                </button>
+            </div>
+    </div>
+
+    <div class="empty" th:if="${#lists.isEmpty(lectures.content)}">
+        등록된 강의가 없습니다. 첫 강의를 개설해보세요!
+    </div>
+</div>
+<div style="display: flex; justify-content: center; gap: 8px; margin-top: 32px;">
+        <span th:each="i : ${#numbers.sequence(0, lectures.totalPages - 1)}">
+            <a th:href="@{/instructor/lectures(page=${i})}"
+               th:text="${i + 1}"
+               th:style="${i == lectures.number}
+                         ? 'padding: 8px 14px; background: var(--btn-dark); color: var(--text-on-dark); border-radius: 7px; font-size: 13px; font-weight: 700; text-decoration: none;'
+                         : 'padding: 8px 14px; background: var(--linen); border: 1.5px solid var(--almond-silk); border-radius: 7px; font-size: 13px; color: var(--text-secondary); text-decoration: none;'">
+            </a>
+        </span>
+</div>
+
+</div>
+<script src="/js/session-timer.js"></script>
+</body>
+</html>

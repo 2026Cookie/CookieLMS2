@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수강신청 - Cookiego</title>
+    <style>
+        :root {
+            --parchment: #edede9; --dust-grey: #d6ccc2; --linen: #f5ebe0;
+            --powder-petal: #e3d5ca; --almond-silk: #d5bdaf;
+            --text-primary: #2c2010; --text-secondary: #5c4a3a;
+            --text-muted: #8b7355; --text-on-dark: #f5ebe0;
+            --btn-dark: #4a3728; --btn-dark-hover: #2c2010;
+            --success: #3a6a50; --error: #7a3020; --warning: #7a5c20;
+            --shadow: rgba(44,32,16,0.10);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--parchment); color: var(--text-primary); min-height: 100vh; }
+        header {
+            background: var(--linen); border-bottom: 1px solid var(--dust-grey);
+            padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .logo { font-size: 18px; font-weight: 700; color: var(--text-primary); text-decoration: none; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .header-right a { font-size: 14px; color: var(--text-secondary); text-decoration: none; }
+        .header-right a:hover { color: var(--text-primary); }
+        .btn-logout {
+            padding: 7px 16px; background: transparent; border: 1.5px solid var(--almond-silk);
+            border-radius: 6px; font-size: 13px; color: var(--text-secondary);
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-logout:hover { background: var(--powder-petal); }
+        .main { max-width: 1040px; margin: 0 auto; padding: 40px 24px; }
+        .page-title { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
+        .search-bar { display: flex; gap: 10px; margin-bottom: 32px; }
+        .search-input {
+            flex: 1; padding: 11px 16px; border: 1px solid var(--dust-grey);
+            border-radius: 8px; background: var(--linen); color: var(--text-primary);
+            font-size: 15px; outline: none; transition: border-color 0.2s;
+        }
+        .search-input:focus { border-color: var(--almond-silk); background: #fff; }
+        .search-btn {
+            padding: 11px 22px; background: var(--btn-dark); color: var(--text-on-dark);
+            border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .search-btn:hover { background: var(--btn-dark-hover); }
+        .lecture-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+        .lecture-card {
+            background: var(--linen); border: 1px solid var(--dust-grey);
+            border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 10px var(--shadow); transition: all 0.2s;
+        }
+        .lecture-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px var(--shadow); }
+        .thumbnail {
+            height: 130px; background: var(--powder-petal);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; color: var(--text-muted); font-weight: 500;
+        }
+        .card-body { padding: 16px; }
+        .card-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; line-height: 1.4; }
+        .card-info { font-size: 13px; color: var(--text-muted); line-height: 1.7; margin-bottom: 14px; }
+        .capacity-full { color: var(--error); font-weight: 600; }
+        .btn-enroll {
+            width: 100%; padding: 9px; border: none; border-radius: 7px;
+            font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-enroll.enroll { background: var(--btn-dark); color: var(--text-on-dark); }
+        .btn-enroll.enroll:hover { background: var(--btn-dark-hover); }
+        .btn-enroll.cancel { background: var(--error); color: var(--text-on-dark); }
+        .btn-enroll.cancel:hover { background: #5a2010; }
+        .btn-enroll.waitlist { background: var(--warning); color: var(--text-on-dark); }
+        .btn-enroll.waitlist:hover { background: #5a4010; }
+        .btn-enroll.view-wait { background: var(--almond-silk); color: var(--text-primary); }
+        .btn-enroll.view-wait:hover { background: var(--powder-petal); }
+        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 40px; }
+        .page-btn {
+            padding: 8px 14px; border: 1px solid var(--dust-grey); background: var(--linen);
+            color: var(--text-secondary); border-radius: 6px; cursor: pointer; font-size: 14px;
+            font-weight: 600; transition: all 0.2s;
+        }
+        .page-btn.active { background: var(--btn-dark); color: var(--text-on-dark); border-color: var(--btn-dark); }
+        .page-btn:hover:not(.active) { background: var(--powder-petal); }
+        .empty { grid-column: span 3; text-align: center; padding: 60px 0; color: var(--text-muted); font-size: 15px; }
+        @media (max-width: 720px) { .lecture-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 480px) { .lecture-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<header>
+    <a href="/user/main" class="logo">Cookiego</a>
+    <div class="header-right">
+        <a href="/user/mypage">마이페이지</a>
+        <form action="/logout" method="post" style="display:inline;">
+            <button type="submit" class="btn-logout">로그아웃</button>
+        </form>
+    </div>
+</header>
+
+<div class="main">
+    <div class="page-title">수강신청</div>
+    <div class="search-bar">
+        <input type="text" id="searchInput" class="search-input" placeholder="강의 제목을 검색해보세요" onkeyup="if(event.keyCode===13) searchLectures()">
+        <button class="search-btn" onclick="searchLectures()">검색</button>
+    </div>
+    <div class="lecture-grid" id="lectureList"></div>
+    <div id="pagination" class="pagination"></div>
+</div>
+
+<script>
+    let currentKeyword = '', currentPage = 0, myEnrolledIds = [], myWaitlistIds = [];
+
+    Promise.all([
+        fetch('/api/enrollments/my').then(r => r.json()).catch(() => []),
+        fetch('/api/waitlist/my').then(r => r.json()).catch(() => [])
+    ]).then(([e, w]) => { myEnrolledIds = e; myWaitlistIds = w; loadLectures('', 0); });
+
+    function searchLectures() { loadLectures(document.getElementById('searchInput').value, 0); }
+
+    function loadLectures(keyword, page) {
+        currentKeyword = keyword; currentPage = page;
+        let url = `/lectures?page=${page}&size=6`;
+        if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+        fetch(url).then(r => r.json()).then(data => {
+            const grid = document.getElementById('lectureList');
+            grid.innerHTML = '';
+            if (!data.content.length) { grid.innerHTML = '<div class="empty">강의가 없습니다.</div>'; document.getElementById('pagination').innerHTML = ''; return; }
+            data.content.forEach(l => {
+                const remaining = l.maxCapacity - l.currentEnrollment;
+                const isFull = remaining <= 0;
+                let btnHtml;
+                if (myEnrolledIds.includes(l.lectureId))
+                    btnHtml = `<button class="btn-enroll cancel" onclick="cancel(${l.lectureId})">수강 취소</button>`;
+                else if (myWaitlistIds.includes(l.lectureId))
+                    btnHtml = `<button class="btn-enroll view-wait" onclick="location.href='/user/waitlist/${l.lectureId}'">대기열 보기</button>`;
+                else if (isFull)
+                    btnHtml = `<button class="btn-enroll waitlist" onclick="registerWaitlist(${l.lectureId})">대기열 등록</button>`;
+                else
+                    btnHtml = `<button class="btn-enroll enroll" onclick="enroll(${l.lectureId})">수강 신청</button>`;
+                grid.innerHTML += `
+                    <div class="lecture-card">
+                        <div class="thumbnail">${l.thumbnail ? `<img src="/lectures/thumbnail/${l.thumbnail}" style="width:100%;height:100%;object-fit:cover;">` : '썸네일 없음'}</div>
+                        <div class="card-body">
+                            <div class="card-title">${l.title}</div>
+                            <div class="card-info">
+                                강사명: ${l.instructorName}<br>
+                                수강 인원: ${l.currentEnrollment} / ${l.maxCapacity} 명<br>
+                                잔여 정원: <span class="${isFull ? 'capacity-full' : ''}">${isFull ? '마감' : remaining + '명'}</span>
+                            </div>
+                            ${btnHtml}
+                        </div>
+                    </div>`;
+            });
+            renderPagination(data.totalPages, data.number, keyword);
+        }).catch(e => console.error(e));
+    }
+
+    function renderPagination(total, cur, keyword) {
+        const div = document.getElementById('pagination');
+        div.innerHTML = '';
+        if (total <= 1) return;
+
+        const blockSize = 10; // 한 번에 보여줄 페이지 번호 개수
+        const currentBlock = Math.floor(cur / blockSize); // 현재 몇 번째 블록인지 계산
+        const startPage = currentBlock * blockSize; // 블록의 시작 페이지
+        let endPage = startPage + blockSize; // 블록의 끝 페이지
+        if (endPage > total) endPage = total; // 총 페이지 수를 넘지 않도록 제한
+
+        // 1. [이전] 버튼: 첫 번째 블록이 아닐 때만 생성
+        if (currentBlock > 0) {
+            const prevBtn = document.createElement('button');
+            prevBtn.innerText = '이전';
+            prevBtn.className = 'page-btn';
+            prevBtn.onclick = () => loadLectures(keyword, startPage - 1);
+            div.appendChild(prevBtn);
+        }
+
+        // 2. [페이지 번호] 버튼: 현재 블록의 시작부터 끝까지 생성
+        for (let i = startPage; i < endPage; i++) {
+            const b = document.createElement('button');
+            b.innerText = i + 1;
+            b.className = 'page-btn' + (i === cur ? ' active' : '');
+            b.onclick = () => loadLectures(keyword, i);
+            div.appendChild(b);
+        }
+
+        // 3. [다음] 버튼: 마지막 블록이 아닐 때만 생성
+        if (endPage < total) {
+            const nextBtn = document.createElement('button');
+            nextBtn.innerText = '다음';
+            nextBtn.className = 'page-btn';
+            nextBtn.onclick = () => loadLectures(keyword, endPage);
+            div.appendChild(nextBtn);
+        }
+    }
+
+    function enroll(id) {
+        fetch(`/api/enrollments/${id}`, {method:'POST'}).then(async r => {
+            const msg = await r.text();
+            alert(msg);
+            if (!r.ok) return;
+            fetch('/api/enrollments/my').then(r => r.json()).then(ids => { myEnrolledIds = ids; loadLectures(currentKeyword, currentPage); });
+        }).catch(() => alert('서버 오류가 발생했습니다.'));
+    }
+
+    function cancel(id) {
+        fetch(`/api/enrollments/${id}/cancel`, {method:'POST'}).then(r => r.text()).then(msg => {
+            alert(msg);
+            fetch('/api/enrollments/my').then(r => r.json()).then(ids => { myEnrolledIds = ids; loadLectures(currentKeyword, currentPage); });
+        }).catch(() => alert('서버 오류가 발생했습니다.'));
+    }
+
+    function registerWaitlist(id) {
+        fetch(`/api/waitlist/${id}`, {method:'POST'}).then(r => r.text()).then(result => {
+            if (!isNaN(parseInt(result))) location.href = `/user/waitlist/${id}`;
+            else alert(result);
+        }).catch(() => alert('서버 오류가 발생했습니다.'));
+    }
+</script>
+<script src="/js/session-timer.js"></script>
+</body>
+</html>

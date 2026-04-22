@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>정보 수정 - Cookiego</title>
+    <style>
+        :root {
+            --parchment: #edede9; --dust-grey: #d6ccc2; --linen: #f5ebe0;
+            --powder-petal: #e3d5ca; --almond-silk: #d5bdaf;
+            --text-primary: #2c2010; --text-secondary: #5c4a3a;
+            --text-muted: #8b7355; --text-on-dark: #f5ebe0;
+            --btn-dark: #4a3728; --btn-dark-hover: #2c2010;
+            --error: #7a3020; --shadow: rgba(44,32,16,0.10);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--parchment); color: var(--text-primary);
+            min-height: 100vh; display: flex; justify-content: center;
+            align-items: flex-start; padding: 40px 20px;
+        }
+        .card {
+            background: var(--linen); border: 1px solid var(--dust-grey);
+            border-radius: 16px; box-shadow: 0 4px 24px var(--shadow);
+            padding: 48px 40px; width: 100%; max-width: 440px;
+        }
+        .back-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--text-muted); margin-bottom: 28px; text-decoration: none; }
+        .back-link:hover { color: var(--text-secondary); }
+        h1 { font-size: 22px; font-weight: 700; margin-bottom: 28px; }
+        .section-label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin: 24px 0 14px; padding-bottom: 6px; border-bottom: 1px solid var(--dust-grey); }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%; padding: 11px 14px; border: 1px solid var(--dust-grey);
+            border-radius: 8px; background: var(--parchment); color: var(--text-primary);
+            font-size: 15px; outline: none; transition: border-color 0.2s;
+        }
+        input:focus { border-color: var(--almond-silk); background: #fff; }
+        .msg-error { color: var(--error); font-size: 13px; margin-top: 5px; }
+        .msg-error-box { background: #f9ede9; border: 1px solid #e8c8c0; color: var(--error); border-radius: 8px; padding: 12px 14px; font-size: 14px; margin-bottom: 16px; }
+        .btn-row { display: flex; gap: 10px; margin-top: 24px; }
+        .btn {
+            flex: 1; padding: 13px; border-radius: 8px; font-size: 15px;
+            font-weight: 600; cursor: pointer; border: none; text-decoration: none;
+            text-align: center; transition: all 0.2s;
+        }
+        .btn-primary { background: var(--btn-dark); color: var(--text-on-dark); }
+        .btn-primary:hover { background: var(--btn-dark-hover); }
+        .btn-secondary { background: var(--almond-silk); color: var(--text-primary); }
+        .btn-secondary:hover { background: var(--powder-petal); }
+        .hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <a th:href="@{/user/mypage/info}" class="back-link">← 내 정보로 돌아가기</a>
+    <h1>정보 수정</h1>
+
+    <div class="msg-error-box" th:if="${error}" th:text="${error}"></div>
+
+    <form th:action="@{/user/mypage/edit}" method="post" th:object="${modifyUserInfo}">
+        <div class="section-label">기본 정보</div>
+        <div class="form-group">
+            <label>이름</label>
+            <input type="text" th:field="*{name}" placeholder="이름">
+            <p class="msg-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+        </div>
+        <div class="form-group">
+            <label>닉네임</label>
+            <input type="text" th:field="*{nickname}" placeholder="닉네임">
+            <p class="msg-error" th:if="${#fields.hasErrors('nickname')}" th:errors="*{nickname}"></p>
+        </div>
+        <div class="form-group">
+            <label>이메일</label>
+            <input type="email" th:field="*{email}" placeholder="이메일">
+            <p class="msg-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
+        </div>
+        <div class="form-group">
+            <label>전화번호</label>
+            <input type="text" th:field="*{phone}" placeholder="전화번호">
+            <p class="msg-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></p>
+        </div>
+
+        <div class="section-label">비밀번호 변경</div>
+        <div class="form-group">
+            <label>현재 비밀번호</label>
+            <input type="password" th:field="*{currentPassword}" placeholder="현재 비밀번호">
+        </div>
+        <div class="form-group">
+            <label>새 비밀번호</label>
+            <input type="password" th:field="*{newPassword}" placeholder="변경 시에만 입력">
+            <p class="msg-error" th:if="${#fields.hasErrors('newPassword')}" th:errors="*{newPassword}"></p>
+            <p class="hint">변경하지 않으려면 비워두세요</p>
+        </div>
+        <div class="form-group">
+            <label>새 비밀번호 확인</label>
+            <input type="password" th:field="*{newPasswordConfirm}" placeholder="새 비밀번호 재입력">
+        </div>
+
+        <div class="btn-row">
+            <button type="submit" class="btn btn-primary">저장</button>
+            <a th:href="@{/user/mypage/info}" class="btn btn-secondary">취소</a>
+        </div>
+    </form>
+</div>
+<script src="/js/session-timer.js"></script>
+</body>
+</html>

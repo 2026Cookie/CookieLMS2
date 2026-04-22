@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>아이디 찾기 - Cookiego</title>
+    <style>
+        :root {
+            --parchment: #edede9; --dust-grey: #d6ccc2; --linen: #f5ebe0;
+            --powder-petal: #e3d5ca; --almond-silk: #d5bdaf;
+            --text-primary: #2c2010; --text-secondary: #5c4a3a;
+            --text-muted: #8b7355; --text-on-dark: #f5ebe0;
+            --btn-dark: #4a3728; --btn-dark-hover: #2c2010;
+            --error: #7a3020; --success: #3a6a50;
+            --shadow: rgba(44,32,16,0.10);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--parchment); color: var(--text-primary);
+            min-height: 100vh; display: flex; justify-content: center; align-items: center;
+        }
+        .card {
+            background: var(--linen); border: 1px solid var(--dust-grey);
+            border-radius: 16px; box-shadow: 0 4px 24px var(--shadow);
+            padding: 48px 40px; width: 100%; max-width: 400px;
+        }
+        .back-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--text-muted); margin-bottom: 28px; text-decoration: none; }
+        .back-link:hover { color: var(--text-secondary); }
+        h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+        .subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+        input[type="text"] {
+            width: 100%; padding: 11px 14px; border: 1px solid var(--dust-grey);
+            border-radius: 8px; background: var(--parchment); color: var(--text-primary);
+            font-size: 15px; outline: none; transition: border-color 0.2s;
+        }
+        input:focus { border-color: var(--almond-silk); background: #fff; }
+        .btn-submit {
+            width: 100%; padding: 13px; background: var(--btn-dark); color: var(--text-on-dark);
+            border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
+            cursor: pointer; margin-top: 8px; transition: background 0.2s;
+        }
+        .btn-submit:hover { background: var(--btn-dark-hover); }
+        .msg-error { background: #f9ede9; border: 1px solid #e8c8c0; color: var(--error); border-radius: 8px; padding: 12px 14px; font-size: 14px; margin-top: 16px; }
+        .msg-success { background: #eaf2ed; border: 1px solid #b8d8c4; color: var(--success); border-radius: 8px; padding: 14px 16px; font-size: 14px; margin-top: 16px; }
+        .msg-success strong { font-size: 18px; display: block; margin-top: 4px; }
+        .support-text { margin-top: 20px; font-size: 12px; color: var(--text-muted); text-align: center; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <a th:href="@{/user/login}" class="back-link">← 로그인으로 돌아가기</a>
+    <h1>아이디 찾기</h1>
+    <p class="subtitle">가입 시 등록한 이름과 전화번호를 입력해 주세요</p>
+
+    <form th:action="@{/user/find_id}" method="post">
+        <div class="form-group">
+            <label>이름</label>
+            <input type="text" name="name" placeholder="이름을 입력하세요">
+        </div>
+        <div class="form-group">
+            <label>전화번호</label>
+            <input type="text" name="phone" placeholder="전화번호를 입력하세요">
+        </div>
+        <button type="submit" class="btn-submit">확인</button>
+    </form>
+
+    <div class="msg-error" th:if="${error}" th:text="${error}"></div>
+    <div class="msg-success" th:if="${loginId}">
+        회원님의 아이디는
+        <strong th:text="${loginId}"></strong>
+        입니다.
+    </div>
+
+    <div class="support-text">고객센터 : 국번없이 111</div>
+</div>
+</body>
+</html>

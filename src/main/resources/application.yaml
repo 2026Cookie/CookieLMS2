@@ -1,3 +1,67 @@
 spring:
-  application:
-    name: CookieLMS
+  # 데이터베이스 연결 설정
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/CoookieLMS
+    username: cookie
+    password: cookie
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+  # 파일 업로드 설정 (Spring Boot 표준 경로)
+  servlet:
+    multipart:
+      max-file-size: 30MB
+      max-request-size: 30MB
+      file-size-threshold: 1MB
+      resolve-lazily: false   # 파싱을 컨트롤러 바인딩 시점까지 지연 → @ControllerAdvice에서 처리 가능
+
+  # JPA 및 하이버네이트 설정
+  jpa:
+    hibernate:
+      ddl-auto: update  # 임시로 update 사용 (trace_id 컬럼 생성 후 validate로 변경)
+    show-sql: true # SQL 콘솔 출력
+    properties:
+      hibernate:
+        format_sql: true # SQL 정렬
+        highlight_sql: true # SQL 키워드 강조coookielms
+        dialect: org.hibernate.dialect.MySQLDialect # MySQL 방언 명시
+
+
+
+# 로그 레벨 설정 (디버깅용)
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace # 종호
+
+
+# 서버 에러 처리 설정
+server:
+  servlet:
+    session:
+      timeout: 15m
+  tomcat:
+    max-swallow-size: -1   # 업로드 용량 초과 시에도 본문 전부 읽어 커넥션 리셋 방지
+    max-http-form-post-size: -1
+  error:
+    whitelabel:
+      enabled: false  # Spring Boot 기본 에러 페이지 비활성화
+    path: /error      # 에러 요청 매핑 경로
+  flyway:
+    enabled: false    # Flyway 비활성화 (Hibernate ddl-auto 사용)
+    baseline-on-migrate: false
+
+
+# 애플리케이션 커스텀 설정
+app:
+  error-log:
+    stack-trace-max-length: 1000  # 스택 트레이스 최대 길이 (자)
+
+# 🌟 [추가] 파일 업로드 공통 경로 강제 지정 (인텔리제이 내부)
+file:
+  upload:
+    path: uploads/
+

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대기열 - Cookiego</title>
+    <style>
+        :root {
+            --parchment: #edede9; --dust-grey: #d6ccc2; --linen: #f5ebe0;
+            --powder-petal: #e3d5ca; --almond-silk: #d5bdaf;
+            --text-primary: #2c2010; --text-secondary: #5c4a3a;
+            --text-muted: #8b7355; --text-on-dark: #f5ebe0;
+            --btn-dark: #4a3728; --btn-dark-hover: #2c2010;
+            --error: #7a3020; --shadow: rgba(44,32,16,0.10);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--parchment); color: var(--text-primary);
+            min-height: 100vh; display: flex; justify-content: center; align-items: center;
+        }
+        .card {
+            background: var(--linen); border: 1px solid var(--dust-grey);
+            border-radius: 16px; box-shadow: 0 4px 24px var(--shadow);
+            padding: 56px 48px; width: 100%; max-width: 420px; text-align: center;
+        }
+        h2 { font-size: 20px; font-weight: 700; margin-bottom: 24px; }
+        .wait-number {
+            font-size: 72px; font-weight: 800; color: var(--btn-dark);
+            line-height: 1; margin-bottom: 6px;
+        }
+        .wait-label { font-size: 16px; color: var(--text-muted); margin-bottom: 28px; }
+        .info-box {
+            background: var(--powder-petal); border: 1px solid var(--almond-silk);
+            border-radius: 10px; padding: 16px 20px;
+            font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 28px;
+        }
+        .btn-row { display: flex; gap: 10px; }
+        .btn {
+            flex: 1; padding: 12px; border-radius: 8px; font-size: 14px;
+            font-weight: 600; cursor: pointer; border: none; text-decoration: none;
+            text-align: center; transition: all 0.2s;
+        }
+        .btn-secondary { background: var(--almond-silk); color: var(--text-primary); }
+        .btn-secondary:hover { background: var(--powder-petal); }
+        .btn-danger { background: var(--error); color: var(--text-on-dark); }
+        .btn-danger:hover { background: #5a2010; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2>대기열 등록 완료</h2>
+    <div class="wait-number" th:text="${waitNumber}">1</div>
+    <div class="wait-label">번째 대기 중</div>
+    <div class="info-box">
+        수강 취소가 발생하면 대기 순서에 따라<br>자동으로 수강 신청이 완료됩니다.
+    </div>
+    <div class="btn-row">
+        <a th:href="@{/user/enrollments}" class="btn btn-secondary">강의 목록으로</a>
+        <button class="btn btn-danger" th:onclick="|cancelWaitlist(${lectureId})|">대기열 취소</button>
+    </div>
+</div>
+<script th:inline="javascript">
+    function cancelWaitlist(lectureId) {
+        if (!confirm('대기열을 취소하시겠습니까?')) return;
+        fetch(`/api/waitlist/${lectureId}/cancel`, {method:'POST'})
+            .then(r => r.text()).then(msg => { alert(msg); location.href = '/user/enrollments'; })
+            .catch(() => alert('서버 오류가 발생했습니다.'));
+    }
+</script>
+<script src="/js/session-timer.js"></script>
+</body>
+</html>
