@@ -190,6 +190,17 @@
     </div>
 </div>
 
+<!-- 모달: 익명 CRITICAL 에러 -->
+<div id="anonymousErrorsModal" class="modal-overlay" onclick="closeModal('anonymousErrorsModal', event)">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>미식별 사용자 CRITICAL 에러</h3>
+            <button class="modal-close" onclick="closeModalById('anonymousErrorsModal')">✕</button>
+        </div>
+        <div class="modal-body" id="anonymousErrorsBody"><div class="loading">불러오는 중...</div></div>
+    </div>
+</div>
+
 <!-- 모달: 엔드포인트 상세 호출 -->
 <div id="endpointDetailModal" class="modal-overlay" onclick="closeModal('endpointDetailModal', event)">
     <div class="modal">
@@ -457,7 +468,7 @@
                 : `<span style="color:var(--text-muted);">${label}</span>`;
             const detailCell = hasUser
                 ? `<button class="link-btn" onclick="openUserErrorsModal(${err.userId}, '${label}')">보기</button>`
-                : `<span style="color:var(--text-muted);">-</span>`;
+                : `<button class="link-btn" onclick="openAnonymousErrorsModal()">보기</button>`;
             html += `<tr>
             <td>${userCell}</td>
             <td><span class="badge badge-danger">${err.errorCount}</span></td>
@@ -714,6 +725,36 @@
     `;
 
         el.innerHTML = html;
+    }
+
+    // ── 익명 CRITICAL 에러 모달 ──────────────────────────────
+    function openAnonymousErrorsModal() {
+        document.getElementById('anonymousErrorsModal').classList.add('active');
+        const body = document.getElementById('anonymousErrorsBody');
+        body.innerHTML = '<div class="loading">불러오는 중...</div>';
+        fetch('/admin/logs/errors/anonymous')
+            .then(r => r.json())
+            .then(data => {
+                if (!data || data.length === 0) {
+                    body.innerHTML = '<div class="info-box">에러가 없습니다.</div>';
+                    return;
+                }
+                let html = '<table class="data-table"><thead><tr><th>에러코드</th><th>메시지</th><th>IP</th><th>발생시각</th><th>상세</th></tr></thead><tbody>';
+                data.forEach(e => {
+                    const time = e.createdAt ? e.createdAt.replace('T', ' ').substring(0, 19) : '-';
+                    const msg = e.errorMessage ? e.errorMessage.substring(0, 60) : '-';
+                    html += `<tr>
+                        <td><span class="badge badge-danger">${e.errorCode}</span></td>
+                        <td>${msg}</td>
+                        <td style="font-size:11px;">${e.clientIp || '-'}</td>
+                        <td>${time}</td>
+                        <td><button class="link-btn" onclick="openErrorDetailModal(${e.id})">보기</button></td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                body.innerHTML = html;
+            })
+            .catch(() => { body.innerHTML = '<div class="msg-error">데이터를 불러올 수 없습니다.</div>'; });
     }
 
     // ── 사용자별 CRITICAL 에러 상세 모달 ──────────────────────
