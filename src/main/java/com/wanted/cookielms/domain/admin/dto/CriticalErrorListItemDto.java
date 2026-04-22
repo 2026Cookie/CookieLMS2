@@ -16,4 +16,5 @@ public class CriticalErrorListItemDto {
     private String httpMethod;
     private Integer executionTimeMs;
     private String traceId;
+    private String errorMessage;
 }
