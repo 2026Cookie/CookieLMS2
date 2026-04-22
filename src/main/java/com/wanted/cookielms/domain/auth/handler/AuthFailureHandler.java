@@ -47,7 +47,7 @@ public class AuthFailureHandler extends SimpleUrlAuthenticationFailureHandler {
                 .clientIp(getClientIp(request))
                 .stackTrace(exception.getMessage())
                 .traceId(traceId)
-                .severity(ErrorSeverity.WARNING)
+                .severity(ErrorSeverity.CRITICAL)
                 .build();
 
         errorLogService.saveErrorLogAsync(errorLog);
