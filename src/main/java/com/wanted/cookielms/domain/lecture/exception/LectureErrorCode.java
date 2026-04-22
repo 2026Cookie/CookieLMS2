@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum LectureErrorCode {
+public enum LectureErrorCode implements ErrorCode{
 
     LECTURE_NOT_FOUND(HttpStatus.NOT_FOUND, "LEC001", "존재하지 않는 강의입니다.", ErrorSeverity.WARNING),
     LECTURE_UNAUTHORIZED(HttpStatus.FORBIDDEN, "LEC002", "본인의 강의만 수정할 수 있습니다.", ErrorSeverity.WARNING),
