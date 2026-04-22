@@ -47,4 +47,9 @@ public class Waitlist {
     public void changeStatus(String status) {
         this.status = status;
     }
+
+    // [성능 비교용] 재정렬 방식에서 사용
+    public void decreaseWaitNumber() {
+        this.waitNumber--;
+    }
 }

@@ -26,7 +26,7 @@ public class EnrollmentController {
         return ResponseEntity.ok(enrollmentService.getMyEnrolledLectureIds(userId));
     }
 
-    @DeleteMapping("/{lectureId}")
+    @PostMapping("/{lectureId}/cancel")
     @ResponseBody
     public ResponseEntity<String> cancel(@PathVariable Long lectureId, @CurrentUserId Long userId) {
         if (userId == null) {
