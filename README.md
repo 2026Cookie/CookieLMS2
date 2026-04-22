@@ -77,29 +77,8 @@
 
 
 프로젝트 구조
+<img width="878" height="920" alt="image" src="https://github.com/user-attachments/assets/1941f69b-d633-4967-ade5-9341d642a63e" />
 
-src
- ├─ main
- │   ├─ java/com/wanted/cookielms
- │   │   ├─ domain
- │   │   │   ├─ admin
- │   │   │   ├─ assignment
- │   │   │   ├─ auth
- │   │   │   ├─ enrollment
- │   │   │   ├─ lecture
- │   │   │   └─ user
- │   │   └─ global
- │   │       ├─ aop
- │   │       ├─ config
- │   │       ├─ error
- │   │       ├─ filter / interceptor
- │   │       └─ logging
- │   └─ resources
- │       ├─ templates (admin / instructor / user / error)
- │       ├─ static
- │       ├─ application.yaml
- │       └─ sql
- └─ test
 
  팀 문서 링크 
 Discussions: https://github.com/2026Cookie/CookieLMS2/discussions
