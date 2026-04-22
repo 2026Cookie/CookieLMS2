@@ -43,7 +43,8 @@ public interface ErrorLogRepository extends JpaRepository<ErrorLogEntity, Long> 
         COALESCE(a.endpoint, 'N/A'), 
         COALESCE(CAST(a.httpMethod AS STRING), 'N/A'),
         a.executionTimeMs,
-        e.traceId
+        e.traceId,
+        e.errorMessage
     )
     FROM ErrorLogEntity e
     LEFT JOIN ApiPerformanceLogEntity a ON e.traceId = a.traceId
@@ -83,11 +84,14 @@ public interface ErrorLogRepository extends JpaRepository<ErrorLogEntity, Long> 
     FROM error_logs e
     LEFT JOIN users u ON e.user_id = u.user_Id
     WHERE e.severity = 'CRITICAL'
-      AND e.user_id IS NOT NULL
+
     GROUP BY e.user_id, u.id
     ORDER BY errorCount DESC
 """, nativeQuery = true)
     List<Map<String, Object>> findCriticalErrorCountGroupByUserId();
+
+    @Query("SELECT e FROM ErrorLogEntity e WHERE e.severity = 'CRITICAL' AND e.userId IS NULL ORDER BY e.createdAt DESC")
+    List<ErrorLogEntity> findAnonymousCriticalErrors();
 
     @Query("""
         SELECT new com.wanted.cookielms.domain.admin.dto.InsightErrorUserDto(
@@ -97,7 +101,7 @@ public interface ErrorLogRepository extends JpaRepository<ErrorLogEntity, Long> 
         LEFT JOIN User u ON e.userId = u.userId
         WHERE e.severity = 'CRITICAL'
         AND e.createdAt >= :since
-        AND e.userId IS NOT NULL
+
         GROUP BY e.userId, u.loginId
         HAVING COUNT(e) >= :threshold
         ORDER BY COUNT(e) DESC
