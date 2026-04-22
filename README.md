@@ -37,6 +37,9 @@
 - Spring Security Test
 
 ---
+## ERD
+<img width="1304" height="1071" alt="image" src="https://github.com/user-attachments/assets/c8ea40d8-f0bb-40ea-97c1-7631c8fcf902" />
+---
 
 ## 핵심 기능
 
