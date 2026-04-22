@@ -28,8 +28,6 @@
 - ModelMapper
 - Lombok
 
-### Frontend
-- Claude
 
 ### Database
 - MySQL 8.x (mysql-connector-j)
