@@ -126,6 +126,12 @@ public class AdminController {
     }
 
     @ResponseBody
+    @GetMapping("/logs/errors/anonymous")
+    public ResponseEntity<List<ErrorLogResponseDTO>> getAnonymousCriticalErrors() {
+        return ResponseEntity.ok(errorLogQueryService.getAnonymousCriticalErrors());
+    }
+
+    @ResponseBody
     @GetMapping("/insights")
     public ResponseEntity<InsightsAggregateDto> getInsights() {
         return ResponseEntity.ok(adminInsightService.getAllInsights());
