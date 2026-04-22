@@ -1,8 +1,31 @@
 -- =====================================================
 -- CoookieLMS 전체 테이블 초기화 스크립트
 -- 실행 전 주의: 모든 데이터가 삭제됩니다.
+--
+-- 구성
+--   1) 데이터베이스 권한 부여 (GRANT)
+--   2) 데이터베이스 DDL (DROP / CREATE TABLE)
+--   3) 데이터베이스 더미 데이터 (INSERT)
 -- =====================================================
 
+
+-- =====================================================
+-- 1) 데이터베이스 권한 부여 SQL
+-- =====================================================
+CREATE DATABASE IF NOT EXISTS CoookieLMS
+    DEFAULT CHARACTER SET utf8mb4
+    DEFAULT COLLATE utf8mb4_unicode_ci;
+
+CREATE USER IF NOT EXISTS 'cookie'@'localhost' IDENTIFIED BY 'cookie';
+
+GRANT ALL PRIVILEGES ON CoookieLMS.* TO 'cookie'@'localhost';
+
+FLUSH PRIVILEGES;
+
+
+-- =====================================================
+-- 2) 데이터베이스 DDL SQL
+-- =====================================================
 USE CoookieLMS;
 
 SET FOREIGN_KEY_CHECKS = 0;
@@ -17,12 +40,12 @@ DROP TABLE IF EXISTS business_service_logs;
 DROP TABLE IF EXISTS enrollment;
 DROP TABLE IF EXISTS error_logs;
 DROP TABLE IF EXISTS flyway_schema_history;
+DROP TABLE IF EXISTS waitlist;
 DROP TABLE IF EXISTS lecture;
 DROP TABLE IF EXISTS logs;
 DROP TABLE IF EXISTS metrics;
 DROP TABLE IF EXISTS user_bans;
 DROP TABLE IF EXISTS user_logs;
-DROP TABLE IF EXISTS waitlist;
 DROP TABLE IF EXISTS users;
 
 -- =====================================================
@@ -163,6 +186,11 @@ CREATE TABLE error_logs (
 );
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+
+-- =====================================================
+-- 3) 데이터베이스 더미 데이터 SQL
+-- =====================================================
 
 -- =====================================================
 -- INSERT: users (lecture FK 대상이므로 먼저 삽입)
@@ -347,3 +375,17 @@ VALUES
 
 INSERT INTO assignments (title, content, due_date, lecture_id)
 VALUES ('1주차 과제', '강의 내용을 정리하여 제출하세요.', '2026-04-20 23:59:59', 95);
+
+
+-- =====================================================
+-- INSERT: error_logs
+-- =====================================================
+INSERT INTO error_logs (id, client_ip, created_at, error_code, error_message, exception_name, severity, stack_trace, trace_id, user_id)
+VALUES
+(1, '0:0:0:0:0:0:0:1', '2026-04-22 10:46:44.980004', 'AUTH_FAILURE', '로그인 실패 (dewknj): 등록된 회원 정보가 없습니다.', 'UsernameNotFoundException', 'CRITICAL', '회원정보가 존재하지 않습니다.',            'e39123b2-a2dc-449e-9d1c-36f6db1bcf3f', NULL),
+(2, '0:0:0:0:0:0:0:1', '2026-04-22 10:46:49.658404', 'AUTH_FAILURE', '로그인 실패 (inst1): 비밀번호가 맞지 않습니다.',   'BadCredentialsException',   'CRITICAL', 'Bad credentials',                         'cc3ea1cf-590d-4e10-b376-45095d25b4c2', NULL),
+(3, '0:0:0:0:0:0:0:1', '2026-04-22 10:47:07.395788', 'AUTH_FAILURE', '로그인 실패 (admin1): 비밀번호가 맞지 않습니다.',  'BadCredentialsException',   'CRITICAL', 'Bad credentials',                         '27fe1959-923b-4eaf-a448-dc909d9e20e2', NULL),
+(4, '0:0:0:0:0:0:0:1', '2026-04-22 10:51:17.435821', 'AUTH_FAILURE', '로그인 실패 (ㅇ모너): 등록된 회원 정보가 없습니다.', 'UsernameNotFoundException', 'CRITICAL', '회원정보가 존재하지 않습니다.',            'f4ca6ba6-8148-42cf-bae5-b0b44c456b17', NULL),
+(5, '0:0:0:0:0:0:0:1', '2026-04-22 10:51:24.670882', 'AUTH_FAILURE', '로그인 실패 (inst1): 비밀번호가 맞지 않습니다.',   'BadCredentialsException',   'CRITICAL', 'Bad credentials',                         '7a0f7da1-dbde-4d5b-9e8e-1a7f5c4adbc6', NULL),
+(6, '0:0:0:0:0:0:0:1', '2026-04-22 11:06:43.465085', '403',          '접근 권한이 없습니다.: Access Denied',             'AuthorizationDeniedException', 'CRITICAL', 'Security Filter Level: Access Denied', 'ec5ba4d5-287d-4f12-8e5f-5df3b3444c87', 64),
+(7, '0:0:0:0:0:0:0:1', '2026-04-22 11:16:18.728306', '403',          '접근 권한이 없습니다.: Access Denied',             'AuthorizationDeniedException', 'CRITICAL', 'Security Filter Level: Access Denied', 'a2595788-2e44-4770-8319-0a23acdd8c02', 64);
