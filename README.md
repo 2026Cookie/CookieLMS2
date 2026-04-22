@@ -13,6 +13,8 @@
 - **운영 효율화**: 관리자 운영 관점의 트래픽/성능/에러 로그 조회 기능 제공
 
 ---
+<img width="1506" height="1190" alt="image" src="https://github.com/user-attachments/assets/4309b42d-27e3-4667-9626-966825850d80" />
+---
 
 ## 기술 스택
 
@@ -87,5 +89,5 @@ Discussions: https://github.com/2026Cookie/CookieLMS2/discussions
 Pull Requests: https://github.com/2026Cookie/CookieLMS2/pulls
 
 Issues: https://github.com/2026Cookie/CookieLMS2/issues
-<img width="1506" height="1190" alt="image" src="https://github.com/user-attachments/assets/4309b42d-27e3-4667-9626-966825850d80" />
+
 
